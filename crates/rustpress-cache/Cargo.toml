@@ -1,0 +1,43 @@
+[package]
+name = "rustpress-cache"
+description = "Caching layer for RustPress CMS supporting Redis and in-memory backends"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[features]
+default = ["memory"]
+memory = ["moka"]
+redis = ["dep:redis", "deadpool-redis"]
+
+[dependencies]
+rustpress-core = { path = "../rustpress-core" }
+
+# Async
+tokio.workspace = true
+async-trait.workspace = true
+futures.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# Error handling
+thiserror.workspace = true
+
+# Logging
+tracing.workspace = true
+
+# Types
+chrono.workspace = true
+
+# In-memory cache
+moka = { workspace = true, optional = true }
+
+# Redis
+redis = { workspace = true, optional = true }
+deadpool-redis = { workspace = true, optional = true }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util", "macros"] }

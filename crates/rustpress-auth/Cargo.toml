@@ -1,0 +1,51 @@
+[package]
+name = "rustpress-auth"
+description = "Authentication and authorization for RustPress CMS"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+rustpress-core = { path = "../rustpress-core" }
+
+# Async
+tokio.workspace = true
+async-trait.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# Error handling
+thiserror.workspace = true
+
+# Logging
+tracing.workspace = true
+
+# Types
+uuid.workspace = true
+chrono.workspace = true
+
+# JWT
+jsonwebtoken.workspace = true
+
+# Password hashing
+argon2.workspace = true
+rand.workspace = true
+
+# Validation
+validator.workspace = true
+
+# Cryptography for TOTP, tokens, etc.
+sha1 = "0.10"
+sha2 = "0.10"
+hmac = "0.12"
+hex = "0.4"
+base64 = "0.22"
+
+# URL encoding for OAuth2
+urlencoding = "2.1"
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util", "macros"] }

@@ -1,0 +1,112 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/rustpress-core",
+    "crates/rustpress-database",
+    "crates/rustpress-auth",
+    "crates/rustpress-api",
+    "crates/rustpress-plugins",
+    "crates/rustpress-cache",
+    "crates/rustpress-storage",
+    "crates/rustpress-jobs",
+    "crates/rustpress-events",
+    "crates/rustpress-server",
+    "crates/rustpress-content",
+    "crates/rustpress-users",
+    "crates/rustpress-themes",
+    "crates/rustpress-performance",
+    "crates/rustpress-media",
+    "crates/rustpress-admin",
+    "crates/rustpress-cli",
+    "crates/rustpress-health",
+    "crates/rustpress-cdn",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["RustPress Team"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/rustpress/rustpress"
+rust-version = "1.75"
+
+[workspace.dependencies]
+# Async Runtime
+tokio = { version = "1.35", features = ["full", "tracing"] }
+
+# Web Framework (Axum chosen for modern design and tower integration)
+axum = { version = "0.7", features = ["macros", "multipart", "ws"] }
+axum-extra = { version = "0.9", features = ["typed-header", "cookie"] }
+tower = { version = "0.5", features = ["full"] }
+tower-http = { version = "0.5", features = ["full"] }
+hyper = { version = "1.1", features = ["full"] }
+
+# Database
+sqlx = { version = "0.7", features = ["runtime-tokio", "tls-native-tls", "postgres", "uuid", "chrono", "json"] }
+deadpool = { version = "0.10", features = ["managed", "rt_tokio_1"] }
+deadpool-redis = "0.14"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+toml = "0.8"
+
+# Configuration
+config = "0.14"
+
+# Error Handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Logging & Tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing-appender = "0.2"
+
+# Metrics
+prometheus-client = "0.22"
+
+# Authentication & Security
+jsonwebtoken = "9.2"
+argon2 = "0.5"
+uuid = { version = "1.6", features = ["v4", "v7", "serde"] }
+rand = "0.8"
+
+# Caching
+redis = { version = "0.24", features = ["tokio-comp", "connection-manager"] }
+moka = { version = "0.12", features = ["future"] }
+
+# Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# Async utilities
+async-trait = "0.1"
+futures = "0.3"
+tokio-stream = "0.1"
+
+# Validation
+validator = { version = "0.16", features = ["derive"] }
+
+# HTTP Client
+reqwest = { version = "0.11", features = ["json", "native-tls"] }
+
+# Storage
+object_store = { version = "0.9", default-features = false, features = ["aws", "azure", "gcp"] }
+
+# Migration
+refinery = { version = "0.8", features = ["tokio-postgres"] }
+
+# Testing
+mockall = "0.12"
+wiremock = "0.5"
+fake = { version = "2.9", features = ["derive"] }
+
+# Misc
+once_cell = "1.19"
+parking_lot = "0.12"
+dashmap = "5.5"
+bytes = "1.5"
+mime = "0.3"
+url = "2.5"
+regex = "1.10"
+semver = { version = "1.0", features = ["serde"] }

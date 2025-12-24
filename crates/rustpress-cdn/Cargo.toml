@@ -1,0 +1,53 @@
+[package]
+name = "rustpress-cdn"
+version = "0.1.0"
+edition = "2021"
+authors = ["RustPress Contributors"]
+description = "CDN integration and auto-configuration for RustPress CMS"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/rustpress/rustpress"
+keywords = ["cdn", "cloudflare", "bunnycdn", "cache"]
+categories = ["web-programming"]
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+
+# HTTP client
+reqwest = { version = "0.11", features = ["json"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Tracing
+tracing = "0.1"
+
+# Async traits
+async-trait = "0.1"
+
+# URL handling
+url = "2.5"
+
+# Crypto for signing
+hmac = "0.12"
+sha2 = "0.10"
+base64 = "0.21"
+
+# Time
+chrono = { version = "0.4", features = ["serde"] }
+
+[dev-dependencies]
+tokio-test = "0.4"
+wiremock = "0.5"
+
+[features]
+default = ["cloudflare", "bunnycdn"]
+cloudflare = []
+bunnycdn = []
+fastly = []
+akamai = []

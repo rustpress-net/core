@@ -1,0 +1,68 @@
+[package]
+name = "rustpress-cli"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+description = "Command-line interface for RustPress CMS"
+readme = "README.md"
+keywords = ["cms", "cli", "wordpress", "rust"]
+categories = ["command-line-utilities", "web-programming"]
+
+[[bin]]
+name = "rustpress"
+path = "src/main.rs"
+
+[dependencies]
+# CLI Framework
+clap = { version = "4.4", features = ["derive", "env", "wrap_help", "string"] }
+clap_complete = "4.4"
+
+# Async Runtime
+tokio.workspace = true
+
+# Output Formatting
+tabled = "0.15"
+colored = "2.1"
+indicatif = "0.17"
+console = "0.15"
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml = "0.9"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Config
+dotenvy = "0.15"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Utilities
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.6", features = ["v4", "serde"] }
+url = "2.5"
+
+# HTTP client (for API communication) - use native-tls to avoid ring build issues on Windows
+reqwest = { version = "0.11", features = ["json", "native-tls", "multipart"], default-features = false }
+
+# Home directory detection
+dirs = "5.0"
+
+# Random number generation (for password generation)
+rand.workspace = true
+
+# Interactive REPL
+rustyline = "14.0"
+shellwords = "1.1"
+
+# Interactive prompts and confirmations
+dialoguer = "0.11"
+
+# XML parsing for WordPress import/export
+quick-xml = { version = "0.31", features = ["serialize"] }

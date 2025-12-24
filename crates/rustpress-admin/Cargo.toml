@@ -1,0 +1,56 @@
+[package]
+name = "rustpress-admin"
+version = "0.1.0"
+edition = "2021"
+authors = ["RustPress Contributors"]
+description = "Admin dashboard and server management for RustPress CMS"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/rustpress/rustpress"
+keywords = ["admin", "dashboard", "cms", "management"]
+categories = ["web-programming"]
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+
+# Web framework
+axum = { version = "0.7", features = ["macros", "multipart"] }
+tower = "0.4"
+tower-http = { version = "0.5", features = ["fs", "cors", "compression-gzip"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Database
+sqlx = { version = "0.7", features = ["runtime-tokio", "postgres", "json", "chrono", "uuid"] }
+
+# Template engine
+askama = "0.12"
+askama_axum = "0.4"
+
+# Time handling
+chrono = { version = "0.4", features = ["serde"] }
+
+# UUID generation
+uuid = { version = "1.0", features = ["v4", "serde"] }
+
+# System info
+sysinfo = "0.30"
+
+# Tracing
+tracing = "0.1"
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Internal crates
+rustpress-health = { path = "../rustpress-health" }
+rustpress-cdn = { path = "../rustpress-cdn" }
+
+[dev-dependencies]
+tokio-test = "0.4"
+
+[features]
+default = []

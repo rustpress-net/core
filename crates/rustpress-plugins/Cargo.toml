@@ -1,0 +1,91 @@
+[package]
+name = "rustpress-plugins"
+description = "Plugin system for RustPress CMS"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+rustpress-core = { path = "../rustpress-core" }
+
+# Async
+tokio.workspace = true
+async-trait.workspace = true
+futures.workspace = true
+tokio-stream.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+toml.workspace = true
+
+# Error handling
+thiserror.workspace = true
+anyhow.workspace = true
+
+# Logging
+tracing.workspace = true
+
+# Types
+uuid.workspace = true
+chrono.workspace = true
+semver.workspace = true
+url.workspace = true
+
+# Dynamic loading
+libloading = "0.8"
+
+# WebAssembly runtime (optional, requires C compiler)
+wasmtime = { version = "17.0", optional = true }
+wasmtime-wasi = { version = "17.0", optional = true }
+
+# Cryptography for code signing (using pure Rust alternatives)
+sha2 = "0.10"
+# ed25519-dalek requires ring which needs C compiler, make it optional
+ed25519-dalek = { version = "2.1", features = ["serde", "rand_core"], optional = true }
+rand.workspace = true
+# Pure Rust alternative for signing when ed25519-dalek not available
+hmac = "0.12"
+
+# Encryption for API keys and secrets (pure Rust, AEAD)
+chacha20poly1305 = "0.10"
+zeroize = { version = "1.7", features = ["derive"] }
+base64 = "0.22"
+
+# File system
+walkdir = "2.4"
+notify = "6.1"
+tempfile = "3.10"
+# Use zip without zstd to avoid C compilation issues on Windows
+zip = { version = "0.6", default-features = false, features = ["deflate"] }
+
+# HTTP client for marketplace/updates (using native-tls to avoid ring C compilation)
+reqwest = { version = "0.11", default-features = false, features = ["native-tls", "json"] }
+
+# Hashing
+blake3 = "1.5"
+
+# Hex encoding for signatures
+hex = "0.4"
+
+# Graphs for dependency resolution
+petgraph = "0.6"
+
+# Regex for shortcode parsing
+regex.workspace = true
+
+# Metrics
+prometheus-client.workspace = true
+
+# Concurrent data structures
+dashmap.workspace = true
+parking_lot.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util", "macros"] }
+
+[features]
+default = []
+wasm = ["wasmtime", "wasmtime-wasi"]
+signing = ["ed25519-dalek"]

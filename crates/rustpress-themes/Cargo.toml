@@ -1,0 +1,70 @@
+[package]
+name = "rustpress-themes"
+description = "Theme system for RustPress CMS"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+rustpress-core = { path = "../rustpress-core" }
+
+# Async
+tokio.workspace = true
+async-trait.workspace = true
+futures.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+toml.workspace = true
+
+# Template engine
+tera = "1.19"
+
+# Error handling
+thiserror.workspace = true
+anyhow.workspace = true
+
+# Logging
+tracing.workspace = true
+
+# Types
+uuid.workspace = true
+chrono.workspace = true
+semver.workspace = true
+url.workspace = true
+
+# File system
+walkdir = "2.4"
+notify = "6.1"
+tempfile = "3.10"
+
+# CSS/JS processing
+lightningcss = "1.0.0-alpha.68"
+grass = "0.13"
+
+# Image processing
+image = { version = "0.25", default-features = false, features = ["jpeg", "png", "gif", "webp"] }
+
+# HTML parsing for critical CSS
+scraper = "0.21"
+
+# Regex for parsing
+regex.workspace = true
+
+# Hashing
+blake3 = "1.5"
+
+# Concurrent data structures
+dashmap.workspace = true
+parking_lot.workspace = true
+
+# HTTP client for marketplace
+reqwest = { version = "0.11", default-features = false, features = ["native-tls", "json"] }
+
+# Zip files
+zip = { version = "0.6", default-features = false, features = ["deflate"] }
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util", "macros"] }

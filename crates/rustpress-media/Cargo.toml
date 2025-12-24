@@ -1,0 +1,51 @@
+[package]
+name = "rustpress-media"
+version = "0.1.0"
+edition = "2021"
+description = "Media management system for RustPress - image optimization, video processing, media library"
+license = "MIT OR Apache-2.0"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.0", features = ["full", "fs"] }
+async-trait = "0.1"
+futures = "0.3"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Database
+sqlx = { version = "0.7", features = ["runtime-tokio", "postgres", "chrono", "uuid"] }
+
+# Date/time
+chrono = { version = "0.4", features = ["serde"] }
+
+# UUID generation
+uuid = { version = "1.0", features = ["v4", "serde"] }
+
+# Image processing
+image = "0.24"
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# File handling
+mime = "0.3"
+mime_guess = "2.0"
+
+# Hashing for deduplication
+sha2 = "0.10"
+hex = "0.4"
+
+# Tracing
+tracing = "0.1"
+
+# Async file operations
+tokio-util = { version = "0.7", features = ["io"] }
+bytes = "1.5"
+
+[dev-dependencies]
+tokio-test = "0.4"
+tempfile = "3.10"

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Deactivated</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f5;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 600px; margin: 0 auto; padding: 20px;">
+        <tr>
+            <td style="background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); padding: 40px;">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                    <tr>
+                        <td style="text-align: center; padding-bottom: 24px;">
+                            <h1 style="margin: 0; color: #18181b; font-size: 24px; font-weight: 600;">{{site_name}}</h1>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h2 style="margin: 0 0 16px; color: #18181b; font-size: 20px; font-weight: 600;">Your Account Has Been Deactivated</h2>
+                            <p style="margin: 0 0 16px; color: #52525b; font-size: 16px; line-height: 1.5;">
+                                Hi {{name}},
+                            </p>
+                            <p style="margin: 0 0 24px; color: #52525b; font-size: 16px; line-height: 1.5;">
+                                Your account on {{site_name}} has been deactivated. You will no longer be able to log in or access your account.
+                            </p>
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin: 16px 0;">
+                                <tr>
+                                    <td style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 16px; border-radius: 0 4px 4px 0;">
+                                        <p style="margin: 0; color: #52525b; font-size: 14px; line-height: 1.5;">
+                                            If you believe this was done in error, or if you would like to reactivate your account, please contact our support team.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                            <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <td style="text-align: center; padding: 24px 0;">
+                                        <a href="{{support_url}}" style="display: inline-block; background-color: #52525b; color: #ffffff; font-size: 16px; font-weight: 600; text-decoration: none; padding: 12px 32px; border-radius: 6px;">
+                                            Contact Support
+                                        </a>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: center; padding: 24px; color: #71717a; font-size: 12px;">
+                <p style="margin: 0;">
+                    &copy; {{current_year}} {{site_name}}. All rights reserved.
+                </p>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

@@ -1,0 +1,96 @@
+[package]
+name = "rustpress-server"
+description = "HTTP server for RustPress CMS using Axum"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+rustpress-core = { path = "../rustpress-core" }
+rustpress-database = { path = "../rustpress-database" }
+rustpress-auth = { path = "../rustpress-auth" }
+rustpress-cache = { path = "../rustpress-cache" }
+rustpress-events = { path = "../rustpress-events" }
+rustpress-storage = { path = "../rustpress-storage" }
+rustpress-jobs = { path = "../rustpress-jobs" }
+rustpress-api = { path = "../rustpress-api" }
+rustpress-themes = { path = "../rustpress-themes" }
+
+# Templating
+tera = "1.19"
+
+# Async
+tokio.workspace = true
+async-trait.workspace = true
+futures.workspace = true
+
+# Web framework
+axum.workspace = true
+axum-extra.workspace = true
+tower.workspace = true
+tower-http.workspace = true
+hyper.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# Error handling
+thiserror.workspace = true
+anyhow.workspace = true
+
+# Logging
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+# Types
+uuid.workspace = true
+chrono.workspace = true
+bytes.workspace = true
+
+# Validation
+validator.workspace = true
+
+# Metrics
+prometheus-client.workspace = true
+
+# Additional
+mime = "0.3"
+tokio-stream = "0.1"
+toml = "0.8"
+zip = "2.2"
+urlencoding = "2.1"
+slugify = "0.1"
+
+# Security middleware
+once_cell.workspace = true
+parking_lot.workspace = true
+regex.workspace = true
+
+# Email
+lettre = { version = "0.11", features = ["tokio1", "tokio1-native-tls", "smtp-transport", "builder", "hostname"] }
+handlebars = "5.1"
+
+# Crypto
+sha2 = "0.10"
+bcrypt = "0.15"
+
+# Database (for migration CLI)
+sqlx.workspace = true
+
+[[bin]]
+name = "rustpress"
+path = "src/main.rs"
+
+[[bin]]
+name = "rustpress-migrate"
+path = "src/bin/migrate.rs"
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util", "macros"] }
+criterion = { version = "0.5", features = ["html_reports", "async_tokio"] }
+
+[[bench]]
+name = "security_middleware"
+harness = false

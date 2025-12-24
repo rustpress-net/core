@@ -1,0 +1,50 @@
+[package]
+name = "rustpress-database"
+description = "Database layer for RustPress CMS with SQLx"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[features]
+default = ["postgres"]
+postgres = ["sqlx/postgres"]
+mysql = ["sqlx/mysql"]
+sqlite = ["sqlx/sqlite"]
+
+[dependencies]
+rustpress-core = { path = "../rustpress-core" }
+
+# Async
+tokio.workspace = true
+async-trait.workspace = true
+futures.workspace = true
+
+# Database
+sqlx.workspace = true
+deadpool = { workspace = true, features = ["managed"] }
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# Error handling
+thiserror.workspace = true
+
+# Logging
+tracing.workspace = true
+
+# Types
+uuid.workspace = true
+chrono.workspace = true
+
+# URL parsing (for database connection strings)
+url = "2.5"
+urlencoding = "2.1"
+
+# HTTP client (for cloud providers like Supabase)
+reqwest = { version = "0.11", default-features = false, features = ["json", "native-tls"] }
+
+[dev-dependencies]
+serde_yaml = "0.9"
+tokio = { workspace = true, features = ["test-util", "macros"] }

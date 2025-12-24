@@ -1,0 +1,51 @@
+[package]
+name = "rustpress-api"
+description = "API handlers and routes for RustPress CMS"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+rustpress-core = { path = "../rustpress-core" }
+rustpress-database = { path = "../rustpress-database" }
+rustpress-auth = { path = "../rustpress-auth" }
+rustpress-cache = { path = "../rustpress-cache" }
+rustpress-events = { path = "../rustpress-events" }
+rustpress-storage = { path = "../rustpress-storage" }
+rustpress-jobs = { path = "../rustpress-jobs" }
+rustpress-admin = { path = "../rustpress-admin" }
+
+# Async
+tokio.workspace = true
+async-trait.workspace = true
+
+# Web framework
+axum.workspace = true
+axum-extra.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# Error handling
+thiserror.workspace = true
+
+# Logging
+tracing.workspace = true
+
+# Types
+uuid.workspace = true
+chrono.workspace = true
+
+# Database
+sqlx.workspace = true
+
+# Validation
+validator.workspace = true
+
+# Markdown
+pulldown-cmark = "0.9"
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util", "macros"] }

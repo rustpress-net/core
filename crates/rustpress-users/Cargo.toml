@@ -1,0 +1,64 @@
+[package]
+name = "rustpress-users"
+description = "User management system for RustPress CMS"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+rustpress-core = { path = "../rustpress-core" }
+
+# Async
+tokio.workspace = true
+async-trait.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# Error handling
+thiserror.workspace = true
+
+# Logging
+tracing.workspace = true
+
+# Types
+uuid.workspace = true
+chrono.workspace = true
+
+# Security
+argon2.workspace = true
+rand.workspace = true
+jsonwebtoken.workspace = true
+
+# Validation
+validator.workspace = true
+
+# Text processing
+regex.workspace = true
+
+# Hashing for Gravatar and TOTP
+md-5 = "0.10"
+sha2 = "0.10"
+sha1 = "0.10"
+hmac = "0.12"
+
+# URL encoding
+urlencoding = "2.1"
+
+# TOTP (2FA)
+totp-rs = { version = "5.4", features = ["qr", "gen_secret"] }
+data-encoding = "2.5"
+
+# OAuth
+oauth2 = "4.4"
+
+# HTTP Client (for OAuth)
+reqwest.workspace = true
+
+# URL parsing
+url.workspace = true
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util", "macros"] }
