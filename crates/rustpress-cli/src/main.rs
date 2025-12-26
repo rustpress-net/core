@@ -53,7 +53,7 @@ async fn run(cli: Cli) -> CliResult<()> {
 
     // Commands that don't require authentication
     match &cli.command {
-        Commands::Auth(_) | Commands::Completion(_) | Commands::Config(_)
+        Commands::Artifacts { .. } | Commands::Auth(_) | Commands::Completion(_) | Commands::Config(_)
         | Commands::Interactive | Commands::Health { .. } | Commands::Info => {}
         // ImportExport analyze doesn't need auth
         Commands::ImportExport(ref cmd) => {
@@ -69,6 +69,9 @@ async fn run(cli: Cli) -> CliResult<()> {
 
     // Match and execute the command
     match cli.command {
+        Commands::Artifacts { command } => {
+            commands::artifacts::execute(command).map_err(|e| anyhow::anyhow!(e.to_string()).into())
+        }
         Commands::Auth(cmd) => commands::auth::execute(&ctx, cmd).await,
         Commands::Server(cmd) => commands::server::execute(&ctx, cmd).await,
         Commands::Db(cmd) => commands::db::execute(&ctx, cmd).await,

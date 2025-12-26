@@ -5,6 +5,7 @@
 use clap::{Parser, Subcommand};
 use crate::output::OutputFormat;
 
+pub mod artifacts;
 pub mod auth;
 pub mod backup;
 pub mod cache;
@@ -62,6 +63,13 @@ pub struct Cli {
 /// Available CLI commands
 #[derive(Subcommand, Debug)]
 pub enum Commands {
+    /// Artifact management (list, upload, download from artifactory)
+    #[command(alias = "artifact")]
+    Artifacts {
+        #[command(subcommand)]
+        command: artifacts::ArtifactCommands,
+    },
+
     /// Authentication (login, logout, whoami)
     #[command(alias = "login")]
     Auth(auth::AuthCommand),

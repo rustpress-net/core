@@ -351,7 +351,7 @@ async fn execute_command(line: &str) -> CliResult<()> {
 
     // Check authentication for non-exempt commands
     match &cli.command {
-        Commands::Auth(_) | Commands::Completion(_) | Commands::Config(_)
+        Commands::Artifacts { .. } | Commands::Auth(_) | Commands::Completion(_) | Commands::Config(_)
         | Commands::Interactive | Commands::Health { .. } | Commands::Info => {}
         Commands::ImportExport(ref cmd) => {
             if !matches!(cmd.command, crate::commands::import_export::ImportExportSubcommand::Analyze { .. }) {
@@ -365,6 +365,9 @@ async fn execute_command(line: &str) -> CliResult<()> {
 
     // Execute the command
     match cli.command {
+        Commands::Artifacts { command } => {
+            crate::commands::artifacts::execute(command).map_err(|e| anyhow::anyhow!(e.to_string()).into())
+        }
         Commands::Auth(cmd) => crate::commands::auth::execute(&ctx, cmd).await,
         Commands::Server(cmd) => crate::commands::server::execute(&ctx, cmd).await,
         Commands::Db(cmd) => crate::commands::db::execute(&ctx, cmd).await,
