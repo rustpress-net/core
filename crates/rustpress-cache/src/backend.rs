@@ -105,14 +105,10 @@ impl CacheBackend for MemoryBackend {
         Ok(self.cache.get(&key.as_str()).await)
     }
 
-    async fn set(&self, key: &CacheKey, value: Vec<u8>, ttl: Option<Duration>) -> Result<()> {
-        if let Some(ttl) = ttl {
-            // For moka, we'd need to use a different approach for per-key TTL
-            // For now, just insert with the cache's default TTL
-            self.cache.insert(key.as_str(), value).await;
-        } else {
-            self.cache.insert(key.as_str(), value).await;
-        }
+    async fn set(&self, key: &CacheKey, value: Vec<u8>, _ttl: Option<Duration>) -> Result<()> {
+        // For moka, we'd need to use a different approach for per-key TTL
+        // For now, just insert with the cache's default TTL
+        self.cache.insert(key.as_str(), value).await;
         Ok(())
     }
 

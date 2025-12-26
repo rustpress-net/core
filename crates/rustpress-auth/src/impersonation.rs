@@ -302,7 +302,7 @@ impl<S: ImpersonationStore, R: UserRoleChecker> ImpersonationManager<S, R> {
         }
 
         // Check for existing active session
-        if let Some(existing) = self.store.get_active_for_impersonator(impersonator_id).await? {
+        if let Some(_existing) = self.store.get_active_for_impersonator(impersonator_id).await? {
             return Err(Error::InvalidInput {
                 field: "impersonator_id".to_string(),
                 message: "You already have an active impersonation session".to_string(),

@@ -1,6 +1,6 @@
 //! Event subscribers and handlers.
 
-use crate::event::{DomainEvent, Event, EventType};
+use crate::event::{DomainEvent, EventType};
 use async_trait::async_trait;
 use rustpress_core::error::Result;
 use std::future::Future;

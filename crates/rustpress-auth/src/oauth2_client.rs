@@ -491,7 +491,7 @@ impl<S: OAuth2StateStore, C: SocialConnectionStore> OAuth2Client<S, C> {
     /// Fetch user info from provider
     async fn fetch_user_info(
         &self,
-        provider: &OAuth2ClientProvider,
+        _provider: &OAuth2ClientProvider,
         access_token: &str,
         userinfo_url: &str,
     ) -> Result<OAuth2UserInfo> {
@@ -505,7 +505,7 @@ impl<S: OAuth2StateStore, C: SocialConnectionStore> OAuth2Client<S, C> {
     }
 
     /// Parse ID token (JWT)
-    fn parse_id_token(&self, provider: &OAuth2ClientProvider, id_token: &str) -> Result<OAuth2UserInfo> {
+    fn parse_id_token(&self, _provider: &OAuth2ClientProvider, id_token: &str) -> Result<OAuth2UserInfo> {
         // In a real implementation, this would decode the JWT
         let _ = id_token;
         Err(Error::Internal {
