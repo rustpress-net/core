@@ -15,6 +15,11 @@ on:
           - patch
           - minor
           - major
+      admin_ui_ref:
+        description: 'Admin UI version (branch, tag, or commit)'
+        required: false
+        default: 'main'
+        type: string
 
 env:
   CARGO_TERM_COLOR: always
@@ -146,6 +151,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Clone admin-ui repository
+        uses: actions/checkout@v4
+        with:
+          repository: rustpress-net/admin-ui
+          ref: ${{ github.event.inputs.admin_ui_ref || 'main' }}
+          path: admin-ui
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: admin-ui/package-lock.json
+
+      - name: Build admin-ui
+        run: |
+          cd admin-ui
+          npm ci
+          npm run build
+
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -177,6 +202,8 @@ jobs:
           cp target/${{ matrix.target }}/release/rustpress release/
           cp target/${{ matrix.target }}/release/rustpress-cli release/
           cp target/${{ matrix.target }}/release/rustpress-migrate release/
+          # Copy admin-ui
+          cp -r admin-ui/dist release/admin-ui
           # Copy documentation
           cp README.md LICENSE* release/ 2>/dev/null || true
           cd release
@@ -191,6 +218,8 @@ jobs:
           Copy-Item "target/${{ matrix.target }}/release/rustpress.exe" -Destination release/
           Copy-Item "target/${{ matrix.target }}/release/rustpress-cli.exe" -Destination release/
           Copy-Item "target/${{ matrix.target }}/release/rustpress-migrate.exe" -Destination release/
+          # Copy admin-ui
+          Copy-Item -Recurse "admin-ui/dist" -Destination "release/admin-ui"
           # Copy documentation
           Copy-Item README.md -Destination release/ -ErrorAction SilentlyContinue
           Copy-Item LICENSE* -Destination release/ -ErrorAction SilentlyContinue
