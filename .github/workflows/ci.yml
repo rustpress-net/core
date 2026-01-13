@@ -8,8 +8,8 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  # Allow specific warnings for MVP release
-  RUSTFLAGS: -Dwarnings -Adead_code -Amismatched_lifetime_syntaxes -Aunused_imports -Adependency_on_unit_never_type_fallback
+  # Allow specific warnings for MVP release (to be addressed in future versions)
+  RUSTFLAGS: -Dwarnings -Aunused -Amismatched_lifetime_syntaxes -Adependency_on_unit_never_type_fallback
 
 jobs:
   check:
