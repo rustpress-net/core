@@ -154,7 +154,7 @@ jobs:
       - name: Clone admin-ui repository
         uses: actions/checkout@v4
         with:
-          repository: rustpress-net/admin-ui
+          repository: rustpress-net/rustpress-core-admin-ui
           ref: ${{ github.event.inputs.admin_ui_ref || 'main' }}
           path: admin-ui
 
