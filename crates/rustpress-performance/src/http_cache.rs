@@ -3,12 +3,8 @@
 //! Comprehensive HTTP cache control with ETags, Cache-Control, and conditional requests.
 
 use std::collections::HashMap;
-use std::time::{Duration, SystemTime, UNIX_EPOCH};
-use axum::{
-    http::{header, HeaderMap, HeaderValue, Request, Response, StatusCode},
-    body::Body,
-};
-use serde::{Deserialize, Serialize};
+use std::time::{Duration, UNIX_EPOCH};
+use axum::http::{header, HeaderMap, HeaderValue};
 
 /// Cache control directives
 #[derive(Debug, Clone, Default)]

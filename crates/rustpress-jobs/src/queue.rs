@@ -5,6 +5,7 @@ use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use rustpress_core::error::{Error, Result};
 use sqlx::PgPool;
+#[allow(unused_imports)]
 use std::sync::Arc;
 use uuid::Uuid;
 
@@ -81,6 +82,7 @@ pub trait Queue: Send + Sync {
 /// Database-backed job queue
 pub struct JobQueue {
     pool: PgPool,
+    #[allow(dead_code)]
     config: QueueConfig,
     tenant_id: Option<Uuid>,
 }

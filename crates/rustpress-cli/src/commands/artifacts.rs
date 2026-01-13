@@ -10,7 +10,7 @@ use clap::{Args, Subcommand};
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 /// Artifact storage configuration
 #[derive(Debug, Clone, Serialize, Deserialize)]

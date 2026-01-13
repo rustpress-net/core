@@ -1,0 +1,347 @@
+# RustPress Database Manager Plugin
+# A phpMyAdmin-like database management tool for RustPress
+
+[plugin]
+id = "rustpress-dbmanager"
+name = "Database Manager"
+version = "1.0.0"
+description = "A comprehensive database management interface similar to phpMyAdmin. Browse tables, execute SQL queries, import/export data, and manage your database directly from the admin panel."
+author = "RustPress Team"
+website = "https://rustpress.dev/plugins/dbmanager"
+license = "MIT"
+min_rustpress_version = "1.0.0"
+type = "native"
+
+[plugin.categories]
+primary = "development"
+secondary = ["database", "tools", "administration"]
+
+[plugin.tags]
+tags = ["database", "sql", "phpmyadmin", "query", "tables", "import", "export", "development", "admin"]
+
+# Dependencies
+[dependencies]
+
+[dependencies.optional]
+
+# Required capabilities - this plugin needs elevated permissions
+[capabilities]
+required = ["database", "file_system"]
+optional = ["export"]
+
+# Admin configuration
+[admin]
+menu_parent = "development"
+menu_position = 10
+menu_icon = "database"
+dashboard_widgets = ["database-status"]
+
+# Admin pages under Development menu
+[[admin.pages]]
+slug = "development/database"
+title = "Database Manager"
+capability = "manage_database"
+template = "pages/DatabaseManager"
+is_main = true
+
+[[admin.pages]]
+slug = "development/database/tables"
+title = "Tables"
+capability = "manage_database"
+template = "pages/DatabaseTables"
+
+[[admin.pages]]
+slug = "development/database/tables/:table"
+title = "Table Browser"
+capability = "manage_database"
+template = "pages/TableBrowser"
+
+[[admin.pages]]
+slug = "development/database/sql"
+title = "SQL Query"
+capability = "manage_database"
+template = "pages/SqlEditor"
+
+[[admin.pages]]
+slug = "development/database/import"
+title = "Import"
+capability = "manage_database"
+template = "pages/DatabaseImport"
+
+[[admin.pages]]
+slug = "development/database/export"
+title = "Export"
+capability = "manage_database"
+template = "pages/DatabaseExport"
+
+[[admin.pages]]
+slug = "development/database/structure"
+title = "Structure"
+capability = "manage_database"
+template = "pages/DatabaseStructure"
+
+# REST API endpoints
+[api]
+namespace = "dbmanager/v1"
+
+# Database Info & Status
+[[api.routes]]
+method = "GET"
+path = "/status"
+handler = "database::status"
+capability = "view_database"
+description = "Get database connection status and server info"
+
+[[api.routes]]
+method = "GET"
+path = "/stats"
+handler = "database::stats"
+capability = "view_database"
+description = "Get database statistics (size, tables, rows)"
+
+# Table Operations
+[[api.routes]]
+method = "GET"
+path = "/tables"
+handler = "tables::list"
+capability = "view_database"
+description = "List all database tables"
+
+[[api.routes]]
+method = "GET"
+path = "/tables/:name"
+handler = "tables::get"
+capability = "view_database"
+description = "Get table details and structure"
+
+[[api.routes]]
+method = "GET"
+path = "/tables/:name/columns"
+handler = "tables::columns"
+capability = "view_database"
+description = "Get table columns with types and constraints"
+
+[[api.routes]]
+method = "GET"
+path = "/tables/:name/indexes"
+handler = "tables::indexes"
+capability = "view_database"
+description = "Get table indexes"
+
+[[api.routes]]
+method = "GET"
+path = "/tables/:name/foreign-keys"
+handler = "tables::foreign_keys"
+capability = "view_database"
+description = "Get table foreign key relationships"
+
+[[api.routes]]
+method = "POST"
+path = "/tables"
+handler = "tables::create"
+capability = "manage_database"
+description = "Create a new table"
+
+[[api.routes]]
+method = "PUT"
+path = "/tables/:name"
+handler = "tables::alter"
+capability = "manage_database"
+description = "Alter table structure"
+
+[[api.routes]]
+method = "DELETE"
+path = "/tables/:name"
+handler = "tables::drop"
+capability = "manage_database"
+description = "Drop a table (requires confirmation)"
+
+[[api.routes]]
+method = "POST"
+path = "/tables/:name/truncate"
+handler = "tables::truncate"
+capability = "manage_database"
+description = "Truncate table data (requires confirmation)"
+
+# Data Operations (CRUD)
+[[api.routes]]
+method = "GET"
+path = "/tables/:name/data"
+handler = "data::list"
+capability = "view_database"
+description = "Browse table data with pagination, sorting, filtering"
+
+[[api.routes]]
+method = "POST"
+path = "/tables/:name/data"
+handler = "data::insert"
+capability = "manage_database"
+description = "Insert a new row"
+
+[[api.routes]]
+method = "PUT"
+path = "/tables/:name/data/:id"
+handler = "data::update"
+capability = "manage_database"
+description = "Update a row"
+
+[[api.routes]]
+method = "DELETE"
+path = "/tables/:name/data/:id"
+handler = "data::delete"
+capability = "manage_database"
+description = "Delete a row"
+
+[[api.routes]]
+method = "DELETE"
+path = "/tables/:name/data"
+handler = "data::bulk_delete"
+capability = "manage_database"
+description = "Bulk delete rows"
+
+# SQL Query Execution
+[[api.routes]]
+method = "POST"
+path = "/query"
+handler = "query::execute"
+capability = "manage_database"
+description = "Execute SQL query"
+
+[[api.routes]]
+method = "POST"
+path = "/query/explain"
+handler = "query::explain"
+capability = "view_database"
+description = "Explain query execution plan"
+
+[[api.routes]]
+method = "GET"
+path = "/query/history"
+handler = "query::history"
+capability = "view_database"
+description = "Get query history"
+
+[[api.routes]]
+method = "POST"
+path = "/query/save"
+handler = "query::save"
+capability = "manage_database"
+description = "Save a query for later use"
+
+[[api.routes]]
+method = "GET"
+path = "/query/saved"
+handler = "query::saved_list"
+capability = "view_database"
+description = "List saved queries"
+
+[[api.routes]]
+method = "DELETE"
+path = "/query/saved/:id"
+handler = "query::saved_delete"
+capability = "manage_database"
+description = "Delete a saved query"
+
+# Import/Export
+[[api.routes]]
+method = "POST"
+path = "/export/tables"
+handler = "export::tables"
+capability = "manage_database"
+description = "Export selected tables to SQL"
+
+[[api.routes]]
+method = "POST"
+path = "/export/query"
+handler = "export::query_result"
+capability = "manage_database"
+description = "Export query results to CSV/JSON/SQL"
+
+[[api.routes]]
+method = "POST"
+path = "/import/sql"
+handler = "import::sql"
+capability = "manage_database"
+description = "Import SQL file"
+
+[[api.routes]]
+method = "POST"
+path = "/import/csv"
+handler = "import::csv"
+capability = "manage_database"
+description = "Import CSV to table"
+
+# Settings schema
+[settings]
+storage_key = "dbmanager_settings"
+
+[settings.defaults]
+max_rows_per_page = 50
+query_timeout_seconds = 30
+enable_query_history = true
+max_history_items = 100
+show_system_tables = false
+confirm_destructive_operations = true
+enable_syntax_highlighting = true
+editor_theme = "vs-dark"
+date_format = "YYYY-MM-DD HH:mm:ss"
+null_display = "(NULL)"
+truncate_long_text = 100
+read_only_mode = false
+
+# Database tables for plugin storage
+[[database.tables]]
+name = "dbmanager_saved_queries"
+description = "Saved SQL queries"
+
+[[database.tables]]
+name = "dbmanager_query_history"
+description = "Query execution history"
+
+# Assets
+[assets]
+admin_css = ["assets/css/dbmanager.css"]
+admin_js = ["assets/js/dbmanager.js"]
+
+# Hooks
+[[hooks.actions]]
+name = "query_executed"
+description = "Fired after a SQL query is executed"
+parameters = ["query", "execution_time", "row_count"]
+
+[[hooks.actions]]
+name = "table_created"
+description = "Fired when a new table is created"
+parameters = ["table_name"]
+
+[[hooks.actions]]
+name = "table_dropped"
+description = "Fired when a table is dropped"
+parameters = ["table_name"]
+
+[[hooks.actions]]
+name = "data_imported"
+description = "Fired when data is imported"
+parameters = ["table_name", "row_count"]
+
+[[hooks.actions]]
+name = "data_exported"
+description = "Fired when data is exported"
+parameters = ["tables", "format"]
+
+[[hooks.filters]]
+name = "blocked_queries"
+description = "Filter to add blocked query patterns"
+parameters = ["patterns"]
+
+[[hooks.filters]]
+name = "export_options"
+description = "Filter export options"
+parameters = ["options"]
+
+# Security settings
+[security]
+blocked_commands = ["DROP DATABASE", "TRUNCATE"]
+require_confirmation = ["DROP TABLE", "TRUNCATE", "DELETE FROM"]
+audit_all_queries = true
+rate_limit_queries = 60  # per minute

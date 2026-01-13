@@ -559,7 +559,7 @@ impl ScreenshotGenerator {
     /// Generate screenshot from HTML content
     pub async fn generate_from_html(
         &self,
-        html: &str,
+        _html: &str,
         output_path: &Path,
     ) -> Result<(), DocsError> {
         // In a real implementation, this would use a headless browser

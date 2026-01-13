@@ -3,7 +3,6 @@
 //! Inheritance and override system for child themes.
 
 use crate::manifest::ThemeManifest;
-use crate::templates::TemplateEngine;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -245,7 +244,7 @@ impl ThemeInheritance {
 
         // Merge from root parent to child (child overrides)
         for id in chain.into_iter().rev() {
-            if let Some(theme) = themes.get(&id) {
+            if let Some(_theme) = themes.get(&id) {
                 // In a real implementation, merge manifest.settings
                 // For now, just mark which theme contributed
                 merged[&id] = serde_json::json!({"loaded": true});

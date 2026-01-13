@@ -9,7 +9,7 @@ use async_trait::async_trait;
 use moka::future::Cache as MokaCache;
 use parking_lot::RwLock;
 use redis::AsyncCommands;
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{de::DeserializeOwned, Serialize};
 use thiserror::Error;
 
 /// Object cache errors
@@ -648,6 +648,11 @@ impl ObjectCache {
     /// Check if remote backend is available
     pub fn has_remote(&self) -> bool {
         self.remote.is_some()
+    }
+
+    /// Clear local cache (synchronous)
+    pub fn clear_local(&self) {
+        self.local.invalidate_all();
     }
 }
 

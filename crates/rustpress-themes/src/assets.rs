@@ -197,7 +197,7 @@ impl AssetCompiler {
 
     fn process_css(&self, content: &str) -> Result<String, AssetError> {
         use lightningcss::stylesheet::{MinifyOptions, ParserOptions, PrinterOptions, StyleSheet};
-        use lightningcss::targets::{Browsers, Targets};
+        use lightningcss::targets::Targets;
 
         let stylesheet = StyleSheet::parse(content, ParserOptions::default())
             .map_err(|e| AssetError::CssCompilation(format!("{:?}", e)))?;

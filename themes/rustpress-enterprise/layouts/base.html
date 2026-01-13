@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="{{ site.language | default(value='en') }}" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>{% block title %}{{ site.name }}{% endblock %}</title>
+  <meta name="description" content="{% block description %}{{ site.description }}{% endblock %}">
+  <meta name="keywords" content="{% block keywords %}SaaS, Enterprise, Cloud, Platform, API{% endblock %}">
+  <meta name="author" content="{{ site.author | default(value='SaasNova') }}">
+
+  {% if page.canonical %}
+  <link rel="canonical" href="{{ page.canonical }}">
+  {% endif %}
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="{{ site.name }}">
+  <meta property="og:title" content="{% block og_title %}{{ page.title | default(value=site.name) }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{{ page.description | default(value=site.description) }}{% endblock %}">
+  <meta property="og:image" content="{% block og_image %}{{ site.default_image }}{% endblock %}">
+  <meta property="og:url" content="{{ page.url }}">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@saasnova">
+  <meta name="twitter:title" content="{% block twitter_title %}{{ page.title | default(value=site.name) }}{% endblock %}">
+  <meta name="twitter:description" content="{% block twitter_description %}{{ page.description | default(value=site.description) }}{% endblock %}">
+
+  <!-- Favicon -->
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" href="/themes/rustpress-enterprise/assets/images/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/themes/rustpress-enterprise/assets/images/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+
+  <!-- Preconnect -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="/themes/rustpress-enterprise/assets/css/style.css">
+  <link rel="stylesheet" href="/themes/rustpress-enterprise/assets/css/animations.css">
+  <link rel="stylesheet" href="/themes/rustpress-enterprise/assets/css/components.css">
+  {% block styles %}{% endblock %}
+
+  <!-- Preload critical resources -->
+  <link rel="preload" href="/themes/rustpress-enterprise/assets/js/main.js" as="script">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <!-- Scroll Progress Bar -->
+  <div class="scroll-progress" id="scroll-progress"></div>
+
+  <!-- Cursor Effect -->
+  <div class="cursor-glow" id="cursor-glow"></div>
+  <div class="cursor-dot" id="cursor-dot"></div>
+
+  <!-- Loading Screen -->
+  <div class="loading-screen" id="loading-screen">
+    <div class="loading-logo">
+      <svg class="loading-icon" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="50" cy="50" r="45" stroke="url(#gradient)" stroke-width="4" stroke-linecap="round" class="loading-circle"/>
+        <defs>
+          <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#6366F1"/>
+            <stop offset="100%" style="stop-color:#06B6D4"/>
+          </linearGradient>
+        </defs>
+      </svg>
+      <span class="loading-text">SaasNova</span>
+    </div>
+  </div>
+
+  <!-- Noise Texture Overlay -->
+  <div class="noise-overlay"></div>
+
+  <!-- Background Effects -->
+  <div class="bg-effects">
+    <div class="gradient-orb gradient-orb--1"></div>
+    <div class="gradient-orb gradient-orb--2"></div>
+    <div class="gradient-orb gradient-orb--3"></div>
+    <div class="grid-pattern"></div>
+  </div>
+
+  <!-- Header -->
+  {% include "partials/header.html" %}
+
+  <!-- Main Content -->
+  <main id="main-content" class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Footer -->
+  {% include "partials/footer.html" %}
+
+  <!-- Back to Top -->
+  <button class="back-to-top" id="back-to-top" aria-label="Back to top">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18 15 12 9 6 15"></polyline>
+    </svg>
+    <span class="btn-glow"></span>
+  </button>
+
+  <!-- Cookie Consent -->
+  <div class="cookie-consent" id="cookie-consent">
+    <div class="cookie-content">
+      <p>We use cookies to enhance your experience. By continuing to visit this site you agree to our use of cookies.</p>
+      <div class="cookie-actions">
+        <button class="btn btn--ghost btn--sm" id="cookie-decline">Decline</button>
+        <button class="btn btn--primary btn--sm" id="cookie-accept">Accept All</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile Menu Overlay -->
+  {% include "partials/mobile-menu.html" %}
+
+  <!-- Scripts -->
+  <script src="/themes/rustpress-enterprise/assets/js/main.js" defer></script>
+  <script src="/themes/rustpress-enterprise/assets/js/animations.js" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

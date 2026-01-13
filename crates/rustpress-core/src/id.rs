@@ -142,7 +142,7 @@ impl<T> AsRef<Uuid> for Id<T> {
 /// Marker traits for entity types
 pub mod entities {
     /// User entity marker
-    #[derive(Clone, Copy)]
+    #[derive(Clone, Copy, PartialEq)]
     pub struct User;
     /// Post entity marker
     #[derive(Clone, Copy)]

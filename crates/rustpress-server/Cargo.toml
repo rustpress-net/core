@@ -16,6 +16,7 @@ rustpress-storage = { path = "../rustpress-storage" }
 rustpress-jobs = { path = "../rustpress-jobs" }
 rustpress-api = { path = "../rustpress-api" }
 rustpress-themes = { path = "../rustpress-themes" }
+rustcloudflare = { path = "../../plugins/rustcloudflare" }
 
 # Templating
 tera = "1.19"
@@ -59,7 +60,7 @@ prometheus-client.workspace = true
 mime = "0.3"
 tokio-stream = "0.1"
 toml = "0.8"
-zip = "2.2"
+zip = { version = "0.6", default-features = false, features = ["deflate"] }
 urlencoding = "2.1"
 slugify = "0.1"
 
@@ -75,6 +76,7 @@ handlebars = "5.1"
 # Crypto
 sha2 = "0.10"
 bcrypt = "0.15"
+argon2.workspace = true
 
 # Database (for migration CLI)
 sqlx.workspace = true

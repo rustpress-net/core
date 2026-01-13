@@ -796,7 +796,7 @@ impl ThemeService {
     /// Export a theme as a ZIP file
     pub async fn export_theme(&self, theme_id: &str) -> Result<Vec<u8>> {
         use std::io::Cursor;
-        use zip::write::SimpleFileOptions;
+        use zip::write::FileOptions;
 
         let theme_path = self.themes_dir.join(theme_id);
         if !theme_path.exists() {
@@ -807,7 +807,7 @@ impl ThemeService {
 
         {
             let mut zip = zip::ZipWriter::new(&mut zip_buffer);
-            let options = SimpleFileOptions::default()
+            let options = FileOptions::default()
                 .compression_method(zip::CompressionMethod::Deflated);
 
             // Add all files from theme directory
@@ -825,7 +825,7 @@ impl ThemeService {
         zip: &mut zip::ZipWriter<W>,
         dir: &Path,
         prefix: &str,
-        options: zip::write::SimpleFileOptions,
+        options: zip::write::FileOptions,
     ) -> Result<()> {
         let entries = std::fs::read_dir(dir)
             .map_err(|e| Error::internal(format!("Failed to read directory: {}", e)))?;

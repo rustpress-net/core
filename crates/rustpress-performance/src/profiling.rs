@@ -211,7 +211,8 @@ impl Profiler {
 
         // Trim if over capacity
         if traces.len() > self.config.max_traces {
-            traces.drain(0..traces.len() - self.config.max_traces);
+            let drain_count = traces.len() - self.config.max_traces;
+            traces.drain(0..drain_count);
         }
     }
 

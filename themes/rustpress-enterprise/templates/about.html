@@ -1,0 +1,489 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}About Us - {{ site.title }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-hero about-hero">
+  <div class="hero-particles"></div>
+  <div class="container">
+    <div class="page-hero-content" data-animate="fade-up">
+      <span class="hero-badge">
+        <span class="badge-dot"></span>
+        Our Story
+      </span>
+      <h1 class="page-hero-title">
+        Building the future of <span class="gradient-text">content management</span>
+      </h1>
+      <p class="page-hero-description">
+        We're on a mission to revolutionize content management with the power of Rust.
+        RustPress combines blazing fast performance, memory-safe security, and AI-powered tools.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Mission & Vision -->
+<section class="mission-section">
+  <div class="container">
+    <div class="mission-grid">
+      <div class="mission-card" data-animate="fade-up">
+        <div class="mission-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 16v-4"/>
+            <path d="M12 8h.01"/>
+          </svg>
+        </div>
+        <h3>Our Mission</h3>
+        <p>To build the fastest, most secure CMS in the world using Rust. We believe every publisher deserves a content platform that's lightning fast, never crashes, and includes AI tools for better content.</p>
+      </div>
+
+      <div class="mission-card" data-animate="fade-up" data-delay="100">
+        <div class="mission-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </div>
+        <h3>Our Vision</h3>
+        <p>A world where content creators focus on writing great content, not fighting slow software or security patches. We're building the next generation of CMS with 10 AI enhancement tools built-in.</p>
+      </div>
+
+      <div class="mission-card" data-animate="fade-up" data-delay="200">
+        <div class="mission-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </div>
+        <h3>Our Values</h3>
+        <p>Performance first, security by default, developer experience, and open source spirit. We chose Rust because we refuse to compromise on speed or safety. Every page is editable, always.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats Section -->
+<section class="about-stats-section">
+  <div class="container">
+    <div class="stats-grid stats-grid--large" data-animate="fade-up">
+      <div class="stat-item">
+        <span class="stat-number">10</span>
+        <span class="stat-label">AI Enhancement Tools</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">5</span>
+        <span class="stat-label">Content Formats</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">~5ms</span>
+        <span class="stat-label">Response Time</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">0</span>
+        <span class="stat-label">Memory Vulnerabilities</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Our Story Timeline -->
+<section class="story-section">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">Our Journey</span>
+      <h2 class="section-title">The RustPress story</h2>
+      <p class="section-description">
+        From a simple idea to the fastest CMS, here's how we built RustPress.
+      </p>
+    </div>
+
+    <div class="timeline">
+      <div class="timeline-item" data-animate="fade-up">
+        <div class="timeline-marker">
+          <span class="timeline-year">2022</span>
+        </div>
+        <div class="timeline-content">
+          <h4>The Idea</h4>
+          <p>Frustrated with slow, insecure WordPress sites and constant plugin updates, we asked: what if we built a CMS in Rust? Memory-safe, blazing fast, and modern.</p>
+        </div>
+      </div>
+
+      <div class="timeline-item" data-animate="fade-up">
+        <div class="timeline-marker">
+          <span class="timeline-year">2023</span>
+        </div>
+        <div class="timeline-content">
+          <h4>Core Engine Built</h4>
+          <p>Built the Rust backend with Axum framework. Achieved 5ms response times - 40x faster than WordPress. PostgreSQL database with Redis caching layer.</p>
+        </div>
+      </div>
+
+      <div class="timeline-item" data-animate="fade-up">
+        <div class="timeline-marker">
+          <span class="timeline-year">2024</span>
+        </div>
+        <div class="timeline-content">
+          <h4>Admin UI & Block Editor</h4>
+          <p>Launched the React-based admin panel. Built the block editor with 5 content formats: Blocks, Elementor, Markdown, HTML, and Text.</p>
+        </div>
+      </div>
+
+      <div class="timeline-item" data-animate="fade-up">
+        <div class="timeline-marker">
+          <span class="timeline-year">2024</span>
+        </div>
+        <div class="timeline-content">
+          <h4>AI Enhancement Tools</h4>
+          <p>Integrated 10 AI tools: Title Generator, Content Summarizer, SEO Optimizer, Plagiarism Checker, Tone Adjuster, Grammar Fixer, Image Generator, Alt Text Generator, Schema Generator, Related Posts.</p>
+        </div>
+      </div>
+
+      <div class="timeline-item timeline-item--present" data-animate="fade-up">
+        <div class="timeline-marker">
+          <span class="timeline-year">Today</span>
+        </div>
+        <div class="timeline-content">
+          <h4>Full CMS Platform</h4>
+          <p>Complete content management with pages, posts, media library, taxonomies, and themes. Every page is fully editable through the admin panel. Zero memory vulnerabilities.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Leadership Team -->
+<section class="team-section">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">Leadership</span>
+      <h2 class="section-title">Meet our team</h2>
+      <p class="section-description">
+        The people behind RustPress
+      </p>
+    </div>
+
+    <div class="team-grid">
+      <div class="team-card" data-animate="fade-up">
+        <div class="team-card-image">
+          <div class="team-avatar">
+            <span>AK</span>
+          </div>
+        </div>
+        <div class="team-card-content">
+          <h4>Alex Kim</h4>
+          <span class="team-role">Co-Founder & CEO</span>
+          <p>Former engineering lead at Google. 15 years of experience building scalable platforms.</p>
+          <div class="team-social">
+            <a href="#" aria-label="LinkedIn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                <rect x="2" y="9" width="4" height="12"/>
+                <circle cx="4" cy="4" r="2"/>
+              </svg>
+            </a>
+            <a href="#" aria-label="Twitter">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="team-card" data-animate="fade-up" data-delay="100">
+        <div class="team-card-image">
+          <div class="team-avatar">
+            <span>SP</span>
+          </div>
+        </div>
+        <div class="team-card-content">
+          <h4>Sarah Patel</h4>
+          <span class="team-role">Co-Founder & CTO</span>
+          <p>Ex-Amazon Principal Engineer. Built distributed systems handling billions of requests daily.</p>
+          <div class="team-social">
+            <a href="#" aria-label="LinkedIn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                <rect x="2" y="9" width="4" height="12"/>
+                <circle cx="4" cy="4" r="2"/>
+              </svg>
+            </a>
+            <a href="#" aria-label="GitHub">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="team-card" data-animate="fade-up" data-delay="200">
+        <div class="team-card-image">
+          <div class="team-avatar">
+            <span>MJ</span>
+          </div>
+        </div>
+        <div class="team-card-content">
+          <h4>Michael Johnson</h4>
+          <span class="team-role">Chief Revenue Officer</span>
+          <p>20 years in enterprise sales. Previously VP of Sales at Salesforce and HubSpot.</p>
+          <div class="team-social">
+            <a href="#" aria-label="LinkedIn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                <rect x="2" y="9" width="4" height="12"/>
+                <circle cx="4" cy="4" r="2"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="team-card" data-animate="fade-up" data-delay="300">
+        <div class="team-card-image">
+          <div class="team-avatar">
+            <span>EC</span>
+          </div>
+        </div>
+        <div class="team-card-content">
+          <h4>Emily Chen</h4>
+          <span class="team-role">VP of Product</span>
+          <p>Product leader with 12 years experience. Previously at Stripe and Figma.</p>
+          <div class="team-social">
+            <a href="#" aria-label="LinkedIn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                <rect x="2" y="9" width="4" height="12"/>
+                <circle cx="4" cy="4" r="2"/>
+              </svg>
+            </a>
+            <a href="#" aria-label="Twitter">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="team-card" data-animate="fade-up" data-delay="400">
+        <div class="team-card-image">
+          <div class="team-avatar">
+            <span>DW</span>
+          </div>
+        </div>
+        <div class="team-card-content">
+          <h4>David Williams</h4>
+          <span class="team-role">VP of Engineering</span>
+          <p>Engineering leader who scaled teams from 10 to 200. Previously at Netflix and Uber.</p>
+          <div class="team-social">
+            <a href="#" aria-label="LinkedIn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                <rect x="2" y="9" width="4" height="12"/>
+                <circle cx="4" cy="4" r="2"/>
+              </svg>
+            </a>
+            <a href="#" aria-label="GitHub">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="team-card" data-animate="fade-up" data-delay="500">
+        <div class="team-card-image">
+          <div class="team-avatar">
+            <span>LT</span>
+          </div>
+        </div>
+        <div class="team-card-content">
+          <h4>Lisa Thompson</h4>
+          <span class="team-role">VP of Customer Success</span>
+          <p>Customer success expert with 10 years building world-class support organizations.</p>
+          <div class="team-social">
+            <a href="#" aria-label="LinkedIn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/>
+                <rect x="2" y="9" width="4" height="12"/>
+                <circle cx="4" cy="4" r="2"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Investors -->
+<section class="investors-section">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">Backed By</span>
+      <h2 class="section-title">Our investors</h2>
+      <p class="section-description">
+        Supported by world-class investors who believe in our vision
+      </p>
+    </div>
+
+    <div class="investors-grid" data-animate="fade-up">
+      <div class="investor-card">
+        <div class="investor-logo">Sequoia</div>
+        <span class="investor-type">Lead Series B</span>
+      </div>
+      <div class="investor-card">
+        <div class="investor-logo">a16z</div>
+        <span class="investor-type">Lead Series A</span>
+      </div>
+      <div class="investor-card">
+        <div class="investor-logo">Accel</div>
+        <span class="investor-type">Series B</span>
+      </div>
+      <div class="investor-card">
+        <div class="investor-logo">Index</div>
+        <span class="investor-type">Series A</span>
+      </div>
+      <div class="investor-card">
+        <div class="investor-logo">YC</div>
+        <span class="investor-type">Seed</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Office Locations -->
+<section class="offices-section">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">Global Presence</span>
+      <h2 class="section-title">Our offices</h2>
+      <p class="section-description">
+        With offices around the world, we're always close to our customers
+      </p>
+    </div>
+
+    <div class="offices-grid" data-animate="fade-up">
+      <div class="office-card">
+        <div class="office-image">
+          <div class="office-placeholder">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M3 21h18"/>
+              <path d="M5 21V7l8-4 8 4v14"/>
+              <path d="M9 21v-4h6v4"/>
+              <path d="M9 9h1"/>
+              <path d="M14 9h1"/>
+              <path d="M9 13h1"/>
+              <path d="M14 13h1"/>
+            </svg>
+          </div>
+        </div>
+        <div class="office-content">
+          <h4>San Francisco</h4>
+          <span class="office-tag">Headquarters</span>
+          <p>535 Mission St, Suite 1401<br>San Francisco, CA 94105</p>
+        </div>
+      </div>
+
+      <div class="office-card">
+        <div class="office-image">
+          <div class="office-placeholder">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M3 21h18"/>
+              <path d="M5 21V7l8-4 8 4v14"/>
+              <path d="M9 21v-4h6v4"/>
+              <path d="M9 9h1"/>
+              <path d="M14 9h1"/>
+              <path d="M9 13h1"/>
+              <path d="M14 13h1"/>
+            </svg>
+          </div>
+        </div>
+        <div class="office-content">
+          <h4>New York</h4>
+          <span class="office-tag">East Coast Hub</span>
+          <p>114 5th Avenue, 18th Floor<br>New York, NY 10011</p>
+        </div>
+      </div>
+
+      <div class="office-card">
+        <div class="office-image">
+          <div class="office-placeholder">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M3 21h18"/>
+              <path d="M5 21V7l8-4 8 4v14"/>
+              <path d="M9 21v-4h6v4"/>
+              <path d="M9 9h1"/>
+              <path d="M14 9h1"/>
+              <path d="M9 13h1"/>
+              <path d="M14 13h1"/>
+            </svg>
+          </div>
+        </div>
+        <div class="office-content">
+          <h4>London</h4>
+          <span class="office-tag">EMEA Hub</span>
+          <p>30 Finsbury Square<br>London EC2A 1AG, UK</p>
+        </div>
+      </div>
+
+      <div class="office-card">
+        <div class="office-image">
+          <div class="office-placeholder">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M3 21h18"/>
+              <path d="M5 21V7l8-4 8 4v14"/>
+              <path d="M9 21v-4h6v4"/>
+              <path d="M9 9h1"/>
+              <path d="M14 9h1"/>
+              <path d="M9 13h1"/>
+              <path d="M14 13h1"/>
+            </svg>
+          </div>
+        </div>
+        <div class="office-content">
+          <h4>Singapore</h4>
+          <span class="office-tag">APAC Hub</span>
+          <p>71 Robinson Road, #14-01<br>Singapore 068895</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Careers CTA -->
+<section class="careers-cta-section">
+  <div class="container">
+    <div class="careers-cta glass-card" data-animate="fade-up">
+      <div class="careers-cta-content">
+        <span class="section-badge">Join Us</span>
+        <h2>We're hiring!</h2>
+        <p>Join our team of passionate Rust developers building the future of content management. We're looking for people who love performance and security.</p>
+        <div class="careers-stats">
+          <div class="career-stat">
+            <span class="stat-number">25+</span>
+            <span class="stat-label">Open Positions</span>
+          </div>
+          <div class="career-stat">
+            <span class="stat-number">4.8</span>
+            <span class="stat-label">Glassdoor Rating</span>
+          </div>
+          <div class="career-stat">
+            <span class="stat-number">100%</span>
+            <span class="stat-label">Remote Friendly</span>
+          </div>
+        </div>
+        <a href="/careers" class="btn btn--primary btn--glow btn--lg">
+          View Open Positions
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

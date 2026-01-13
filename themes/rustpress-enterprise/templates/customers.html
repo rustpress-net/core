@@ -1,0 +1,429 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Customers - {{ site.title }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-hero">
+  <div class="hero-particles"></div>
+  <div class="container">
+    <div class="page-hero-content" data-animate="fade-up">
+      <span class="hero-badge">
+        <span class="badge-dot"></span>
+        Customer Stories
+      </span>
+      <h1 class="page-hero-title">
+        Trusted by <span class="gradient-text">10,000+ companies</span>
+      </h1>
+      <p class="page-hero-description">
+        From startups to Fortune 500 companies, see how businesses around the world
+        use RustPress to transform their content management.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Logo Cloud -->
+<section class="customers-logo-section">
+  <div class="container">
+    <div class="logo-cloud-large" data-animate="fade-up">
+      <div class="logo-item"><span>Microsoft</span></div>
+      <div class="logo-item"><span>Google</span></div>
+      <div class="logo-item"><span>Amazon</span></div>
+      <div class="logo-item"><span>Meta</span></div>
+      <div class="logo-item"><span>Netflix</span></div>
+      <div class="logo-item"><span>Spotify</span></div>
+      <div class="logo-item"><span>Airbnb</span></div>
+      <div class="logo-item"><span>Uber</span></div>
+      <div class="logo-item"><span>Stripe</span></div>
+      <div class="logo-item"><span>Shopify</span></div>
+      <div class="logo-item"><span>Slack</span></div>
+      <div class="logo-item"><span>Zoom</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<section class="customer-stats-section">
+  <div class="container">
+    <div class="stats-grid stats-grid--large" data-animate="fade-up">
+      <div class="stat-item">
+        <span class="stat-number" data-counter="10000" data-suffix="+">0</span>
+        <span class="stat-label">Companies Worldwide</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number" data-counter="50" data-suffix="+">0</span>
+        <span class="stat-label">Countries</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number" data-counter="1" data-suffix="M+">0</span>
+        <span class="stat-label">Users</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number" data-counter="4.9" data-decimals="1">0</span>
+        <span class="stat-label">Average Rating</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Case Studies -->
+<section class="case-studies-section">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">Case Studies</span>
+      <h2 class="section-title">Success stories</h2>
+      <p class="section-description">
+        Deep dives into how leading companies achieved remarkable results with RustPress.
+      </p>
+    </div>
+
+    <div class="case-studies-grid">
+      <!-- Case Study 1 -->
+      <div class="case-study-card-large" data-animate="fade-up">
+        <div class="case-study-image">
+          <div class="case-study-image-placeholder">
+            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+              <line x1="8" y1="21" x2="16" y2="21"/>
+              <line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+          </div>
+        </div>
+        <div class="case-study-content">
+          <div class="case-study-meta">
+            <span class="industry-tag">Technology</span>
+            <span class="company-size">Enterprise</span>
+          </div>
+          <h3>TechFlow increased productivity by 45%</h3>
+          <p>Learn how TechFlow, a leading enterprise software company, streamlined their content operations and boosted team productivity using RustPress's AI enhancement features.</p>
+          <div class="case-study-metrics">
+            <div class="metric">
+              <span class="metric-value">45%</span>
+              <span class="metric-label">Productivity Increase</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">60%</span>
+              <span class="metric-label">Faster Reporting</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">$1.2M</span>
+              <span class="metric-label">Annual Savings</span>
+            </div>
+          </div>
+          <a href="#" class="btn btn--primary">Read Case Study</a>
+        </div>
+      </div>
+
+      <!-- Case Study 2 -->
+      <div class="case-study-card" data-animate="fade-up" data-delay="100">
+        <div class="case-study-header">
+          <div class="case-study-logo-box">
+            <span>GS</span>
+          </div>
+          <span class="industry-tag">E-commerce</span>
+        </div>
+        <h4>GrowthShop</h4>
+        <p>How an e-commerce startup scaled from $1M to $10M ARR with RustPress.</p>
+        <div class="case-study-result">
+          <span class="result-highlight">10x Revenue Growth</span>
+        </div>
+        <a href="#" class="case-study-link">
+          Read story
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Case Study 3 -->
+      <div class="case-study-card" data-animate="fade-up" data-delay="200">
+        <div class="case-study-header">
+          <div class="case-study-logo-box">
+            <span>FH</span>
+          </div>
+          <span class="industry-tag">Healthcare</span>
+        </div>
+        <h4>FinHealth</h4>
+        <p>A healthcare fintech reduced compliance reporting time by 80%.</p>
+        <div class="case-study-result">
+          <span class="result-highlight">80% Time Saved</span>
+        </div>
+        <a href="#" class="case-study-link">
+          Read story
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Case Study 4 -->
+      <div class="case-study-card" data-animate="fade-up" data-delay="300">
+        <div class="case-study-header">
+          <div class="case-study-logo-box">
+            <span>MA</span>
+          </div>
+          <span class="industry-tag">Marketing</span>
+        </div>
+        <h4>MarketAce</h4>
+        <p>How a marketing agency improved client reporting and retention.</p>
+        <div class="case-study-result">
+          <span class="result-highlight">95% Client Retention</span>
+        </div>
+        <a href="#" class="case-study-link">
+          Read story
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Testimonials -->
+<section class="testimonials-section testimonials-section--alt">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">Testimonials</span>
+      <h2 class="section-title">What our customers say</h2>
+    </div>
+
+    <div class="testimonials-masonry" data-animate="fade-up">
+      <div class="testimonial-card testimonial-card--featured">
+        <div class="testimonial-rating">
+          <svg width="16" height="16" fill="var(--color-warning)" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <svg width="16" height="16" fill="var(--color-warning)" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <svg width="16" height="16" fill="var(--color-warning)" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <svg width="16" height="16" fill="var(--color-warning)" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <svg width="16" height="16" fill="var(--color-warning)" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <blockquote>"RustPress has completely transformed how we manage content. The AI enhancement tools alone have saved us hundreds of hours per month. The ROI was clear within the first quarter."</blockquote>
+        <div class="testimonial-author">
+          <div class="author-avatar">JD</div>
+          <div class="author-info">
+            <span class="author-name">James Davidson</span>
+            <span class="author-role">CTO, TechStart Inc.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <blockquote>"The best investment we've made for our business. Customer support is exceptional."</blockquote>
+        <div class="testimonial-author">
+          <div class="author-avatar">SM</div>
+          <div class="author-info">
+            <span class="author-name">Sarah Mitchell</span>
+            <span class="author-role">VP Operations, GlobalCorp</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <blockquote>"We evaluated 10+ CMS solutions before choosing RustPress. It was the only one that could handle our complex content workflows without requiring custom development."</blockquote>
+        <div class="testimonial-author">
+          <div class="author-avatar">MR</div>
+          <div class="author-info">
+            <span class="author-name">Michael Rodriguez</span>
+            <span class="author-role">Founder, StartupLab</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <blockquote>"The analytics dashboard gives us insights we never had before. We can now make data-driven decisions in real-time."</blockquote>
+        <div class="testimonial-author">
+          <div class="author-avatar">LC</div>
+          <div class="author-info">
+            <span class="author-name">Lisa Chen</span>
+            <span class="author-role">Director of Analytics, DataDrive</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <blockquote>"Moving from WordPress to RustPress was the best decision we made. Our team is now 3x more productive with the AI tools."</blockquote>
+        <div class="testimonial-author">
+          <div class="author-avatar">AK</div>
+          <div class="author-info">
+            <span class="author-name">Alex Kumar</span>
+            <span class="author-role">COO, ScaleUp Co.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card">
+        <blockquote>"Security was our top concern. RustPress's memory-safe Rust foundation gave us the confidence to move forward."</blockquote>
+        <div class="testimonial-author">
+          <div class="author-avatar">RB</div>
+          <div class="author-info">
+            <span class="author-name">Robert Brown</span>
+            <span class="author-role">CISO, SecureFinance</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Industry Breakdown -->
+<section class="industry-section">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">Industries</span>
+      <h2 class="section-title">Customers across industries</h2>
+    </div>
+
+    <div class="industry-grid" data-animate="fade-up">
+      <div class="industry-card">
+        <div class="industry-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+            <line x1="8" y1="21" x2="16" y2="21"/>
+            <line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+        </div>
+        <h4>Technology</h4>
+        <span class="industry-count">2,500+ companies</span>
+      </div>
+
+      <div class="industry-card">
+        <div class="industry-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <line x1="12" y1="1" x2="12" y2="23"/>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </div>
+        <h4>Financial Services</h4>
+        <span class="industry-count">1,800+ companies</span>
+      </div>
+
+      <div class="industry-card">
+        <div class="industry-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="9" cy="21" r="1"/>
+            <circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
+        </div>
+        <h4>E-commerce</h4>
+        <span class="industry-count">1,500+ companies</span>
+      </div>
+
+      <div class="industry-card">
+        <div class="industry-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <h4>Healthcare</h4>
+        <span class="industry-count">1,200+ companies</span>
+      </div>
+
+      <div class="industry-card">
+        <div class="industry-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+          </svg>
+        </div>
+        <h4>Education</h4>
+        <span class="industry-count">800+ companies</span>
+      </div>
+
+      <div class="industry-card">
+        <div class="industry-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="1" y="3" width="15" height="13"/>
+            <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+            <circle cx="5.5" cy="18.5" r="2.5"/>
+            <circle cx="18.5" cy="18.5" r="2.5"/>
+          </svg>
+        </div>
+        <h4>Logistics</h4>
+        <span class="industry-count">600+ companies</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Awards & Recognition -->
+<section class="awards-section">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">Recognition</span>
+      <h2 class="section-title">Award-winning platform</h2>
+    </div>
+
+    <div class="awards-grid" data-animate="fade-up">
+      <div class="award-card">
+        <div class="award-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.5">
+            <circle cx="12" cy="8" r="7"/>
+            <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/>
+          </svg>
+        </div>
+        <h4>G2 Leader</h4>
+        <p>Winter 2024</p>
+      </div>
+
+      <div class="award-card">
+        <div class="award-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.5">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+        </div>
+        <h4>Capterra</h4>
+        <p>Top Rated 2024</p>
+      </div>
+
+      <div class="award-card">
+        <div class="award-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.5">
+            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+            <path d="M4 22h16"/>
+            <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+            <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+          </svg>
+        </div>
+        <h4>TrustRadius</h4>
+        <p>Best of 2024</p>
+      </div>
+
+      <div class="award-card">
+        <div class="award-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="1.5">
+            <path d="M12 15a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z"/>
+            <path d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"/>
+          </svg>
+        </div>
+        <h4>ProductHunt</h4>
+        <p>#1 Product of the Day</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-card glass-card" data-animate="fade-up">
+      <div class="cta-content">
+        <h2>Join 10,000+ companies</h2>
+        <p>See why industry leaders choose RustPress for their content management.</p>
+        <div class="cta-buttons">
+          <a href="/demo" class="btn btn--primary btn--glow btn--lg">
+            Start Free Trial
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+          <a href="/contact" class="btn btn--outline btn--lg">Contact Sales</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

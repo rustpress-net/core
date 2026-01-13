@@ -295,10 +295,12 @@ impl EdgeCacheHeaders {
 
 /// Check if path matches a glob pattern
 fn glob_matches(path: &str, pattern: &str) -> bool {
+    // Use placeholder to avoid replacing the * in .* when replacing single *
     let regex_pattern = pattern
         .replace(".", r"\.")
+        .replace("**", "\x00DOUBLESTAR\x00")
         .replace("*", "[^/]*")
-        .replace("**", ".*");
+        .replace("\x00DOUBLESTAR\x00", ".*");
 
     let regex = format!("^{}$", regex_pattern);
     regex::Regex::new(&regex)

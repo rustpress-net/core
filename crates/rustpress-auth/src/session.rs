@@ -301,7 +301,6 @@ fn hash_token(token: &str) -> String {
 
 /// Base64 URL-safe encoding
 fn base64_url_encode(bytes: &[u8]) -> String {
-    use std::io::Write;
     let mut output = String::new();
     let alphabet = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 

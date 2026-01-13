@@ -2,7 +2,7 @@
 
 use rustpress_core::error::{Error, Result};
 use sqlx::postgres::PgPoolOptions;
-use sqlx::{PgPool, Pool, Postgres};
+use sqlx::{PgPool, Postgres};
 use std::sync::Arc;
 use std::time::Duration;
 

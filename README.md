@@ -20,15 +20,41 @@ A modern, high-performance Content Management System (CMS) built with Rust. Rust
 
 ## Requirements
 
-- Rust 1.75 or later
 - PostgreSQL 15+
 - Redis 7+
 
-## Quick Start
+## Installation
+
+### One-Line Install (Recommended)
+
+**Linux / macOS:**
+```bash
+curl -sSL https://raw.githubusercontent.com/rustpress/rustpress/main/install.sh | bash
+```
+
+**Windows (PowerShell):**
+```powershell
+irm https://raw.githubusercontent.com/rustpress/rustpress/main/install.ps1 | iex
+```
+
+### Using Cargo
+
+If you have Rust installed:
+```bash
+cargo install rustpress
+```
+
+### Using Docker
+
+```bash
+docker run -d -p 8080:8080 ghcr.io/rustpress/rustpress:latest
+```
+
+### From Source
 
 ```bash
 # Clone the repository
-git clone https://github.com/rustpress/rustpress.git
+git clone https://github.com/rustpress-net/core.git
 cd rustpress
 
 # Set up environment variables
@@ -40,6 +66,20 @@ cargo run --bin rustpress-migrate
 
 # Start the server
 cargo run --bin rustpress
+```
+
+## Quick Start
+
+After installation:
+
+```bash
+# 1. Set up your database
+rustpress-migrate
+
+# 2. Start the server
+rustpress
+
+# 3. Visit http://localhost:8080
 ```
 
 ## Project Structure
@@ -93,15 +133,15 @@ SESSION_SECRET=your-session-secret
 
 Plugins are distributed as separate packages. Install them by adding to your RustPress installation:
 
-- [rustpress-plugin-rustbackup](https://github.com/rustpress/rustpress-plugin-rustbackup) - Backup & restore
-- [rustpress-plugin-rustseo](https://github.com/rustpress/rustpress-plugin-rustseo) - SEO optimization
-- [rustpress-plugin-rustanalytics](https://github.com/rustpress/rustpress-plugin-rustanalytics) - Analytics
-- [rustpress-plugin-rustcommerce](https://github.com/rustpress/rustpress-plugin-rustcommerce) - E-commerce
-- [rustpress-plugin-rustforms](https://github.com/rustpress/rustpress-plugin-rustforms) - Form builder
-- [rustpress-plugin-rustmail](https://github.com/rustpress/rustpress-plugin-rustmail) - Email integration
-- [rustpress-plugin-rustmedia](https://github.com/rustpress/rustpress-plugin-rustmedia) - Media management
-- [rustpress-plugin-rustsecurity](https://github.com/rustpress/rustpress-plugin-rustsecurity) - Security enhancements
-- [rustpress-plugin-rustusers](https://github.com/rustpress/rustpress-plugin-rustusers) - User management
+- [rustpress-plugin-rustbackup](https://github.com/rustpress-net/core-plugin-rustbackup) - Backup & restore
+- [rustpress-plugin-rustseo](https://github.com/rustpress-net/core-plugin-rustseo) - SEO optimization
+- [rustpress-plugin-rustanalytics](https://github.com/rustpress-net/core-plugin-rustanalytics) - Analytics
+- [rustpress-plugin-rustcommerce](https://github.com/rustpress-net/core-plugin-rustcommerce) - E-commerce
+- [rustpress-plugin-rustforms](https://github.com/rustpress-net/core-plugin-rustforms) - Form builder
+- [rustpress-plugin-rustmail](https://github.com/rustpress-net/core-plugin-rustmail) - Email integration
+- [rustpress-plugin-rustmedia](https://github.com/rustpress-net/core-plugin-rustmedia) - Media management
+- [rustpress-plugin-rustsecurity](https://github.com/rustpress-net/core-plugin-rustsecurity) - Security enhancements
+- [rustpress-plugin-rustusers](https://github.com/rustpress-net/core-plugin-rustusers) - User management
 
 ## Development
 

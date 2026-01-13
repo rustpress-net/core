@@ -41,6 +41,7 @@ deadpool.workspace = true
 
 # Time
 chrono.workspace = true
+httpdate = "1.0"
 
 # Hashing
 blake3 = "1.5"

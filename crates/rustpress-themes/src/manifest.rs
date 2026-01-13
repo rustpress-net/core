@@ -4,7 +4,6 @@
 
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
-use std::path::PathBuf;
 
 /// Theme manifest - the main configuration file for a theme
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -7,6 +7,7 @@ use chrono::{DateTime, Utc};
 use rustpress_core::error::{Error, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+#[allow(unused_imports)]
 use std::net::IpAddr;
 use std::sync::RwLock;
 use uuid::Uuid;

@@ -1,0 +1,379 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Use Cases - {{ site.title }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-hero">
+  <div class="hero-particles"></div>
+  <div class="container">
+    <div class="page-hero-content" data-animate="fade-up">
+      <span class="hero-badge">
+        <span class="badge-dot"></span>
+        Use Cases
+      </span>
+      <h1 class="page-hero-title">
+        Solutions for <span class="gradient-text">every industry</span>
+      </h1>
+      <p class="page-hero-description">
+        Discover how companies across industries use RustPress to streamline content operations,
+        boost productivity, and publish faster with AI enhancement tools.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Industry Cards -->
+<section class="use-cases-section">
+  <div class="container">
+    <div class="use-cases-grid">
+      <!-- SaaS -->
+      <div class="use-case-card use-case-card--large" data-animate="fade-up">
+        <div class="use-case-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+            <line x1="12" y1="22.08" x2="12" y2="12"/>
+          </svg>
+        </div>
+        <div class="use-case-content">
+          <span class="use-case-tag">Technology</span>
+          <h3>SaaS Companies</h3>
+          <p>Scale your SaaS business with powerful analytics, automated workflows, and seamless integrations. Track MRR, reduce churn, and accelerate growth.</p>
+          <ul class="use-case-benefits">
+            <li>Track subscription metrics & MRR</li>
+            <li>Automate customer onboarding</li>
+            <li>Reduce churn with predictive analytics</li>
+            <li>Integrate with billing systems</li>
+          </ul>
+          <a href="#" class="btn btn--primary">
+            Learn More
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </div>
+        <div class="use-case-visual">
+          <div class="use-case-stats">
+            <div class="use-case-stat">
+              <span class="stat-value">45%</span>
+              <span class="stat-label">Faster Onboarding</span>
+            </div>
+            <div class="use-case-stat">
+              <span class="stat-value">30%</span>
+              <span class="stat-label">Lower Churn</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- E-commerce -->
+      <div class="use-case-card" data-animate="fade-up" data-delay="100">
+        <div class="use-case-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="9" cy="21" r="1"/>
+            <circle cx="20" cy="21" r="1"/>
+            <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+          </svg>
+        </div>
+        <span class="use-case-tag">Retail</span>
+        <h3>E-commerce</h3>
+        <p>Optimize your online store with inventory management, order tracking, and customer insights.</p>
+        <a href="#" class="use-case-link">
+          Explore
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Fintech -->
+      <div class="use-case-card" data-animate="fade-up" data-delay="200">
+        <div class="use-case-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <line x1="12" y1="1" x2="12" y2="23"/>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </div>
+        <span class="use-case-tag">Finance</span>
+        <h3>Fintech</h3>
+        <p>Secure, compliant solutions for financial services with advanced fraud detection and reporting.</p>
+        <a href="#" class="use-case-link">
+          Explore
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Healthcare -->
+      <div class="use-case-card" data-animate="fade-up" data-delay="300">
+        <div class="use-case-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+          </svg>
+        </div>
+        <span class="use-case-tag">Healthcare</span>
+        <h3>Healthcare</h3>
+        <p>HIPAA-compliant solutions for healthcare providers to manage patient data securely.</p>
+        <a href="#" class="use-case-link">
+          Explore
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Marketing -->
+      <div class="use-case-card use-case-card--large" data-animate="fade-up">
+        <div class="use-case-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+            <polyline points="2 17 12 22 22 17"/>
+            <polyline points="2 12 12 17 22 12"/>
+          </svg>
+        </div>
+        <div class="use-case-content">
+          <span class="use-case-tag">Marketing</span>
+          <h3>Marketing Teams</h3>
+          <p>Unify your marketing stack, track campaign performance, and automate lead nurturing. Get a complete view of your marketing ROI.</p>
+          <ul class="use-case-benefits">
+            <li>Campaign performance tracking</li>
+            <li>Multi-channel attribution</li>
+            <li>Automated lead scoring</li>
+            <li>Custom audience segments</li>
+          </ul>
+          <a href="#" class="btn btn--primary">
+            Learn More
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+        </div>
+        <div class="use-case-visual">
+          <div class="use-case-stats">
+            <div class="use-case-stat">
+              <span class="stat-value">3x</span>
+              <span class="stat-label">Campaign ROI</span>
+            </div>
+            <div class="use-case-stat">
+              <span class="stat-value">60%</span>
+              <span class="stat-label">Time Saved</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Education -->
+      <div class="use-case-card" data-animate="fade-up" data-delay="100">
+        <div class="use-case-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+          </svg>
+        </div>
+        <span class="use-case-tag">Education</span>
+        <h3>EdTech</h3>
+        <p>Manage student data, track engagement, and automate administrative workflows.</p>
+        <a href="#" class="use-case-link">
+          Explore
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Real Estate -->
+      <div class="use-case-card" data-animate="fade-up" data-delay="200">
+        <div class="use-case-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <span class="use-case-tag">Real Estate</span>
+        <h3>Real Estate</h3>
+        <p>Manage properties, track leads, and automate follow-ups for real estate businesses.</p>
+        <a href="#" class="use-case-link">
+          Explore
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Consulting -->
+      <div class="use-case-card" data-animate="fade-up" data-delay="300">
+        <div class="use-case-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <span class="use-case-tag">Professional Services</span>
+        <h3>Consulting</h3>
+        <p>Track projects, manage clients, and streamline billing for consulting firms.</p>
+        <a href="#" class="use-case-link">
+          Explore
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Case Study Highlight -->
+<section class="case-study-section">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">Success Story</span>
+      <h2 class="section-title">Featured case study</h2>
+    </div>
+
+    <div class="case-study-card glass-card" data-animate="fade-up">
+      <div class="case-study-content">
+        <div class="case-study-logo">
+          <span>TechCorp</span>
+        </div>
+        <blockquote class="case-study-quote">
+          "RustPress transformed how we manage content. We reduced our manual processes by 70% and can now focus on what matters - building great products for our customers."
+        </blockquote>
+        <div class="case-study-author">
+          <span class="author-name">Jennifer Martinez</span>
+          <span class="author-role">VP of Operations, TechCorp</span>
+        </div>
+        <div class="case-study-results">
+          <div class="result-item">
+            <span class="result-value">70%</span>
+            <span class="result-label">Reduction in Manual Work</span>
+          </div>
+          <div class="result-item">
+            <span class="result-value">3x</span>
+            <span class="result-label">Faster Reporting</span>
+          </div>
+          <div class="result-item">
+            <span class="result-value">$500K</span>
+            <span class="result-label">Annual Savings</span>
+          </div>
+        </div>
+        <a href="/customers" class="btn btn--primary">Read Full Case Study</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- By Team Role -->
+<section class="team-roles-section">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">By Role</span>
+      <h2 class="section-title">Solutions for every team</h2>
+      <p class="section-description">
+        Whether you're in content, marketing, engineering, or operations - RustPress has the tools you need.
+      </p>
+    </div>
+
+    <div class="roles-grid" data-animate="fade-up">
+      <div class="role-card">
+        <div class="role-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 3v18h18"/>
+            <path d="M18 17V9"/>
+            <path d="M13 17V5"/>
+            <path d="M8 17v-3"/>
+          </svg>
+        </div>
+        <h4>Sales Teams</h4>
+        <p>Track leads, manage pipelines, and close deals faster with automated workflows.</p>
+        <a href="#" class="role-link">Learn more</a>
+      </div>
+
+      <div class="role-card">
+        <div class="role-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+        </div>
+        <h4>Marketing Teams</h4>
+        <p>Measure campaign performance, track attribution, and optimize marketing spend.</p>
+        <a href="#" class="role-link">Learn more</a>
+      </div>
+
+      <div class="role-card">
+        <div class="role-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="16 18 22 12 16 6"/>
+            <polyline points="8 6 2 12 8 18"/>
+          </svg>
+        </div>
+        <h4>Engineering Teams</h4>
+        <p>Monitor system performance, track deployments, and integrate with dev tools.</p>
+        <a href="#" class="role-link">Learn more</a>
+      </div>
+
+      <div class="role-card">
+        <div class="role-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </div>
+        <h4>Operations Teams</h4>
+        <p>Streamline processes, automate tasks, and get visibility across the organization.</p>
+        <a href="#" class="role-link">Learn more</a>
+      </div>
+
+      <div class="role-card">
+        <div class="role-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+            <line x1="1" y1="10" x2="23" y2="10"/>
+          </svg>
+        </div>
+        <h4>Finance Teams</h4>
+        <p>Track revenue, manage billing, and generate financial reports automatically.</p>
+        <a href="#" class="role-link">Learn more</a>
+      </div>
+
+      <div class="role-card">
+        <div class="role-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/>
+            <line x1="4" y1="22" x2="4" y2="15"/>
+          </svg>
+        </div>
+        <h4>Executive Teams</h4>
+        <p>Get real-time dashboards, key metrics, and strategic insights at your fingertips.</p>
+        <a href="#" class="role-link">Learn more</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-card glass-card" data-animate="fade-up">
+      <div class="cta-content">
+        <h2>Ready to transform your business?</h2>
+        <p>See how RustPress can work for your specific use case.</p>
+        <div class="cta-buttons">
+          <a href="/demo" class="btn btn--primary btn--glow btn--lg">
+            Get a Demo
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </a>
+          <a href="/contact" class="btn btn--outline btn--lg">Talk to Sales</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

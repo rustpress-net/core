@@ -511,14 +511,16 @@ mod tests {
 
     #[test]
     fn test_cron_validation() {
-        assert!(CronScheduler::validate("0 0 * * *"));
-        assert!(CronScheduler::validate("*/5 * * * *"));
+        // The cron crate uses 6 or 7 fields: sec min hour day_of_month month day_of_week [year]
+        assert!(CronScheduler::validate("0 0 0 * * *")); // Daily at midnight
+        assert!(CronScheduler::validate("0 */5 * * * *")); // Every 5 minutes
         assert!(!CronScheduler::validate("invalid"));
     }
 
     #[test]
     fn test_cron_next_occurrence() {
-        let result = CronScheduler::next_occurrence("0 0 * * *");
+        // The cron crate uses 6 or 7 fields: sec min hour day_of_month month day_of_week [year]
+        let result = CronScheduler::next_occurrence("0 0 0 * * *");
         assert!(result.is_ok());
     }
 }

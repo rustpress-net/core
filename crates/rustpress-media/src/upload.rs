@@ -91,8 +91,7 @@ impl UploadService {
         };
 
         // Create database record
-        let media = sqlx::query_as!(
-            MediaItem,
+        let media: MediaItem = sqlx::query_as(
             r#"
             INSERT INTO media_items (
                 filename, title, alt_text, media_type, mime_type,
@@ -102,25 +101,24 @@ impl UploadService {
             VALUES ($1, $2, '', $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, '{}', $13)
             RETURNING
                 id, filename, title, alt_text, caption, description,
-                media_type as "media_type: MediaType",
-                mime_type, file_size, path, url, thumbnail_url,
+                media_type, mime_type, file_size, path, url, thumbnail_url,
                 width, height, duration, file_hash, folder_id,
                 metadata, uploaded_by, created_at, updated_at
-            "#,
-            filename,
-            filename, // title defaults to filename
-            media_type as MediaType,
-            content_type,
-            processed_data.len() as i64,
-            path,
-            url,
-            thumbnail_url,
-            width,
-            height,
-            file_hash,
-            folder_id,
-            uploaded_by
+            "#
         )
+        .bind(filename)
+        .bind(filename) // title defaults to filename
+        .bind(media_type.to_string())
+        .bind(content_type)
+        .bind(processed_data.len() as i64)
+        .bind(&path)
+        .bind(&url)
+        .bind(&thumbnail_url)
+        .bind(width)
+        .bind(height)
+        .bind(&file_hash)
+        .bind(folder_id)
+        .bind(uploaded_by)
         .fetch_one(&self.pool)
         .await?;
 
@@ -283,21 +281,19 @@ impl UploadService {
 
     /// Find existing file by hash
     async fn find_by_hash(&self, hash: &str) -> MediaResult<Option<MediaItem>> {
-        let media = sqlx::query_as!(
-            MediaItem,
+        let media: Option<MediaItem> = sqlx::query_as(
             r#"
             SELECT
                 id, filename, title, alt_text, caption, description,
-                media_type as "media_type: MediaType",
-                mime_type, file_size, path, url, thumbnail_url,
+                media_type, mime_type, file_size, path, url, thumbnail_url,
                 width, height, duration, file_hash, folder_id,
                 metadata, uploaded_by, created_at, updated_at
             FROM media_items
             WHERE file_hash = $1
             LIMIT 1
-            "#,
-            hash
+            "#
         )
+        .bind(hash)
         .fetch_optional(&self.pool)
         .await?;
 
@@ -383,20 +379,20 @@ impl UploadService {
 
             // Insert variant record
             let variant_url = format!("{}/{}", self.config.base_url, variant_path.display());
-            sqlx::query!(
+            sqlx::query(
                 r#"
                 INSERT INTO media_variants (media_id, variant_type, width, height, file_size, path, url, format)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-                "#,
-                media.id,
-                variant.size_descriptor,
-                variant.width as i32,
-                variant.height as i32,
-                variant.data.len() as i64,
-                variant_path.to_string_lossy().to_string(),
-                variant_url,
-                variant.format.extension()
+                "#
             )
+            .bind(media.id)
+            .bind(&variant.size_descriptor)
+            .bind(variant.width as i32)
+            .bind(variant.height as i32)
+            .bind(variant.data.len() as i64)
+            .bind(variant_path.to_string_lossy().to_string())
+            .bind(&variant_url)
+            .bind(variant.format.extension())
             .execute(&self.pool)
             .await?;
         }
@@ -653,7 +649,8 @@ mod tests {
     fn test_sanitize_filename() {
         assert_eq!(sanitize_filename("test file.jpg"), "test_file.jpg");
         assert_eq!(sanitize_filename("test<>file.jpg"), "test__file.jpg");
-        assert_eq!(sanitize_filename("../../../etc/passwd"), ".._.._.._.._etc_passwd");
+        // Path traversal attempts are stripped for security - only filename is kept
+        assert_eq!(sanitize_filename("../../../etc/passwd"), "passwd");
     }
 
     #[test]

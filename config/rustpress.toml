@@ -1,0 +1,11 @@
+setup_complete = true
+
+[database]
+database_url = "postgres://rustpress:rustpress@localhost:5433/rustpress"
+
+[server]
+host = "127.0.0.1"
+port = 8089
+
+[auth]
+jwt_secret = "ZKW5bFPnnYzYR1XdhRYhbXmX7pBU94DaetzueI8TYZkdGLHo9pjggE8dte5FyWtR"

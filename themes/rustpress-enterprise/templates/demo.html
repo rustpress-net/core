@@ -1,0 +1,204 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Request Demo - {{ site.title }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-hero demo-hero">
+  <div class="hero-particles"></div>
+  <div class="container">
+    <div class="demo-layout">
+      <div class="demo-content" data-animate="fade-right">
+        <span class="hero-badge">
+          <span class="badge-dot"></span>
+          Start Your Journey
+        </span>
+        <h1 class="page-hero-title">
+          See RustPress <span class="gradient-text">in action</span>
+        </h1>
+        <p class="page-hero-description">
+          Get a personalized demo from our product experts. See how RustPress
+          and its 10 AI tools can transform your content management.
+        </p>
+
+        <div class="demo-benefits">
+          <div class="demo-benefit">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>30-minute personalized walkthrough</span>
+          </div>
+          <div class="demo-benefit">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>Custom demo for your use case</span>
+          </div>
+          <div class="demo-benefit">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>Q&A with product experts</span>
+          </div>
+          <div class="demo-benefit">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>No commitment required</span>
+          </div>
+        </div>
+
+        <div class="demo-testimonial">
+          <blockquote>"The demo showed exactly how RustPress could solve our content management challenges. We migrated from WordPress the same week."</blockquote>
+          <div class="testimonial-author">
+            <span class="author-name">Sarah Chen</span>
+            <span class="author-role">VP Operations, TechCorp</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-form-container" data-animate="fade-left">
+        <div class="demo-form-card glass-card">
+          <h3>Schedule your demo</h3>
+          <form class="demo-form" id="demo-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="first-name">First Name *</label>
+                <input type="text" id="first-name" name="first_name" required>
+              </div>
+              <div class="form-group">
+                <label for="last-name">Last Name *</label>
+                <input type="text" id="last-name" name="last_name" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="email">Work Email *</label>
+              <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group">
+              <label for="company">Company Name *</label>
+              <input type="text" id="company" name="company" required>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="company-size">Company Size *</label>
+                <select id="company-size" name="company_size" required>
+                  <option value="">Select...</option>
+                  <option value="1-10">1-10 employees</option>
+                  <option value="11-50">11-50 employees</option>
+                  <option value="51-200">51-200 employees</option>
+                  <option value="201-500">201-500 employees</option>
+                  <option value="501-1000">501-1000 employees</option>
+                  <option value="1000+">1000+ employees</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="role">Your Role *</label>
+                <select id="role" name="role" required>
+                  <option value="">Select...</option>
+                  <option value="ceo">CEO/Founder</option>
+                  <option value="cto">CTO/VP Engineering</option>
+                  <option value="coo">COO/VP Operations</option>
+                  <option value="sales">Sales Leader</option>
+                  <option value="marketing">Marketing Leader</option>
+                  <option value="product">Product Leader</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="phone">Phone Number</label>
+              <input type="tel" id="phone" name="phone">
+            </div>
+
+            <div class="form-group">
+              <label for="message">What would you like to see in the demo?</label>
+              <textarea id="message" name="message" rows="3" placeholder="Tell us about your needs..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn--primary btn--glow btn--full btn--lg">
+              Request Demo
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+
+            <p class="form-disclaimer">
+              By submitting this form, you agree to our
+              <a href="/privacy">Privacy Policy</a> and
+              <a href="/terms">Terms of Service</a>.
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Trust Section -->
+<section class="demo-trust-section">
+  <div class="container">
+    <p class="trust-label" data-animate="fade-up">Trusted by 10,000+ companies worldwide</p>
+    <div class="logo-cloud" data-animate="fade-up">
+      <div class="logo-item"><span>Microsoft</span></div>
+      <div class="logo-item"><span>Google</span></div>
+      <div class="logo-item"><span>Stripe</span></div>
+      <div class="logo-item"><span>Shopify</span></div>
+      <div class="logo-item"><span>Airbnb</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- What to Expect -->
+<section class="expect-section">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">What to Expect</span>
+      <h2 class="section-title">Your demo experience</h2>
+    </div>
+
+    <div class="expect-grid" data-animate="fade-up">
+      <div class="expect-card">
+        <div class="expect-number">1</div>
+        <h4>Discovery Call</h4>
+        <p>We'll learn about your business, challenges, and goals to customize the demo.</p>
+      </div>
+
+      <div class="expect-card">
+        <div class="expect-number">2</div>
+        <h4>Product Walkthrough</h4>
+        <p>See the features most relevant to your needs with real-world examples.</p>
+      </div>
+
+      <div class="expect-card">
+        <div class="expect-number">3</div>
+        <h4>Q&A Session</h4>
+        <p>Get answers to all your questions from our product experts.</p>
+      </div>
+
+      <div class="expect-card">
+        <div class="expect-number">4</div>
+        <h4>Next Steps</h4>
+        <p>Receive a tailored proposal with recommendations for your organization.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Self-Serve Option -->
+<section class="self-serve-section">
+  <div class="container">
+    <div class="self-serve-card glass-card" data-animate="fade-up">
+      <div class="self-serve-content">
+        <h3>Prefer to explore on your own?</h3>
+        <p>Start a free trial and experience RustPress at your own pace. No credit card required.</p>
+        <a href="/signup" class="btn btn--outline btn--lg">Start Free Trial</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

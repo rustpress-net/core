@@ -7,6 +7,7 @@ use axum::{
     routing::{delete, get, post, put},
     Json, Router,
 };
+use tower_http::services::{ServeDir, ServeFile};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -14,6 +15,7 @@ use crate::error::HttpResult;
 use crate::extract::{AuthUser, PaginatedQuery, PathId, ValidatedJson};
 use crate::response::{created, json, no_content, paginated, SuccessResponse};
 use crate::state::AppState;
+use std::sync::Arc;
 
 /// Create the main application router
 pub fn create_router(state: AppState) -> Router {
@@ -22,7 +24,13 @@ pub fn create_router(state: AppState) -> Router {
         .nest("/health", health_routes())
         // API v1 routes
         .nest("/api/v1", api_v1_routes())
+        // Cloudflare plugin routes (separate state)
+        .nest_service("/api/v1/cloudflare", build_cloudflare_router(&state))
         // Admin UI routes (serve static files, handle by frontend)
+        // Handle /admin/ with trailing slash - redirect to /admin
+        .route("/admin/", get(|| async {
+            axum::response::Redirect::permanent("/admin")
+        }))
         .nest("/admin", admin_routes())
         // Public-facing website routes (theme rendering)
         .merge(public_routes())
@@ -31,31 +39,82 @@ pub fn create_router(state: AppState) -> Router {
         .with_state(state)
 }
 
-/// Admin routes (placeholder - typically served by frontend)
+/// Admin routes - serve static files from admin-ui/dist
 fn admin_routes() -> Router<AppState> {
-    Router::new()
-        .route("/", get(admin_redirect_handler))
-        .route("/*path", get(admin_redirect_handler))
-}
+    // Path to admin UI dist directory
+    let admin_dist = std::env::var("ADMIN_UI_PATH")
+        .unwrap_or_else(|_| "./admin-ui/dist".to_string());
 
-/// Admin redirect handler (placeholder)
-async fn admin_redirect_handler() -> impl IntoResponse {
-    // In production, this would serve the React admin UI
-    Html(r#"<!DOCTYPE html>
-<html>
-<head>
-    <title>RustPress Admin</title>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<body>
-    <div id="root">
-        <h1>RustPress Admin</h1>
-        <p>The admin interface should be served from the React build.</p>
-        <p>Run <code>npm run build</code> in the admin-ui directory.</p>
-    </div>
-</body>
-</html>"#)
+    let index_path = format!("{}/index.html", admin_dist);
+
+    // Use a single fallback handler for all paths (SPA routing)
+    Router::new()
+        .fallback(move |req: axum::extract::Request| {
+            let admin_dist = admin_dist.clone();
+            let index_path = index_path.clone();
+            async move {
+                use axum::response::IntoResponse;
+                use axum::body::Body;
+                use axum::http::{StatusCode, header};
+
+                let path = req.uri().path();
+
+                // Check if this looks like a static asset request
+                let is_asset = path.starts_with("/assets/") ||
+                               path.ends_with(".js") ||
+                               path.ends_with(".css") ||
+                               path.ends_with(".svg") ||
+                               path.ends_with(".ico") ||
+                               path.ends_with(".png") ||
+                               path.ends_with(".jpg") ||
+                               path.ends_with(".woff") ||
+                               path.ends_with(".woff2");
+
+                if is_asset {
+                    // Try to serve the static file
+                    let file_path = format!("{}{}", admin_dist, path);
+                    match tokio::fs::read(&file_path).await {
+                        Ok(contents) => {
+                            let content_type = if path.ends_with(".js") {
+                                "application/javascript"
+                            } else if path.ends_with(".css") {
+                                "text/css"
+                            } else if path.ends_with(".svg") {
+                                "image/svg+xml"
+                            } else if path.ends_with(".png") {
+                                "image/png"
+                            } else if path.ends_with(".ico") {
+                                "image/x-icon"
+                            } else {
+                                "application/octet-stream"
+                            };
+                            (
+                                StatusCode::OK,
+                                [(header::CONTENT_TYPE, content_type)],
+                                Body::from(contents)
+                            ).into_response()
+                        }
+                        Err(_) => {
+                            (StatusCode::NOT_FOUND, "Not found").into_response()
+                        }
+                    }
+                } else {
+                    // Serve index.html for SPA routes (root, trailing slash, and all other paths)
+                    match tokio::fs::read(&index_path).await {
+                        Ok(contents) => {
+                            (
+                                StatusCode::OK,
+                                [(header::CONTENT_TYPE, "text/html")],
+                                Body::from(contents)
+                            ).into_response()
+                        }
+                        Err(_) => {
+                            (StatusCode::NOT_FOUND, "Admin UI not found").into_response()
+                        }
+                    }
+                }
+            }
+        })
 }
 
 /// Public website routes
@@ -131,6 +190,11 @@ fn api_v1_routes() -> Router<AppState> {
         .nest("/cdn", cdn_routes())
         // Taxonomy routes (categories, tags)
         .nest("/taxonomies", taxonomy_routes())
+        // Direct category/tag routes (aliases for frontend compatibility)
+        .route("/categories", get(list_categories_handler).post(create_category_handler))
+        .route("/categories/:id", get(get_category_handler).put(update_category_handler).delete(delete_category_handler))
+        .route("/tags", get(list_tags_handler).post(create_tag_handler))
+        .route("/tags/:id", get(get_tag_handler).put(update_tag_handler).delete(delete_tag_handler))
         // Menu routes
         .nest("/menus", menu_routes())
         // Widget routes
@@ -200,6 +264,7 @@ fn auth_routes() -> Router<AppState> {
 fn user_routes() -> Router<AppState> {
     Router::new()
         .route("/", get(list_users_handler).post(create_user_handler))
+        .route("/me", get(current_user_handler))
         .route(
             "/:id",
             get(get_user_handler)
@@ -241,6 +306,7 @@ fn page_routes() -> Router<AppState> {
 fn media_routes() -> Router<AppState> {
     Router::new()
         .route("/", get(list_media_handler).post(upload_media_handler))
+        .route("/folders", get(list_media_folders_handler).post(create_media_folder_handler))
         .route(
             "/:id",
             get(get_media_handler)
@@ -273,6 +339,12 @@ fn settings_routes() -> Router<AppState> {
         .route("/", get(list_settings_handler))
         .route("/batch", put(batch_update_settings_handler))
         .route("/groups/:group", get(get_settings_group_handler))
+        // Group-specific routes for common groups
+        .route("/general", get(get_general_settings_handler))
+        .route("/reading", get(get_reading_settings_handler))
+        .route("/writing", get(get_writing_settings_handler))
+        .route("/discussion", get(get_discussion_settings_handler))
+        .route("/permalinks", get(get_permalinks_settings_handler))
         .route("/:key", get(get_setting_handler).put(update_setting_handler))
 }
 
@@ -365,23 +437,14 @@ async fn login_handler(
 ) -> HttpResult<impl axum::response::IntoResponse> {
     let pool = state.db().inner();
 
-    // Find user by email or username with their highest role
+    // Find user by email or username
     let user: Option<rustpress_database::repository::users::UserRow> = sqlx::query_as(
         r#"
-        SELECT u.id, u.email, u.username, u.password_hash, u.display_name, u.status,
-               COALESCE(r.name, 'subscriber') as role, u.avatar_url, u.locale, u.timezone,
-               u.email_verified_at, u.last_login_at, u.created_at, u.updated_at, u.deleted_at
-        FROM users u
-        LEFT JOIN user_roles ur ON u.id = ur.user_id
-        LEFT JOIN roles r ON ur.role_id = r.id
-        WHERE (u.email = $1 OR u.username = $1) AND u.deleted_at IS NULL
-        ORDER BY CASE r.name
-            WHEN 'administrator' THEN 1
-            WHEN 'editor' THEN 2
-            WHEN 'author' THEN 3
-            WHEN 'contributor' THEN 4
-            ELSE 5
-        END
+        SELECT id, email, username, password_hash, display_name, status, role,
+               avatar_url, NULL::varchar as locale, NULL::varchar as timezone,
+               email_verified_at, last_login_at, created_at, updated_at, deleted_at
+        FROM users
+        WHERE (email = $1 OR username = $1) AND deleted_at IS NULL
         LIMIT 1
         "#
     )
@@ -474,10 +537,16 @@ async fn refresh_token_handler(
     let user_uuid = uuid::Uuid::parse_str(&claims.sub)
         .map_err(|_| rustpress_core::error::Error::unauthorized("Invalid user ID in token"))?;
 
-    // Get user info
+    // Get user info with explicit columns
     let pool = state.db().inner();
     let user: Option<rustpress_database::repository::users::UserRow> = sqlx::query_as(
-        "SELECT * FROM users WHERE id = $1 AND deleted_at IS NULL"
+        r#"
+        SELECT id, email, username, password_hash, display_name, status, role,
+               avatar_url, locale, timezone,
+               email_verified_at, last_login_at, created_at, updated_at, deleted_at
+        FROM users
+        WHERE id = $1 AND deleted_at IS NULL
+        "#
     )
     .bind(user_uuid)
     .fetch_optional(pool)
@@ -750,9 +819,15 @@ async fn current_user_handler(
 ) -> HttpResult<impl axum::response::IntoResponse> {
     let pool = state.db().inner();
 
-    // Get full user info
+    // Get full user info with explicit columns
     let user_row: Option<rustpress_database::repository::users::UserRow> = sqlx::query_as(
-        "SELECT * FROM users WHERE id = $1 AND deleted_at IS NULL"
+        r#"
+        SELECT id, email, username, password_hash, display_name, status, role,
+               avatar_url, locale, timezone,
+               email_verified_at, last_login_at, created_at, updated_at, deleted_at
+        FROM users
+        WHERE id = $1 AND deleted_at IS NULL
+        "#
     )
     .bind(user.id)
     .fetch_optional(pool)
@@ -1315,6 +1390,61 @@ async fn delete_media_handler(
     Ok(no_content())
 }
 
+/// List media folders
+async fn list_media_folders_handler(
+    State(state): State<AppState>,
+) -> HttpResult<impl axum::response::IntoResponse> {
+    let pool = state.db().inner();
+
+    let folders: Vec<(Uuid, String, Option<Uuid>)> = sqlx::query_as(
+        "SELECT id, name, parent_id FROM media_folders ORDER BY name"
+    )
+    .fetch_all(pool)
+    .await
+    .unwrap_or_default();
+
+    let folder_list: Vec<serde_json::Value> = folders.iter().map(|(id, name, parent_id)| {
+        serde_json::json!({
+            "id": id,
+            "name": name,
+            "parent_id": parent_id
+        })
+    }).collect();
+
+    Ok(json(serde_json::json!({ "folders": folder_list })))
+}
+
+/// Create media folder request
+#[derive(Debug, Deserialize)]
+struct CreateMediaFolderRequest {
+    name: String,
+    parent_id: Option<Uuid>,
+}
+
+/// Create media folder
+async fn create_media_folder_handler(
+    _user: AuthUser,
+    State(state): State<AppState>,
+    Json(payload): Json<CreateMediaFolderRequest>,
+) -> HttpResult<impl axum::response::IntoResponse> {
+    let pool = state.db().inner();
+    let id = Uuid::now_v7();
+    let now = chrono::Utc::now();
+
+    sqlx::query(
+        "INSERT INTO media_folders (id, name, parent_id, created_at, updated_at) VALUES ($1, $2, $3, $4, $4)"
+    )
+    .bind(id)
+    .bind(&payload.name)
+    .bind(&payload.parent_id)
+    .bind(now)
+    .execute(pool)
+    .await
+    .map_err(|e| rustpress_core::error::Error::database_with_source("Failed to create folder", e))?;
+
+    Ok(created(serde_json::json!({ "id": id, "name": payload.name })))
+}
+
 // =============================================================================
 // Comment Handlers
 // =============================================================================
@@ -1543,6 +1673,56 @@ async fn get_settings_group_handler(
 ) -> HttpResult<impl axum::response::IntoResponse> {
     let service = SettingsService::new(state.db().inner().clone());
     let settings = service.get_by_group(&group).await?;
+    Ok(json(settings))
+}
+
+/// Get general settings
+async fn get_general_settings_handler(
+    user: AuthUser,
+    State(state): State<AppState>,
+) -> HttpResult<impl axum::response::IntoResponse> {
+    let service = SettingsService::new(state.db().inner().clone());
+    let settings = service.get_by_group("general").await?;
+    Ok(json(settings))
+}
+
+/// Get reading settings
+async fn get_reading_settings_handler(
+    user: AuthUser,
+    State(state): State<AppState>,
+) -> HttpResult<impl axum::response::IntoResponse> {
+    let service = SettingsService::new(state.db().inner().clone());
+    let settings = service.get_by_group("reading").await?;
+    Ok(json(settings))
+}
+
+/// Get writing settings
+async fn get_writing_settings_handler(
+    user: AuthUser,
+    State(state): State<AppState>,
+) -> HttpResult<impl axum::response::IntoResponse> {
+    let service = SettingsService::new(state.db().inner().clone());
+    let settings = service.get_by_group("writing").await?;
+    Ok(json(settings))
+}
+
+/// Get discussion settings
+async fn get_discussion_settings_handler(
+    user: AuthUser,
+    State(state): State<AppState>,
+) -> HttpResult<impl axum::response::IntoResponse> {
+    let service = SettingsService::new(state.db().inner().clone());
+    let settings = service.get_by_group("discussion").await?;
+    Ok(json(settings))
+}
+
+/// Get permalinks settings
+async fn get_permalinks_settings_handler(
+    user: AuthUser,
+    State(state): State<AppState>,
+) -> HttpResult<impl axum::response::IntoResponse> {
+    let service = SettingsService::new(state.db().inner().clone());
+    let settings = service.get_by_group("permalinks").await?;
     Ok(json(settings))
 }
 
@@ -2165,7 +2345,7 @@ async fn theme_asset_handler(
 
     // Build the file path - get themes_dir from theme manager
     let themes_dir = state.theme_manager().themes_dir().to_path_buf();
-    let file_path = themes_dir.join(&theme_id).join("assets").join(&path);
+    let file_path = themes_dir.join(&theme_id).join(&path);
 
     // Security: ensure path doesn't escape themes directory
     let canonical = match file_path.canonicalize() {
@@ -3733,7 +3913,6 @@ async fn list_categories_handler(
         SELECT id, name, slug, description, parent_id,
                (SELECT COUNT(*) FROM post_categories WHERE category_id = categories.id)::int as post_count
         FROM categories
-        WHERE deleted_at IS NULL
         ORDER BY name
         "#
     )
@@ -3806,7 +3985,7 @@ async fn get_category_handler(
     let pool = state.db().inner();
 
     let category: Option<(Uuid, String, String, Option<String>, Option<Uuid>)> = sqlx::query_as(
-        "SELECT id, name, slug, description, parent_id FROM categories WHERE id = $1 AND deleted_at IS NULL"
+        "SELECT id, name, slug, description, parent_id FROM categories WHERE id = $1"
     )
     .bind(id)
     .fetch_optional(pool)
@@ -3850,7 +4029,7 @@ async fn delete_category_handler(
 ) -> HttpResult<impl axum::response::IntoResponse> {
     let pool = state.db().inner();
 
-    sqlx::query("UPDATE categories SET deleted_at = NOW() WHERE id = $1")
+    sqlx::query("DELETE FROM categories WHERE id = $1")
         .bind(id)
         .execute(pool)
         .await
@@ -3870,7 +4049,6 @@ async fn list_tags_handler(
         SELECT id, name, slug, description,
                (SELECT COUNT(*) FROM post_tags WHERE tag_id = tags.id)::int as post_count
         FROM tags
-        WHERE deleted_at IS NULL
         ORDER BY name
         "#
     )
@@ -3940,7 +4118,7 @@ async fn get_tag_handler(
     let pool = state.db().inner();
 
     let tag: Option<(Uuid, String, String, Option<String>)> = sqlx::query_as(
-        "SELECT id, name, slug, description FROM tags WHERE id = $1 AND deleted_at IS NULL"
+        "SELECT id, name, slug, description FROM tags WHERE id = $1"
     )
     .bind(id)
     .fetch_optional(pool)
@@ -3984,7 +4162,7 @@ async fn delete_tag_handler(
 ) -> HttpResult<impl axum::response::IntoResponse> {
     let pool = state.db().inner();
 
-    sqlx::query("UPDATE tags SET deleted_at = NOW() WHERE id = $1")
+    sqlx::query("DELETE FROM tags WHERE id = $1")
         .bind(id)
         .execute(pool)
         .await
@@ -4001,6 +4179,7 @@ async fn delete_tag_handler(
 fn menu_routes() -> Router<AppState> {
     Router::new()
         .route("/", get(list_menus_handler).post(create_menu_handler))
+        .route("/locations", get(list_menu_locations_handler))
         .route("/:id", get(get_menu_handler).put(update_menu_handler).delete(delete_menu_handler))
         .route("/:id/items", get(get_menu_items_handler).put(update_menu_items_handler))
 }
@@ -4030,6 +4209,22 @@ async fn list_menus_handler(
     Ok(json(serde_json::json!({ "menus": menu_list })))
 }
 
+/// List available menu locations
+async fn list_menu_locations_handler(
+    State(_state): State<AppState>,
+) -> HttpResult<impl axum::response::IntoResponse> {
+    // Return standard theme menu locations
+    Ok(json(serde_json::json!({
+        "locations": [
+            { "slug": "primary", "name": "Primary Navigation", "description": "Main site navigation menu" },
+            { "slug": "secondary", "name": "Secondary Navigation", "description": "Secondary navigation menu" },
+            { "slug": "footer", "name": "Footer Menu", "description": "Footer navigation links" },
+            { "slug": "social", "name": "Social Links", "description": "Social media links menu" },
+            { "slug": "mobile", "name": "Mobile Menu", "description": "Mobile-specific navigation" }
+        ]
+    })))
+}
+
 /// Create menu request
 #[derive(Debug, Deserialize)]
 struct CreateMenuRequest {
@@ -4044,9 +4239,30 @@ async fn create_menu_handler(
     State(state): State<AppState>,
     Json(payload): Json<CreateMenuRequest>,
 ) -> HttpResult<impl axum::response::IntoResponse> {
+    // Validate name is not empty
+    if payload.name.trim().is_empty() {
+        return Err(rustpress_core::error::Error::validation("Menu name cannot be empty").into());
+    }
+
     let pool = state.db().inner();
     let id = Uuid::now_v7();
-    let slug = payload.slug.unwrap_or_else(|| slugify::slugify(&payload.name, "-", "", None));
+    let slug = payload.slug.filter(|s| !s.trim().is_empty())
+        .unwrap_or_else(|| {
+            // Use a safe slug generation - fallback to UUID if slugify fails
+            let base_slug = payload.name.to_lowercase()
+                .chars()
+                .map(|c| if c.is_alphanumeric() { c } else { '-' })
+                .collect::<String>();
+            let cleaned: String = base_slug.split('-')
+                .filter(|s| !s.is_empty())
+                .collect::<Vec<_>>()
+                .join("-");
+            if cleaned.is_empty() {
+                format!("menu-{}", &id.to_string()[..8])
+            } else {
+                cleaned
+            }
+        });
     let now = chrono::Utc::now();
 
     sqlx::query(
@@ -4291,6 +4507,7 @@ async fn update_menu_items_handler(
 fn widget_routes() -> Router<AppState> {
     Router::new()
         .route("/", get(list_widgets_handler))
+        .route("/types", get(list_widget_types_handler))
         .route("/areas", get(list_widget_areas_handler))
         .route("/areas/:area_id", get(get_widget_area_handler).put(update_widget_area_handler))
         .route("/:id", get(get_widget_handler).put(update_widget_handler).delete(delete_widget_handler))
@@ -4303,6 +4520,23 @@ async fn list_widgets_handler(
     // Return available widget types
     Ok(json(serde_json::json!({
         "widgets": [
+            { "type": "text", "name": "Text", "description": "Arbitrary text or HTML" },
+            { "type": "recent_posts", "name": "Recent Posts", "description": "Display recent posts" },
+            { "type": "categories", "name": "Categories", "description": "Display category list" },
+            { "type": "tags", "name": "Tag Cloud", "description": "Display tag cloud" },
+            { "type": "search", "name": "Search", "description": "Search form" },
+            { "type": "custom_html", "name": "Custom HTML", "description": "Custom HTML content" },
+            { "type": "navigation", "name": "Navigation Menu", "description": "Display a menu" }
+        ]
+    })))
+}
+
+/// List available widget types
+async fn list_widget_types_handler(
+    State(_state): State<AppState>,
+) -> HttpResult<impl axum::response::IntoResponse> {
+    Ok(json(serde_json::json!({
+        "types": [
             { "type": "text", "name": "Text", "description": "Arbitrary text or HTML" },
             { "type": "recent_posts", "name": "Recent Posts", "description": "Display recent posts" },
             { "type": "categories", "name": "Categories", "description": "Display category list" },
@@ -4470,6 +4704,8 @@ async fn delete_widget_handler(
 fn stats_routes() -> Router<AppState> {
     Router::new()
         .route("/", get(dashboard_stats_handler))
+        .route("/dashboard", get(dashboard_stats_handler))
+        .route("/posts", get(posts_stats_handler))
         .route("/overview", get(stats_overview_handler))
         .route("/content", get(content_stats_handler))
         .route("/activity", get(activity_stats_handler))
@@ -4503,6 +4739,31 @@ async fn dashboard_stats_handler(
         "published_posts": posts.0,
         "draft_posts": 0,
         "pending_comments": 0
+    })))
+}
+
+/// Get posts stats
+async fn posts_stats_handler(
+    user: AuthUser,
+    State(state): State<AppState>,
+) -> HttpResult<impl axum::response::IntoResponse> {
+    let pool = state.db().inner();
+
+    let total: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM posts WHERE post_type = 'post' AND deleted_at IS NULL")
+        .fetch_one(pool).await.unwrap_or((0,));
+    let published: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM posts WHERE post_type = 'post' AND status = 'published' AND deleted_at IS NULL")
+        .fetch_one(pool).await.unwrap_or((0,));
+    let draft: (i64,) = sqlx::query_as("SELECT COUNT(*) FROM posts WHERE post_type = 'post' AND status = 'draft' AND deleted_at IS NULL")
+        .fetch_one(pool).await.unwrap_or((0,));
+
+    Ok(json(serde_json::json!({
+        "total": total.0,
+        "published": published.0,
+        "draft": draft.0,
+        "scheduled": 0,
+        "pending": 0,
+        "views_total": 0,
+        "views_today": 0
     })))
 }
 
@@ -4564,6 +4825,7 @@ async fn activity_stats_handler(
 fn email_routes() -> Router<AppState> {
     Router::new()
         .route("/config", get(email_config_handler).put(email_config_update_handler))
+        .route("/settings", get(email_config_handler).put(email_config_update_handler))
         .route("/test", post(email_test_handler))
         .route("/templates", get(email_templates_handler))
         .route("/send", post(email_send_handler))
@@ -5025,4 +5287,19 @@ async fn email_send_handler(
             })))
         }
     }
+}
+
+/// Cloudflare plugin routes builder
+/// This returns a router with CloudflareServices state that will be merged at the api_v1 level
+pub fn build_cloudflare_router(state: &AppState) -> Router {
+    use rustcloudflare::services::CloudflareServices;
+    
+    // Get the database pool from AppState
+    let db_pool = state.database.inner().clone();
+    
+    // Create unconfigured cloudflare services (config loaded dynamically from DB)
+    let services = Arc::new(CloudflareServices::new_unconfigured(db_pool));
+    
+    // Create the cloudflare router with its own state
+    rustcloudflare::api::create_router(services)
 }

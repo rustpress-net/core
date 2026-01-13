@@ -8,7 +8,7 @@ use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 use axum::{
     body::Body,
-    http::{header, HeaderMap, HeaderValue, Request, Response, StatusCode},
+    http::{header, Response, StatusCode},
     response::IntoResponse,
 };
 use parking_lot::RwLock;
@@ -147,6 +147,7 @@ impl Default for StaticFileConfig {
 }
 
 /// Cached file entry
+#[derive(Clone)]
 struct CachedFile {
     content: Vec<u8>,
     gzip_content: Option<Vec<u8>>,
@@ -621,8 +622,10 @@ mod tests {
 
     #[test]
     fn test_gzip_compression() {
-        let data = b"Hello, World! This is some test data for compression.";
-        let compressed = compress_gzip(data, 6).unwrap();
+        // Use larger, repetitive data to ensure compression is effective
+        // Small data may not compress well due to gzip header overhead
+        let data = b"Hello, World! This is some test data for compression. ".repeat(20);
+        let compressed = compress_gzip(&data, 6).unwrap();
         assert!(compressed.len() < data.len());
     }
 }

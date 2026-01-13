@@ -1,0 +1,283 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Blog - {{ site.title }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-hero blog-hero">
+  <div class="hero-particles"></div>
+  <div class="container">
+    <div class="page-hero-content" data-animate="fade-up">
+      <span class="hero-badge">
+        <span class="badge-dot"></span>
+        Our Blog
+      </span>
+      <h1 class="page-hero-title">
+        Insights & <span class="gradient-text">Resources</span>
+      </h1>
+      <p class="page-hero-description">
+        Stay up to date with the latest product updates, industry insights,
+        and best practices for growing your business.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Blog Categories -->
+<section class="blog-categories-section">
+  <div class="container">
+    <div class="blog-categories" data-animate="fade-up">
+      <a href="#" class="category-pill active">All Posts</a>
+      <a href="#" class="category-pill">Product Updates</a>
+      <a href="#" class="category-pill">Engineering</a>
+      <a href="#" class="category-pill">Best Practices</a>
+      <a href="#" class="category-pill">Case Studies</a>
+      <a href="#" class="category-pill">Company News</a>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Post -->
+<section class="featured-post-section">
+  <div class="container">
+    <div class="featured-post" data-animate="fade-up">
+      <div class="featured-post-image">
+        <div class="post-image-placeholder">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <circle cx="8.5" cy="8.5" r="1.5"/>
+            <polyline points="21 15 16 10 5 21"/>
+          </svg>
+        </div>
+      </div>
+      <div class="featured-post-content">
+        <div class="post-meta">
+          <span class="post-category">Product Updates</span>
+          <span class="post-date">December 15, 2024</span>
+        </div>
+        <h2>Introducing AI-Powered Analytics: Predictive Insights for Your Business</h2>
+        <p>We're excited to announce the launch of our new AI-powered analytics suite. Get predictive insights, automated anomaly detection, and intelligent recommendations powered by machine learning.</p>
+        <div class="post-author">
+          <div class="author-avatar">EC</div>
+          <div class="author-info">
+            <span class="author-name">Emily Chen</span>
+            <span class="author-role">VP of Product</span>
+          </div>
+        </div>
+        <a href="/blog/ai-powered-analytics" class="btn btn--primary">
+          Read More
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Blog Posts Grid -->
+<section class="blog-posts-section">
+  <div class="container">
+    <div class="blog-posts-grid">
+      <article class="blog-post-card" data-animate="fade-up">
+        <div class="post-image">
+          <div class="post-image-placeholder small">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <polyline points="16 18 22 12 16 6"/>
+              <polyline points="8 6 2 12 8 18"/>
+            </svg>
+          </div>
+        </div>
+        <div class="post-content">
+          <div class="post-meta">
+            <span class="post-category">Engineering</span>
+            <span class="post-date">Dec 12, 2024</span>
+          </div>
+          <h3><a href="/blog/scaling-to-million-users">How We Scaled to 1 Million Users</a></h3>
+          <p>A deep dive into the engineering challenges and solutions behind our recent scaling milestone.</p>
+          <div class="post-footer">
+            <div class="author-mini">
+              <span class="author-avatar-mini">DW</span>
+              <span class="author-name">David Williams</span>
+            </div>
+            <span class="read-time">8 min read</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="blog-post-card" data-animate="fade-up" data-delay="100">
+        <div class="post-image">
+          <div class="post-image-placeholder small">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+              <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+          </div>
+        </div>
+        <div class="post-content">
+          <div class="post-meta">
+            <span class="post-category">Best Practices</span>
+            <span class="post-date">Dec 10, 2024</span>
+          </div>
+          <h3><a href="/blog/workflow-automation-guide">The Complete Guide to Workflow Automation</a></h3>
+          <p>Learn how to automate repetitive tasks and boost your team's productivity with our step-by-step guide.</p>
+          <div class="post-footer">
+            <div class="author-mini">
+              <span class="author-avatar-mini">SM</span>
+              <span class="author-name">Sarah Mitchell</span>
+            </div>
+            <span class="read-time">12 min read</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="blog-post-card" data-animate="fade-up" data-delay="200">
+        <div class="post-image">
+          <div class="post-image-placeholder small">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="post-content">
+          <div class="post-meta">
+            <span class="post-category">Product Updates</span>
+            <span class="post-date">Dec 8, 2024</span>
+          </div>
+          <h3><a href="/blog/soc2-certification">RustPress Achieves SOC 2 Type II Certification</a></h3>
+          <p>We're proud to announce our SOC 2 Type II certification, demonstrating our commitment to security.</p>
+          <div class="post-footer">
+            <div class="author-mini">
+              <span class="author-avatar-mini">AK</span>
+              <span class="author-name">Alex Kim</span>
+            </div>
+            <span class="read-time">4 min read</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="blog-post-card" data-animate="fade-up">
+        <div class="post-image">
+          <div class="post-image-placeholder small">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+        </div>
+        <div class="post-content">
+          <div class="post-meta">
+            <span class="post-category">Case Studies</span>
+            <span class="post-date">Dec 5, 2024</span>
+          </div>
+          <h3><a href="/blog/techcorp-case-study">How TechCorp Increased Productivity by 45%</a></h3>
+          <p>Learn how TechCorp transformed their content management using RustPress's AI features.</p>
+          <div class="post-footer">
+            <div class="author-mini">
+              <span class="author-avatar-mini">MJ</span>
+              <span class="author-name">Michael Johnson</span>
+            </div>
+            <span class="read-time">6 min read</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="blog-post-card" data-animate="fade-up" data-delay="100">
+        <div class="post-image">
+          <div class="post-image-placeholder small">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="post-content">
+          <div class="post-meta">
+            <span class="post-category">Engineering</span>
+            <span class="post-date">Dec 2, 2024</span>
+          </div>
+          <h3><a href="/blog/api-v2-announcement">Introducing API v2: Faster, More Powerful</a></h3>
+          <p>Our new API version brings significant performance improvements and new capabilities.</p>
+          <div class="post-footer">
+            <div class="author-mini">
+              <span class="author-avatar-mini">SP</span>
+              <span class="author-name">Sarah Patel</span>
+            </div>
+            <span class="read-time">5 min read</span>
+          </div>
+        </div>
+      </article>
+
+      <article class="blog-post-card" data-animate="fade-up" data-delay="200">
+        <div class="post-image">
+          <div class="post-image-placeholder small">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="2" y1="12" x2="22" y2="12"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="post-content">
+          <div class="post-meta">
+            <span class="post-category">Company News</span>
+            <span class="post-date">Nov 28, 2024</span>
+          </div>
+          <h3><a href="/blog/series-b-announcement">Announcing Our $75M Series B</a></h3>
+          <p>We're thrilled to announce our Series B funding round led by Sequoia Capital.</p>
+          <div class="post-footer">
+            <div class="author-mini">
+              <span class="author-avatar-mini">AK</span>
+              <span class="author-name">Alex Kim</span>
+            </div>
+            <span class="read-time">3 min read</span>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <!-- Pagination -->
+    <div class="blog-pagination" data-animate="fade-up">
+      <button class="pagination-btn prev" disabled>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Previous
+      </button>
+      <div class="pagination-numbers">
+        <span class="pagination-number active">1</span>
+        <span class="pagination-number">2</span>
+        <span class="pagination-number">3</span>
+        <span class="pagination-dots">...</span>
+        <span class="pagination-number">12</span>
+      </div>
+      <button class="pagination-btn next">
+        Next
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M5 12h14M12 5l7 7-7 7"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="newsletter-section">
+  <div class="container">
+    <div class="newsletter-card glass-card" data-animate="fade-up">
+      <div class="newsletter-content">
+        <h3>Subscribe to our newsletter</h3>
+        <p>Get the latest posts, product updates, and industry insights delivered to your inbox.</p>
+        <form class="newsletter-form">
+          <div class="newsletter-input-group">
+            <input type="email" placeholder="Enter your email" required>
+            <button type="submit" class="btn btn--primary">Subscribe</button>
+          </div>
+        </form>
+        <p class="newsletter-disclaimer">We respect your privacy. Unsubscribe at any time.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

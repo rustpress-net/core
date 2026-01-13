@@ -2,14 +2,14 @@
 //!
 //! WordPress-compatible template hierarchy with Tera template engine.
 
-use crate::manifest::{TemplateSection, TemplateDefinition};
+use crate::manifest::TemplateSection;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use parking_lot::RwLock;
 use tera::{Context, Tera};
-use tracing::{debug, error, info, warn};
+use tracing::{debug, error, info};
 
 // ============================================================================
 // Template Hierarchy (Point 192)
@@ -435,7 +435,7 @@ impl TemplateEngine {
         // Date format filter
         tera.register_filter("wp_date", |value: &tera::Value, args: &HashMap<String, tera::Value>| {
             let date_str = tera::try_get_value!("wp_date", "value", String, value);
-            let format = match args.get("format") {
+            let _format = match args.get("format") {
                 Some(val) => tera::try_get_value!("wp_date", "format", String, val),
                 None => "%B %d, %Y".to_string(),
             };

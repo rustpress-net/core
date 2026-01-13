@@ -1,0 +1,457 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Careers - {{ site.title }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-hero careers-hero">
+  <div class="hero-particles"></div>
+  <div class="container">
+    <div class="page-hero-content" data-animate="fade-up">
+      <span class="hero-badge">
+        <span class="badge-dot"></span>
+        Join Our Team
+      </span>
+      <h1 class="page-hero-title">
+        Build the future of <span class="gradient-text">business software</span>
+      </h1>
+      <p class="page-hero-description">
+        We're on a mission to empower every business with the tools they need to succeed.
+        Join us and help shape the future.
+      </p>
+      <div class="hero-cta-group">
+        <a href="#open-positions" class="btn btn--primary btn--glow btn--lg">
+          View Open Positions
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Company Stats -->
+<section class="careers-stats-section">
+  <div class="container">
+    <div class="stats-grid stats-grid--large" data-animate="fade-up">
+      <div class="stat-item">
+        <span class="stat-number">150+</span>
+        <span class="stat-label">Team Members</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">25+</span>
+        <span class="stat-label">Open Positions</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">20+</span>
+        <span class="stat-label">Countries</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">4.8</span>
+        <span class="stat-label">Glassdoor Rating</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Culture Section -->
+<section class="culture-section">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">Our Culture</span>
+      <h2 class="section-title">Why join RustPress?</h2>
+      <p class="section-description">
+        We're building more than a product — we're building a company where people do the best work of their careers.
+      </p>
+    </div>
+
+    <div class="culture-grid" data-animate="fade-up">
+      <div class="culture-card">
+        <div class="culture-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+        </div>
+        <h3>Remote-First</h3>
+        <p>Work from anywhere in the world. We have team members in 20+ countries and believe the best talent isn't confined to a single location.</p>
+      </div>
+
+      <div class="culture-card">
+        <div class="culture-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <h3>Impact at Scale</h3>
+        <p>Your work will directly impact thousands of businesses worldwide. We ship fast and iterate based on real customer feedback.</p>
+      </div>
+
+      <div class="culture-card">
+        <div class="culture-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <h3>Diverse & Inclusive</h3>
+        <p>We believe diverse teams build better products. We're committed to creating an inclusive environment where everyone belongs.</p>
+      </div>
+
+      <div class="culture-card">
+        <div class="culture-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+          </svg>
+        </div>
+        <h3>Continuous Learning</h3>
+        <p>$3,000 annual learning budget, conference attendance, and dedicated time for professional development.</p>
+      </div>
+
+      <div class="culture-card">
+        <div class="culture-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+            <line x1="1" y1="10" x2="23" y2="10"/>
+          </svg>
+        </div>
+        <h3>Competitive Compensation</h3>
+        <p>Top-of-market salaries, meaningful equity, and comprehensive benefits that take care of you and your family.</p>
+      </div>
+
+      <div class="culture-card">
+        <div class="culture-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+          </svg>
+        </div>
+        <h3>Work-Life Balance</h3>
+        <p>Unlimited PTO, flexible hours, and a culture that respects your time outside of work.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Benefits Section -->
+<section class="benefits-section">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">Benefits</span>
+      <h2 class="section-title">Perks & benefits</h2>
+    </div>
+
+    <div class="benefits-grid" data-animate="fade-up">
+      <div class="benefit-item">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span>Competitive salary & equity</span>
+      </div>
+      <div class="benefit-item">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span>100% remote-friendly</span>
+      </div>
+      <div class="benefit-item">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span>Unlimited PTO</span>
+      </div>
+      <div class="benefit-item">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span>Health, dental & vision insurance</span>
+      </div>
+      <div class="benefit-item">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span>$3,000 annual learning budget</span>
+      </div>
+      <div class="benefit-item">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span>Home office stipend</span>
+      </div>
+      <div class="benefit-item">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span>401(k) with company match</span>
+      </div>
+      <div class="benefit-item">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span>Parental leave</span>
+      </div>
+      <div class="benefit-item">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span>Mental health support</span>
+      </div>
+      <div class="benefit-item">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span>Company retreats</span>
+      </div>
+      <div class="benefit-item">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span>Latest equipment provided</span>
+      </div>
+      <div class="benefit-item">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+        <span>Flexible working hours</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Open Positions -->
+<section id="open-positions" class="positions-section">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">Open Positions</span>
+      <h2 class="section-title">Join our team</h2>
+      <p class="section-description">
+        Explore our open positions and find your next opportunity.
+      </p>
+    </div>
+
+    <div class="positions-filter" data-animate="fade-up">
+      <button class="filter-btn active" data-filter="all">All Departments</button>
+      <button class="filter-btn" data-filter="engineering">Engineering</button>
+      <button class="filter-btn" data-filter="product">Product</button>
+      <button class="filter-btn" data-filter="sales">Sales</button>
+      <button class="filter-btn" data-filter="marketing">Marketing</button>
+      <button class="filter-btn" data-filter="operations">Operations</button>
+    </div>
+
+    <div class="positions-list" data-animate="fade-up">
+      <!-- Engineering -->
+      <div class="position-card" data-department="engineering">
+        <div class="position-info">
+          <h4>Senior Backend Engineer</h4>
+          <div class="position-meta">
+            <span class="meta-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+              </svg>
+              Engineering
+            </span>
+            <span class="meta-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              Remote
+            </span>
+          </div>
+        </div>
+        <a href="#" class="btn btn--outline btn--sm">Apply</a>
+      </div>
+
+      <div class="position-card" data-department="engineering">
+        <div class="position-info">
+          <h4>Frontend Engineer</h4>
+          <div class="position-meta">
+            <span class="meta-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+              </svg>
+              Engineering
+            </span>
+            <span class="meta-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              Remote
+            </span>
+          </div>
+        </div>
+        <a href="#" class="btn btn--outline btn--sm">Apply</a>
+      </div>
+
+      <div class="position-card" data-department="engineering">
+        <div class="position-info">
+          <h4>DevOps Engineer</h4>
+          <div class="position-meta">
+            <span class="meta-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+              </svg>
+              Engineering
+            </span>
+            <span class="meta-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              Remote
+            </span>
+          </div>
+        </div>
+        <a href="#" class="btn btn--outline btn--sm">Apply</a>
+      </div>
+
+      <!-- Product -->
+      <div class="position-card" data-department="product">
+        <div class="position-info">
+          <h4>Senior Product Manager</h4>
+          <div class="position-meta">
+            <span class="meta-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+              </svg>
+              Product
+            </span>
+            <span class="meta-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              San Francisco / Remote
+            </span>
+          </div>
+        </div>
+        <a href="#" class="btn btn--outline btn--sm">Apply</a>
+      </div>
+
+      <div class="position-card" data-department="product">
+        <div class="position-info">
+          <h4>Product Designer</h4>
+          <div class="position-meta">
+            <span class="meta-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+              </svg>
+              Product
+            </span>
+            <span class="meta-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              Remote
+            </span>
+          </div>
+        </div>
+        <a href="#" class="btn btn--outline btn--sm">Apply</a>
+      </div>
+
+      <!-- Sales -->
+      <div class="position-card" data-department="sales">
+        <div class="position-info">
+          <h4>Enterprise Account Executive</h4>
+          <div class="position-meta">
+            <span class="meta-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+              </svg>
+              Sales
+            </span>
+            <span class="meta-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              New York
+            </span>
+          </div>
+        </div>
+        <a href="#" class="btn btn--outline btn--sm">Apply</a>
+      </div>
+
+      <!-- Marketing -->
+      <div class="position-card" data-department="marketing">
+        <div class="position-info">
+          <h4>Content Marketing Manager</h4>
+          <div class="position-meta">
+            <span class="meta-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+              </svg>
+              Marketing
+            </span>
+            <span class="meta-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                <circle cx="12" cy="10" r="3"/>
+              </svg>
+              Remote
+            </span>
+          </div>
+        </div>
+        <a href="#" class="btn btn--outline btn--sm">Apply</a>
+      </div>
+    </div>
+
+    <div class="positions-cta" data-animate="fade-up">
+      <p>Don't see a role that fits? We're always looking for talented people.</p>
+      <a href="/contact" class="btn btn--outline">Send General Application</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-card glass-card" data-animate="fade-up">
+      <div class="cta-content">
+        <h2>Ready to join us?</h2>
+        <p>Take the next step in your career. We can't wait to meet you.</p>
+        <div class="cta-buttons">
+          <a href="#open-positions" class="btn btn--primary btn--glow btn--lg">
+            View Open Positions
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const filterBtns = document.querySelectorAll('.filter-btn');
+  const positionCards = document.querySelectorAll('.position-card');
+
+  filterBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const filter = btn.dataset.filter;
+
+      filterBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      positionCards.forEach(card => {
+        if (filter === 'all' || card.dataset.department === filter) {
+          card.style.display = '';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  });
+});
+</script>
+{% endblock %}

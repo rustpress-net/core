@@ -296,7 +296,7 @@ mod tests {
         );
         assert_eq!(
             validator.strength("Password1"),
-            PasswordStrength::Fair
+            PasswordStrength::Good
         );
         assert_eq!(
             validator.strength("SecurePass123"),

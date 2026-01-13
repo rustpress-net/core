@@ -4,7 +4,7 @@
 
 use std::collections::HashMap;
 use std::sync::Arc;
-use std::time::{Duration, Instant};
+use std::time::Instant;
 use parking_lot::RwLock;
 use serde::{Deserialize, Serialize};
 
@@ -203,7 +203,8 @@ impl QueryLogger {
 
         // Trim if over capacity
         if entries.len() > self.config.max_entries {
-            entries.drain(0..entries.len() - self.config.max_entries);
+            let drain_count = entries.len() - self.config.max_entries;
+            entries.drain(0..drain_count);
         }
 
         // Generate suggestions for slow queries

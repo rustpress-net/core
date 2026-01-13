@@ -380,7 +380,7 @@ impl Default for RateLimitConfig {
             by_ip: true,
             by_user: true,
             by_api_key: true,
-            exempt_paths: vec!["/health".to_string(), "/metrics".to_string()],
+            exempt_paths: vec!["/health".to_string(), "/metrics".to_string(), "/api/v4".to_string(), "/admin".to_string()],
         }
     }
 }

@@ -145,7 +145,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Rust toolchain
-        uses: dtolnay/rust-action@stable
+        uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
 
@@ -171,7 +171,11 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           mkdir -p release
-          cp target/${{ matrix.target }}/release/${{ matrix.artifact_name }} release/
+          # Copy all binaries
+          cp target/${{ matrix.target }}/release/rustpress release/
+          cp target/${{ matrix.target }}/release/rustpress-cli release/
+          cp target/${{ matrix.target }}/release/rustpress-migrate release/
+          # Copy documentation
           cp README.md LICENSE* release/ 2>/dev/null || true
           cd release
           zip -r ../${{ matrix.asset_name }}-v${{ needs.determine-version.outputs.new_version }}.zip .
@@ -181,7 +185,11 @@ jobs:
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path release
-          Copy-Item "target/${{ matrix.target }}/release/${{ matrix.artifact_name }}" -Destination release/
+          # Copy all binaries
+          Copy-Item "target/${{ matrix.target }}/release/rustpress.exe" -Destination release/
+          Copy-Item "target/${{ matrix.target }}/release/rustpress-cli.exe" -Destination release/
+          Copy-Item "target/${{ matrix.target }}/release/rustpress-migrate.exe" -Destination release/
+          # Copy documentation
           Copy-Item README.md -Destination release/ -ErrorAction SilentlyContinue
           Copy-Item LICENSE* -Destination release/ -ErrorAction SilentlyContinue
           Compress-Archive -Path release/* -DestinationPath "${{ matrix.asset_name }}-v${{ needs.determine-version.outputs.new_version }}.zip"
@@ -323,3 +331,32 @@ jobs:
             ghcr.io/${{ github.repository }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  # ---------------------------------------------------------------------------
+  # Cleanup Old Releases - Keep only the latest release to save disk space
+  # ---------------------------------------------------------------------------
+  cleanup-releases:
+    name: Cleanup Old Releases
+    needs: [create-release, docker]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Delete old releases (keep only latest)
+        uses: dev-drprasad/delete-older-releases@v0.3.4
+        with:
+          keep_latest: 1
+          delete_tags: true
+          delete_tag_pattern: v.*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Cleanup old Docker images
+        uses: actions/delete-package-versions@v5
+        with:
+          package-name: ${{ github.event.repository.name }}
+          package-type: container
+          min-versions-to-keep: 1
+          delete-only-untagged-versions: false

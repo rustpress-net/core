@@ -524,24 +524,32 @@ impl UserService {
     }
 
     fn is_valid_email(&self, email: &str) -> bool {
-        // Basic email validation
-        let parts: Vec<&str> = email.split('@').collect();
-        if parts.len() != 2 {
-            return false;
-        }
-        let local = parts[0];
-        let domain = parts[1];
-
-        if local.is_empty() || domain.is_empty() {
-            return false;
-        }
-
-        if !domain.contains('.') {
-            return false;
-        }
-
-        true
+        is_valid_email_impl(email)
     }
+}
+
+/// Standalone email validation (for testing without database)
+fn is_valid_email_impl(email: &str) -> bool {
+    // Basic email validation
+    let parts: Vec<&str> = email.split('@').collect();
+    if parts.len() != 2 {
+        return false;
+    }
+    let local = parts[0];
+    let domain = parts[1];
+
+    if local.is_empty() || domain.is_empty() {
+        return false;
+    }
+
+    if !domain.contains('.') {
+        return false;
+    }
+
+    true
+}
+
+impl UserService {
 
     fn hash_password(&self, password: &str) -> Result<String> {
         use std::collections::hash_map::DefaultHasher;
@@ -557,7 +565,7 @@ impl UserService {
         Ok(format!("hash:{:x}", hasher.finish()))
     }
 
-    fn verify_password(&self, password: &str, hash: &str) -> Result<bool> {
+    fn verify_password(&self, _password: &str, hash: &str) -> Result<bool> {
         // Note: In production, use proper password verification
         // This is a placeholder for demonstration
         if hash.starts_with("hash:") {
@@ -595,14 +603,10 @@ mod tests {
 
     #[test]
     fn test_email_validation() {
-        let service = UserService {
-            pool: unsafe { std::mem::zeroed() },
-        };
-
-        assert!(service.is_valid_email("test@example.com"));
-        assert!(service.is_valid_email("user.name@domain.org"));
-        assert!(!service.is_valid_email("invalid"));
-        assert!(!service.is_valid_email("@domain.com"));
-        assert!(!service.is_valid_email("user@"));
+        assert!(is_valid_email_impl("test@example.com"));
+        assert!(is_valid_email_impl("user.name@domain.org"));
+        assert!(!is_valid_email_impl("invalid"));
+        assert!(!is_valid_email_impl("@domain.com"));
+        assert!(!is_valid_email_impl("user@"));
     }
 }

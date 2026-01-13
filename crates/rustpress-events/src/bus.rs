@@ -4,8 +4,7 @@ use crate::event::{DomainEvent, EventType};
 use crate::subscriber::Subscriber;
 use dashmap::DashMap;
 use parking_lot::RwLock;
-use rustpress_core::error::{Error, Result};
-use std::collections::HashMap;
+use rustpress_core::error::Result;
 use std::sync::Arc;
 use tokio::sync::broadcast;
 

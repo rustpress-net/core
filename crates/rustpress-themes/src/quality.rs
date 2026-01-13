@@ -3,7 +3,6 @@
 //! AMP compatibility, accessibility checks, and performance scoring.
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use thiserror::Error;
 
 /// Quality check errors
@@ -171,12 +170,18 @@ impl AmpCompatibility {
     }
 
     fn remove_scripts(&self, html: &str) -> String {
-        // Keep only AMP scripts
-        let re = regex::Regex::new(
-            r#"<script(?![^>]*ampproject)[^>]*>[\s\S]*?</script>"#
-        ).unwrap();
+        // Keep only AMP scripts - match all script tags and filter in callback
+        let re = regex::Regex::new(r#"<script[^>]*>[\s\S]*?</script>"#).unwrap();
 
-        re.replace_all(html, "").to_string()
+        re.replace_all(html, |caps: &regex::Captures| {
+            let script = &caps[0];
+            // Keep AMP scripts (contain ampproject in src)
+            if script.contains("ampproject") {
+                script.to_string()
+            } else {
+                String::new()
+            }
+        }).to_string()
     }
 
     /// Generate AMP boilerplate
@@ -504,7 +509,7 @@ impl AccessibilityChecker {
 
         let has_main = html.contains("<main") || html.contains(r#"role="main""#);
         let has_nav = html.contains("<nav") || html.contains(r#"role="navigation""#);
-        let has_header = html.contains("<header") || html.contains(r#"role="banner""#);
+        let _has_header = html.contains("<header") || html.contains(r#"role="banner""#);
 
         if !has_main {
             issues.push(AccessibilityIssue {

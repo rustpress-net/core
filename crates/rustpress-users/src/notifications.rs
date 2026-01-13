@@ -253,15 +253,23 @@ impl UserNotificationPreferences {
 
     /// Check if notification should be sent
     pub fn should_notify(&self, notification_type: NotificationType, channel: NotificationChannel) -> bool {
+        let is_security_notification = matches!(
+            notification_type,
+            NotificationType::PasswordChanged | NotificationType::SecurityAlert
+        );
+
         if self.unsubscribe_all && channel == NotificationChannel::Email {
             // Security notifications bypass unsubscribe
-            if !matches!(notification_type, NotificationType::PasswordChanged | NotificationType::SecurityAlert) {
+            if !is_security_notification {
                 return false;
             }
         }
 
         if channel == NotificationChannel::Email && !self.email_verified {
-            return false;
+            // Security notifications also bypass email verification
+            if !is_security_notification {
+                return false;
+            }
         }
 
         self.preferences.get(&notification_type)

@@ -1,0 +1,1155 @@
+[plugin]
+id = "rustcloudflare"
+name = "RustCloudflare"
+version = "1.0.1"
+description = "Seamless Cloudflare integration for RustPress - CDN, DNS, Security, Workers, R2, KV, D1, and more"
+author = "RustPress Team"
+author_url = "https://rustpress.io"
+homepage = "https://rustpress.io/plugins/rustcloudflare"
+license = "MIT"
+min_rustpress_version = "1.0.0"
+tags = ["cloudflare", "cdn", "security", "performance", "dns", "workers", "edge"]
+
+[dependencies.plugins]
+# No plugin dependencies required
+
+[dependencies.system]
+openssl = "^1.1"
+
+# =============================================================================
+# SETTINGS SCHEMA
+# =============================================================================
+
+[settings.schema.api_token]
+setting_type = "password"
+label = "Cloudflare API Token"
+description = "Your Cloudflare API token with appropriate permissions"
+required = true
+group = "credentials"
+
+[settings.schema.account_id]
+setting_type = "string"
+label = "Account ID"
+description = "Your Cloudflare Account ID"
+required = true
+group = "credentials"
+
+[settings.schema.zone_id]
+setting_type = "string"
+label = "Zone ID"
+description = "The Zone ID for your domain"
+required = true
+group = "credentials"
+
+[settings.schema.email]
+setting_type = "email"
+label = "Cloudflare Email"
+description = "Email associated with your Cloudflare account (optional, for legacy API)"
+required = false
+group = "credentials"
+
+# CDN Settings
+[settings.schema.cdn_enabled]
+setting_type = "boolean"
+label = "Enable CDN"
+description = "Enable Cloudflare CDN for static assets"
+default = true
+group = "cdn"
+
+[settings.schema.auto_minify]
+setting_type = "multiselect"
+label = "Auto Minify"
+description = "Automatically minify assets"
+options = ["javascript", "css", "html"]
+default = ["javascript", "css", "html"]
+group = "cdn"
+
+[settings.schema.brotli_compression]
+setting_type = "boolean"
+label = "Brotli Compression"
+description = "Enable Brotli compression for faster delivery"
+default = true
+group = "cdn"
+
+[settings.schema.early_hints]
+setting_type = "boolean"
+label = "Early Hints (103)"
+description = "Enable Early Hints for faster page loads"
+default = true
+group = "cdn"
+
+[settings.schema.rocket_loader]
+setting_type = "boolean"
+label = "Rocket Loader"
+description = "Improve paint times by async loading scripts"
+default = false
+group = "cdn"
+
+# Cache Settings
+[settings.schema.cache_level]
+setting_type = "select"
+label = "Cache Level"
+description = "Determines how much of your content Cloudflare will cache"
+options = ["bypass", "basic", "simplified", "aggressive"]
+default = "aggressive"
+group = "cache"
+
+[settings.schema.browser_cache_ttl]
+setting_type = "integer"
+label = "Browser Cache TTL"
+description = "Browser cache TTL in seconds (0 = respect origin headers)"
+default = 14400
+min = 0
+max = 31536000
+group = "cache"
+
+[settings.schema.edge_cache_ttl]
+setting_type = "integer"
+label = "Edge Cache TTL"
+description = "Edge cache TTL in seconds"
+default = 86400
+min = 0
+max = 2592000
+group = "cache"
+
+[settings.schema.cache_by_device_type]
+setting_type = "boolean"
+label = "Cache by Device Type"
+description = "Separate cache for mobile and desktop"
+default = false
+group = "cache"
+
+[settings.schema.cache_deception_armor]
+setting_type = "boolean"
+label = "Cache Deception Armor"
+description = "Protect against cache deception attacks"
+default = true
+group = "cache"
+
+# Security Settings
+[settings.schema.security_level]
+setting_type = "select"
+label = "Security Level"
+description = "Security level for visitor verification"
+options = ["off", "essentially_off", "low", "medium", "high", "under_attack"]
+default = "medium"
+group = "security"
+
+[settings.schema.waf_enabled]
+setting_type = "boolean"
+label = "Web Application Firewall"
+description = "Enable Cloudflare WAF for security protection"
+default = true
+group = "security"
+
+[settings.schema.bot_management]
+setting_type = "boolean"
+label = "Bot Management"
+description = "Enable bot detection and management"
+default = true
+group = "security"
+
+[settings.schema.ddos_protection]
+setting_type = "boolean"
+label = "DDoS Protection"
+description = "Enable advanced DDoS protection"
+default = true
+group = "security"
+
+[settings.schema.challenge_passage]
+setting_type = "integer"
+label = "Challenge Passage (seconds)"
+description = "Time before visitors need to re-verify"
+default = 1800
+min = 300
+max = 604800
+group = "security"
+
+[settings.schema.browser_integrity_check]
+setting_type = "boolean"
+label = "Browser Integrity Check"
+description = "Check browser headers for threats"
+default = true
+group = "security"
+
+# SSL/TLS Settings
+[settings.schema.ssl_mode]
+setting_type = "select"
+label = "SSL Mode"
+description = "SSL/TLS encryption mode"
+options = ["off", "flexible", "full", "strict"]
+default = "strict"
+group = "ssl"
+
+[settings.schema.always_use_https]
+setting_type = "boolean"
+label = "Always Use HTTPS"
+description = "Redirect all HTTP requests to HTTPS"
+default = true
+group = "ssl"
+
+[settings.schema.min_tls_version]
+setting_type = "select"
+label = "Minimum TLS Version"
+description = "Minimum TLS version allowed"
+options = ["1.0", "1.1", "1.2", "1.3"]
+default = "1.2"
+group = "ssl"
+
+[settings.schema.automatic_https_rewrites]
+setting_type = "boolean"
+label = "Automatic HTTPS Rewrites"
+description = "Rewrite HTTP links to HTTPS"
+default = true
+group = "ssl"
+
+[settings.schema.opportunistic_encryption]
+setting_type = "boolean"
+label = "Opportunistic Encryption"
+description = "Enable HTTP/2 opportunistic encryption"
+default = true
+group = "ssl"
+
+# Performance Settings
+[settings.schema.argo_smart_routing]
+setting_type = "boolean"
+label = "Argo Smart Routing"
+description = "Route traffic through fastest paths (additional cost)"
+default = false
+group = "performance"
+
+[settings.schema.argo_tiered_caching]
+setting_type = "boolean"
+label = "Argo Tiered Caching"
+description = "Reduce origin requests with tiered caching"
+default = false
+group = "performance"
+
+[settings.schema.http2]
+setting_type = "boolean"
+label = "HTTP/2"
+description = "Enable HTTP/2 protocol"
+default = true
+group = "performance"
+
+[settings.schema.http3]
+setting_type = "boolean"
+label = "HTTP/3 (QUIC)"
+description = "Enable HTTP/3 with QUIC protocol"
+default = true
+group = "performance"
+
+[settings.schema.zero_rtt]
+setting_type = "boolean"
+label = "0-RTT Connection Resumption"
+description = "Enable 0-RTT for faster connections"
+default = true
+group = "performance"
+
+[settings.schema.websockets]
+setting_type = "boolean"
+label = "WebSockets"
+description = "Allow WebSocket connections"
+default = true
+group = "performance"
+
+# Image Optimization
+[settings.schema.polish]
+setting_type = "select"
+label = "Polish (Image Optimization)"
+description = "Optimize images on the fly"
+options = ["off", "lossless", "lossy"]
+default = "lossy"
+group = "images"
+
+[settings.schema.webp]
+setting_type = "boolean"
+label = "WebP Conversion"
+description = "Convert images to WebP format"
+default = true
+group = "images"
+
+[settings.schema.mirage]
+setting_type = "boolean"
+label = "Mirage"
+description = "Optimize image loading for mobile"
+default = true
+group = "images"
+
+[settings.schema.image_resizing]
+setting_type = "boolean"
+label = "Image Resizing"
+description = "Enable on-the-fly image resizing"
+default = true
+group = "images"
+
+# Workers Settings
+[settings.schema.workers_enabled]
+setting_type = "boolean"
+label = "Enable Workers"
+description = "Enable Cloudflare Workers integration"
+default = true
+group = "workers"
+
+[settings.schema.workers_kv_enabled]
+setting_type = "boolean"
+label = "Workers KV"
+description = "Enable Workers KV storage"
+default = true
+group = "workers"
+
+[settings.schema.workers_kv_namespace]
+setting_type = "string"
+label = "KV Namespace ID"
+description = "Workers KV namespace for RustPress data"
+required = false
+group = "workers"
+
+# R2 Storage Settings
+[settings.schema.r2_enabled]
+setting_type = "boolean"
+label = "Enable R2 Storage"
+description = "Use Cloudflare R2 for media storage"
+default = false
+group = "r2"
+
+[settings.schema.r2_bucket]
+setting_type = "string"
+label = "R2 Bucket Name"
+description = "Name of the R2 bucket for media files"
+required = false
+group = "r2"
+
+[settings.schema.r2_access_key_id]
+setting_type = "string"
+label = "R2 Access Key ID"
+description = "R2 API access key ID"
+required = false
+group = "r2"
+
+[settings.schema.r2_secret_access_key]
+setting_type = "password"
+label = "R2 Secret Access Key"
+description = "R2 API secret access key"
+required = false
+group = "r2"
+
+[settings.schema.r2_public_url]
+setting_type = "url"
+label = "R2 Public URL"
+description = "Public URL for R2 bucket (custom domain or r2.dev)"
+required = false
+group = "r2"
+
+# D1 Database Settings
+[settings.schema.d1_enabled]
+setting_type = "boolean"
+label = "Enable D1 Database"
+description = "Enable Cloudflare D1 for edge database"
+default = false
+group = "d1"
+
+[settings.schema.d1_database_id]
+setting_type = "string"
+label = "D1 Database ID"
+description = "D1 database identifier"
+required = false
+group = "d1"
+
+# Stream Settings
+[settings.schema.stream_enabled]
+setting_type = "boolean"
+label = "Enable Stream"
+description = "Use Cloudflare Stream for video hosting"
+default = false
+group = "stream"
+
+# Analytics
+[settings.schema.analytics_enabled]
+setting_type = "boolean"
+label = "Enable Analytics"
+description = "Enable Cloudflare Web Analytics"
+default = true
+group = "analytics"
+
+[settings.schema.analytics_token]
+setting_type = "string"
+label = "Analytics Token"
+description = "Cloudflare Web Analytics site token"
+required = false
+group = "analytics"
+
+# DNS Settings
+[settings.schema.dns_management]
+setting_type = "boolean"
+label = "DNS Management"
+description = "Allow managing DNS records from RustPress"
+default = true
+group = "dns"
+
+[settings.schema.auto_dns_sync]
+setting_type = "boolean"
+label = "Auto DNS Sync"
+description = "Automatically sync DNS records"
+default = false
+group = "dns"
+
+# =============================================================================
+# API ENDPOINTS
+# =============================================================================
+
+# Dashboard & Overview
+[[api.endpoints]]
+path = "/status"
+method = "GET"
+handler = "get_cloudflare_status"
+permission = "manage_cloudflare"
+description = "Get Cloudflare connection status and zone info"
+
+[[api.endpoints]]
+path = "/analytics"
+method = "GET"
+handler = "get_analytics"
+permission = "view_cloudflare_analytics"
+description = "Get Cloudflare analytics data"
+
+[[api.endpoints]]
+path = "/analytics/realtime"
+method = "GET"
+handler = "get_realtime_analytics"
+permission = "view_cloudflare_analytics"
+description = "Get real-time analytics from Cloudflare"
+
+# Cache Management
+[[api.endpoints]]
+path = "/cache/purge"
+method = "POST"
+handler = "purge_cache"
+permission = "manage_cloudflare_cache"
+description = "Purge Cloudflare cache"
+
+[[api.endpoints]]
+path = "/cache/purge/all"
+method = "POST"
+handler = "purge_all_cache"
+permission = "manage_cloudflare_cache"
+description = "Purge entire Cloudflare cache"
+
+[[api.endpoints]]
+path = "/cache/purge/tags"
+method = "POST"
+handler = "purge_cache_by_tags"
+permission = "manage_cloudflare_cache"
+description = "Purge cache by cache tags"
+
+[[api.endpoints]]
+path = "/cache/purge/prefix"
+method = "POST"
+handler = "purge_cache_by_prefix"
+permission = "manage_cloudflare_cache"
+description = "Purge cache by URL prefix"
+
+[[api.endpoints]]
+path = "/cache/status"
+method = "GET"
+handler = "get_cache_status"
+permission = "view_cloudflare_cache"
+description = "Get cache statistics"
+
+# DNS Management
+[[api.endpoints]]
+path = "/dns/records"
+method = "GET"
+handler = "list_dns_records"
+permission = "manage_cloudflare_dns"
+description = "List all DNS records"
+
+[[api.endpoints]]
+path = "/dns/records"
+method = "POST"
+handler = "create_dns_record"
+permission = "manage_cloudflare_dns"
+description = "Create a new DNS record"
+
+[[api.endpoints]]
+path = "/dns/records/:id"
+method = "PUT"
+handler = "update_dns_record"
+permission = "manage_cloudflare_dns"
+description = "Update a DNS record"
+
+[[api.endpoints]]
+path = "/dns/records/:id"
+method = "DELETE"
+handler = "delete_dns_record"
+permission = "manage_cloudflare_dns"
+description = "Delete a DNS record"
+
+[[api.endpoints]]
+path = "/dns/import"
+method = "POST"
+handler = "import_dns_records"
+permission = "manage_cloudflare_dns"
+description = "Import DNS records from zone file"
+
+[[api.endpoints]]
+path = "/dns/export"
+method = "GET"
+handler = "export_dns_records"
+permission = "manage_cloudflare_dns"
+description = "Export DNS records as zone file"
+
+# SSL/TLS
+[[api.endpoints]]
+path = "/ssl/status"
+method = "GET"
+handler = "get_ssl_status"
+permission = "view_cloudflare_ssl"
+description = "Get SSL certificate status"
+
+[[api.endpoints]]
+path = "/ssl/certificates"
+method = "GET"
+handler = "list_certificates"
+permission = "manage_cloudflare_ssl"
+description = "List SSL certificates"
+
+[[api.endpoints]]
+path = "/ssl/certificates/order"
+method = "POST"
+handler = "order_certificate"
+permission = "manage_cloudflare_ssl"
+description = "Order a new SSL certificate"
+
+[[api.endpoints]]
+path = "/ssl/verify"
+method = "POST"
+handler = "verify_ssl"
+permission = "manage_cloudflare_ssl"
+description = "Verify SSL configuration"
+
+# Security / WAF
+[[api.endpoints]]
+path = "/security/waf/rules"
+method = "GET"
+handler = "list_waf_rules"
+permission = "manage_cloudflare_security"
+description = "List WAF rules"
+
+[[api.endpoints]]
+path = "/security/waf/rules"
+method = "POST"
+handler = "create_waf_rule"
+permission = "manage_cloudflare_security"
+description = "Create a custom WAF rule"
+
+[[api.endpoints]]
+path = "/security/waf/rules/:id"
+method = "PUT"
+handler = "update_waf_rule"
+permission = "manage_cloudflare_security"
+description = "Update a WAF rule"
+
+[[api.endpoints]]
+path = "/security/waf/rules/:id"
+method = "DELETE"
+handler = "delete_waf_rule"
+permission = "manage_cloudflare_security"
+description = "Delete a WAF rule"
+
+[[api.endpoints]]
+path = "/security/firewall/rules"
+method = "GET"
+handler = "list_firewall_rules"
+permission = "manage_cloudflare_security"
+description = "List firewall rules"
+
+[[api.endpoints]]
+path = "/security/firewall/rules"
+method = "POST"
+handler = "create_firewall_rule"
+permission = "manage_cloudflare_security"
+description = "Create a firewall rule"
+
+[[api.endpoints]]
+path = "/security/events"
+method = "GET"
+handler = "get_security_events"
+permission = "view_cloudflare_security"
+description = "Get security events and threats"
+
+[[api.endpoints]]
+path = "/security/under-attack"
+method = "POST"
+handler = "toggle_under_attack_mode"
+permission = "manage_cloudflare_security"
+description = "Toggle Under Attack mode"
+
+[[api.endpoints]]
+path = "/security/ip-access/rules"
+method = "GET"
+handler = "list_ip_access_rules"
+permission = "manage_cloudflare_security"
+description = "List IP access rules"
+
+[[api.endpoints]]
+path = "/security/ip-access/rules"
+method = "POST"
+handler = "create_ip_access_rule"
+permission = "manage_cloudflare_security"
+description = "Create IP access rule (block/allow)"
+
+[[api.endpoints]]
+path = "/security/bot-management"
+method = "GET"
+handler = "get_bot_management_config"
+permission = "manage_cloudflare_security"
+description = "Get bot management configuration"
+
+[[api.endpoints]]
+path = "/security/bot-management"
+method = "PUT"
+handler = "update_bot_management_config"
+permission = "manage_cloudflare_security"
+description = "Update bot management configuration"
+
+# Page Rules
+[[api.endpoints]]
+path = "/page-rules"
+method = "GET"
+handler = "list_page_rules"
+permission = "manage_cloudflare_rules"
+description = "List page rules"
+
+[[api.endpoints]]
+path = "/page-rules"
+method = "POST"
+handler = "create_page_rule"
+permission = "manage_cloudflare_rules"
+description = "Create a page rule"
+
+[[api.endpoints]]
+path = "/page-rules/:id"
+method = "PUT"
+handler = "update_page_rule"
+permission = "manage_cloudflare_rules"
+description = "Update a page rule"
+
+[[api.endpoints]]
+path = "/page-rules/:id"
+method = "DELETE"
+handler = "delete_page_rule"
+permission = "manage_cloudflare_rules"
+description = "Delete a page rule"
+
+# Transform Rules
+[[api.endpoints]]
+path = "/transform-rules"
+method = "GET"
+handler = "list_transform_rules"
+permission = "manage_cloudflare_rules"
+description = "List transform rules"
+
+[[api.endpoints]]
+path = "/transform-rules"
+method = "POST"
+handler = "create_transform_rule"
+permission = "manage_cloudflare_rules"
+description = "Create a transform rule"
+
+# Workers
+[[api.endpoints]]
+path = "/workers"
+method = "GET"
+handler = "list_workers"
+permission = "manage_cloudflare_workers"
+description = "List Cloudflare Workers"
+
+[[api.endpoints]]
+path = "/workers"
+method = "POST"
+handler = "create_worker"
+permission = "manage_cloudflare_workers"
+description = "Deploy a new Worker"
+
+[[api.endpoints]]
+path = "/workers/:name"
+method = "GET"
+handler = "get_worker"
+permission = "manage_cloudflare_workers"
+description = "Get Worker details and code"
+
+[[api.endpoints]]
+path = "/workers/:name"
+method = "PUT"
+handler = "update_worker"
+permission = "manage_cloudflare_workers"
+description = "Update Worker code"
+
+[[api.endpoints]]
+path = "/workers/:name"
+method = "DELETE"
+handler = "delete_worker"
+permission = "manage_cloudflare_workers"
+description = "Delete a Worker"
+
+[[api.endpoints]]
+path = "/workers/:name/routes"
+method = "GET"
+handler = "list_worker_routes"
+permission = "manage_cloudflare_workers"
+description = "List Worker routes"
+
+[[api.endpoints]]
+path = "/workers/:name/routes"
+method = "POST"
+handler = "create_worker_route"
+permission = "manage_cloudflare_workers"
+description = "Create Worker route"
+
+[[api.endpoints]]
+path = "/workers/kv/namespaces"
+method = "GET"
+handler = "list_kv_namespaces"
+permission = "manage_cloudflare_workers"
+description = "List KV namespaces"
+
+[[api.endpoints]]
+path = "/workers/kv/namespaces"
+method = "POST"
+handler = "create_kv_namespace"
+permission = "manage_cloudflare_workers"
+description = "Create KV namespace"
+
+[[api.endpoints]]
+path = "/workers/kv/:namespace/keys"
+method = "GET"
+handler = "list_kv_keys"
+permission = "manage_cloudflare_workers"
+description = "List keys in KV namespace"
+
+[[api.endpoints]]
+path = "/workers/kv/:namespace/values/:key"
+method = "GET"
+handler = "get_kv_value"
+permission = "manage_cloudflare_workers"
+description = "Get KV value"
+
+[[api.endpoints]]
+path = "/workers/kv/:namespace/values/:key"
+method = "PUT"
+handler = "set_kv_value"
+permission = "manage_cloudflare_workers"
+description = "Set KV value"
+
+[[api.endpoints]]
+path = "/workers/kv/:namespace/values/:key"
+method = "DELETE"
+handler = "delete_kv_value"
+permission = "manage_cloudflare_workers"
+description = "Delete KV value"
+
+# R2 Storage
+[[api.endpoints]]
+path = "/r2/buckets"
+method = "GET"
+handler = "list_r2_buckets"
+permission = "manage_cloudflare_r2"
+description = "List R2 buckets"
+
+[[api.endpoints]]
+path = "/r2/buckets"
+method = "POST"
+handler = "create_r2_bucket"
+permission = "manage_cloudflare_r2"
+description = "Create R2 bucket"
+
+[[api.endpoints]]
+path = "/r2/buckets/:bucket/objects"
+method = "GET"
+handler = "list_r2_objects"
+permission = "manage_cloudflare_r2"
+description = "List objects in R2 bucket"
+
+[[api.endpoints]]
+path = "/r2/buckets/:bucket/objects/:key"
+method = "PUT"
+handler = "upload_r2_object"
+permission = "manage_cloudflare_r2"
+description = "Upload object to R2"
+
+[[api.endpoints]]
+path = "/r2/buckets/:bucket/objects/:key"
+method = "DELETE"
+handler = "delete_r2_object"
+permission = "manage_cloudflare_r2"
+description = "Delete R2 object"
+
+[[api.endpoints]]
+path = "/r2/sync"
+method = "POST"
+handler = "sync_media_to_r2"
+permission = "manage_cloudflare_r2"
+description = "Sync RustPress media to R2"
+
+# D1 Database
+[[api.endpoints]]
+path = "/d1/databases"
+method = "GET"
+handler = "list_d1_databases"
+permission = "manage_cloudflare_d1"
+description = "List D1 databases"
+
+[[api.endpoints]]
+path = "/d1/databases"
+method = "POST"
+handler = "create_d1_database"
+permission = "manage_cloudflare_d1"
+description = "Create D1 database"
+
+[[api.endpoints]]
+path = "/d1/databases/:id/query"
+method = "POST"
+handler = "query_d1_database"
+permission = "manage_cloudflare_d1"
+description = "Execute query on D1"
+
+# Stream
+[[api.endpoints]]
+path = "/stream/videos"
+method = "GET"
+handler = "list_stream_videos"
+permission = "manage_cloudflare_stream"
+description = "List Stream videos"
+
+[[api.endpoints]]
+path = "/stream/videos"
+method = "POST"
+handler = "upload_stream_video"
+permission = "manage_cloudflare_stream"
+description = "Upload video to Stream"
+
+[[api.endpoints]]
+path = "/stream/videos/:id"
+method = "GET"
+handler = "get_stream_video"
+permission = "manage_cloudflare_stream"
+description = "Get video details"
+
+[[api.endpoints]]
+path = "/stream/videos/:id"
+method = "DELETE"
+handler = "delete_stream_video"
+permission = "manage_cloudflare_stream"
+description = "Delete Stream video"
+
+[[api.endpoints]]
+path = "/stream/live-inputs"
+method = "GET"
+handler = "list_live_inputs"
+permission = "manage_cloudflare_stream"
+description = "List live streaming inputs"
+
+[[api.endpoints]]
+path = "/stream/live-inputs"
+method = "POST"
+handler = "create_live_input"
+permission = "manage_cloudflare_stream"
+description = "Create live streaming input"
+
+# Zone Settings
+[[api.endpoints]]
+path = "/zone/settings"
+method = "GET"
+handler = "get_zone_settings"
+permission = "manage_cloudflare"
+description = "Get all zone settings"
+
+[[api.endpoints]]
+path = "/zone/settings"
+method = "PATCH"
+handler = "update_zone_settings"
+permission = "manage_cloudflare"
+description = "Update zone settings"
+
+[[api.endpoints]]
+path = "/zone/development-mode"
+method = "POST"
+handler = "toggle_development_mode"
+permission = "manage_cloudflare"
+description = "Toggle development mode"
+
+# Speed Optimization
+[[api.endpoints]]
+path = "/speed/test"
+method = "POST"
+handler = "run_speed_test"
+permission = "view_cloudflare_analytics"
+description = "Run speed test via Observatory"
+
+[[api.endpoints]]
+path = "/speed/recommendations"
+method = "GET"
+handler = "get_speed_recommendations"
+permission = "view_cloudflare_analytics"
+description = "Get speed optimization recommendations"
+
+# =============================================================================
+# ADMIN PAGES
+# =============================================================================
+
+[[admin.pages]]
+id = "cloudflare-dashboard"
+title = "Cloudflare Dashboard"
+handler = "render_dashboard"
+capability = "manage_cloudflare"
+icon = "cloud"
+parent = "cloudflare"
+order = 1
+
+[[admin.pages]]
+id = "cloudflare-cache"
+title = "Cache Management"
+handler = "render_cache_page"
+capability = "manage_cloudflare_cache"
+parent = "cloudflare"
+order = 2
+
+[[admin.pages]]
+id = "cloudflare-dns"
+title = "DNS Management"
+handler = "render_dns_page"
+capability = "manage_cloudflare_dns"
+parent = "cloudflare"
+order = 3
+
+[[admin.pages]]
+id = "cloudflare-security"
+title = "Security & WAF"
+handler = "render_security_page"
+capability = "manage_cloudflare_security"
+parent = "cloudflare"
+order = 4
+
+[[admin.pages]]
+id = "cloudflare-ssl"
+title = "SSL/TLS"
+handler = "render_ssl_page"
+capability = "manage_cloudflare_ssl"
+parent = "cloudflare"
+order = 5
+
+[[admin.pages]]
+id = "cloudflare-performance"
+title = "Performance"
+handler = "render_performance_page"
+capability = "manage_cloudflare"
+parent = "cloudflare"
+order = 6
+
+[[admin.pages]]
+id = "cloudflare-workers"
+title = "Workers & KV"
+handler = "render_workers_page"
+capability = "manage_cloudflare_workers"
+parent = "cloudflare"
+order = 7
+
+[[admin.pages]]
+id = "cloudflare-r2"
+title = "R2 Storage"
+handler = "render_r2_page"
+capability = "manage_cloudflare_r2"
+parent = "cloudflare"
+order = 8
+
+[[admin.pages]]
+id = "cloudflare-stream"
+title = "Stream Video"
+handler = "render_stream_page"
+capability = "manage_cloudflare_stream"
+parent = "cloudflare"
+order = 9
+
+[[admin.pages]]
+id = "cloudflare-analytics"
+title = "Analytics"
+handler = "render_analytics_page"
+capability = "view_cloudflare_analytics"
+parent = "cloudflare"
+order = 10
+
+[[admin.pages]]
+id = "cloudflare-rules"
+title = "Page Rules"
+handler = "render_rules_page"
+capability = "manage_cloudflare_rules"
+parent = "cloudflare"
+order = 11
+
+[[admin.pages]]
+id = "cloudflare-settings"
+title = "Settings"
+handler = "render_settings_page"
+capability = "manage_cloudflare"
+parent = "cloudflare"
+order = 99
+
+# =============================================================================
+# ADMIN MENU
+# =============================================================================
+
+[[admin.menu]]
+id = "cloudflare"
+title = "Cloudflare"
+icon = "cloud"
+capability = "manage_cloudflare"
+position = 30
+
+# =============================================================================
+# DASHBOARD WIDGETS
+# =============================================================================
+
+[[admin.widgets]]
+id = "cloudflare-overview"
+title = "Cloudflare Status"
+handler = "render_overview_widget"
+capability = "manage_cloudflare"
+position = "normal"
+priority = 10
+
+[[admin.widgets]]
+id = "cloudflare-traffic"
+title = "Cloudflare Traffic"
+handler = "render_traffic_widget"
+capability = "view_cloudflare_analytics"
+position = "normal"
+priority = 20
+
+[[admin.widgets]]
+id = "cloudflare-threats"
+title = "Security Threats"
+handler = "render_threats_widget"
+capability = "view_cloudflare_security"
+position = "side"
+priority = 10
+
+[[admin.widgets]]
+id = "cloudflare-cache-stats"
+title = "Cache Statistics"
+handler = "render_cache_stats_widget"
+capability = "view_cloudflare_cache"
+position = "side"
+priority = 20
+
+# =============================================================================
+# HOOKS
+# =============================================================================
+
+[hooks]
+on_activate = "on_plugin_activate"
+on_deactivate = "on_plugin_deactivate"
+on_init = "on_plugin_init"
+
+# =============================================================================
+# CRON JOBS
+# =============================================================================
+
+[[cron]]
+name = "cloudflare-analytics-sync"
+handler = "sync_analytics"
+schedule = "hourly"
+description = "Sync Cloudflare analytics data"
+
+[[cron]]
+name = "cloudflare-cache-warmup"
+handler = "warmup_cache"
+schedule = "daily"
+description = "Warm up Cloudflare cache for popular pages"
+
+[[cron]]
+name = "cloudflare-ssl-check"
+handler = "check_ssl_expiry"
+schedule = "daily"
+description = "Check SSL certificate expiry"
+
+[[cron]]
+name = "cloudflare-security-report"
+handler = "generate_security_report"
+schedule = "weekly"
+description = "Generate weekly security report"
+
+# =============================================================================
+# CLI COMMANDS
+# =============================================================================
+
+[[cli]]
+name = "cloudflare"
+description = "Cloudflare management commands"
+
+[[cli.subcommands]]
+name = "purge"
+handler = "cli_purge_cache"
+description = "Purge Cloudflare cache"
+
+[[cli.subcommands]]
+name = "dns"
+handler = "cli_dns_management"
+description = "Manage DNS records"
+
+[[cli.subcommands]]
+name = "workers"
+handler = "cli_workers_management"
+description = "Manage Cloudflare Workers"
+
+[[cli.subcommands]]
+name = "status"
+handler = "cli_status"
+description = "Show Cloudflare connection status"
+
+[[cli.subcommands]]
+name = "under-attack"
+handler = "cli_under_attack"
+description = "Toggle Under Attack mode"
+
+# =============================================================================
+# MIGRATIONS
+# =============================================================================
+
+[migrations]
+directory = "migrations"
+
+# =============================================================================
+# ASSETS
+# =============================================================================
+
+[[assets.styles]]
+handle = "rustcloudflare-admin"
+src = "assets/css/admin.css"
+admin_only = true
+
+[[assets.scripts]]
+handle = "rustcloudflare-admin"
+src = "assets/js/admin.js"
+admin_only = true
+dependencies = ["react", "react-dom"]
+
+# =============================================================================
+# PERMISSIONS
+# =============================================================================
+
+[permissions]
+manage_cloudflare = "Full Cloudflare management access"
+view_cloudflare_analytics = "View Cloudflare analytics"
+manage_cloudflare_cache = "Manage Cloudflare cache"
+view_cloudflare_cache = "View cache statistics"
+manage_cloudflare_dns = "Manage DNS records"
+manage_cloudflare_security = "Manage security settings and WAF"
+view_cloudflare_security = "View security events"
+manage_cloudflare_ssl = "Manage SSL/TLS settings"
+view_cloudflare_ssl = "View SSL status"
+manage_cloudflare_workers = "Manage Cloudflare Workers"
+manage_cloudflare_r2 = "Manage R2 storage"
+manage_cloudflare_d1 = "Manage D1 database"
+manage_cloudflare_stream = "Manage Cloudflare Stream"
+manage_cloudflare_rules = "Manage page and transform rules"

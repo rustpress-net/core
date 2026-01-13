@@ -2,7 +2,6 @@
 
 use crate::backend::CacheBackend;
 use crate::key::CacheKey;
-use async_trait::async_trait;
 use rustpress_core::error::{Error, Result};
 use serde::{de::DeserializeOwned, Serialize};
 use std::sync::Arc;

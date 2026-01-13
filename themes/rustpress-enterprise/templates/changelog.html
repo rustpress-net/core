@@ -1,0 +1,292 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Changelog - {{ site.title }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-hero changelog-hero">
+  <div class="hero-particles"></div>
+  <div class="container">
+    <div class="page-hero-content" data-animate="fade-up">
+      <span class="hero-badge">
+        <span class="badge-dot"></span>
+        Changelog
+      </span>
+      <h1 class="page-hero-title">
+        What's <span class="gradient-text">new</span>
+      </h1>
+      <p class="page-hero-description">
+        Stay up to date with all the latest features, improvements, and bug fixes.
+        We ship updates weekly.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- Changelog Subscribe -->
+<section class="changelog-subscribe-section">
+  <div class="container">
+    <div class="changelog-subscribe" data-animate="fade-up">
+      <div class="subscribe-content">
+        <h4>Get notified of updates</h4>
+        <p>Subscribe to receive product updates in your inbox.</p>
+      </div>
+      <form class="subscribe-form">
+        <input type="email" placeholder="Enter your email" required>
+        <button type="submit" class="btn btn--primary">Subscribe</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- Changelog Timeline -->
+<section class="changelog-section">
+  <div class="container">
+    <div class="changelog-timeline">
+      <!-- Latest Release -->
+      <div class="changelog-entry changelog-entry--latest" data-animate="fade-up">
+        <div class="changelog-date">
+          <span class="date-month">Dec</span>
+          <span class="date-day">15</span>
+          <span class="date-year">2024</span>
+        </div>
+        <div class="changelog-content">
+          <div class="changelog-header">
+            <span class="version-tag">v2.8.0</span>
+            <span class="release-type new">New Feature</span>
+          </div>
+          <h3>AI-Powered Analytics</h3>
+          <p>Introducing our new AI-powered analytics suite with predictive insights and automated anomaly detection.</p>
+          <ul class="changelog-features">
+            <li>
+              <span class="feature-type new">New</span>
+              <span>Predictive analytics powered by machine learning</span>
+            </li>
+            <li>
+              <span class="feature-type new">New</span>
+              <span>Automated anomaly detection with real-time alerts</span>
+            </li>
+            <li>
+              <span class="feature-type new">New</span>
+              <span>AI-generated insights and recommendations</span>
+            </li>
+            <li>
+              <span class="feature-type improved">Improved</span>
+              <span>Dashboard performance improvements (2x faster)</span>
+            </li>
+          </ul>
+          <div class="changelog-links">
+            <a href="/blog/ai-powered-analytics" class="changelog-link">Read the blog post</a>
+            <a href="/docs/analytics" class="changelog-link">View documentation</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Previous Release -->
+      <div class="changelog-entry" data-animate="fade-up">
+        <div class="changelog-date">
+          <span class="date-month">Dec</span>
+          <span class="date-day">8</span>
+          <span class="date-year">2024</span>
+        </div>
+        <div class="changelog-content">
+          <div class="changelog-header">
+            <span class="version-tag">v2.7.2</span>
+            <span class="release-type improved">Improvements</span>
+          </div>
+          <h3>Performance & Reliability</h3>
+          <p>This release focuses on performance improvements and bug fixes based on customer feedback.</p>
+          <ul class="changelog-features">
+            <li>
+              <span class="feature-type improved">Improved</span>
+              <span>API response times reduced by 40%</span>
+            </li>
+            <li>
+              <span class="feature-type improved">Improved</span>
+              <span>Webhook delivery reliability improvements</span>
+            </li>
+            <li>
+              <span class="feature-type fixed">Fixed</span>
+              <span>Fixed issue with CSV exports in Safari</span>
+            </li>
+            <li>
+              <span class="feature-type fixed">Fixed</span>
+              <span>Fixed timezone handling in scheduled workflows</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Another Release -->
+      <div class="changelog-entry" data-animate="fade-up">
+        <div class="changelog-date">
+          <span class="date-month">Dec</span>
+          <span class="date-day">1</span>
+          <span class="date-year">2024</span>
+        </div>
+        <div class="changelog-content">
+          <div class="changelog-header">
+            <span class="version-tag">v2.7.0</span>
+            <span class="release-type new">New Feature</span>
+          </div>
+          <h3>Custom Dashboards</h3>
+          <p>Create fully customizable dashboards with drag-and-drop widgets and sharing capabilities.</p>
+          <ul class="changelog-features">
+            <li>
+              <span class="feature-type new">New</span>
+              <span>Drag-and-drop dashboard builder</span>
+            </li>
+            <li>
+              <span class="feature-type new">New</span>
+              <span>15+ new widget types including charts, tables, and KPIs</span>
+            </li>
+            <li>
+              <span class="feature-type new">New</span>
+              <span>Dashboard sharing with granular permissions</span>
+            </li>
+            <li>
+              <span class="feature-type new">New</span>
+              <span>Scheduled dashboard email reports</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- November Releases -->
+      <div class="changelog-entry" data-animate="fade-up">
+        <div class="changelog-date">
+          <span class="date-month">Nov</span>
+          <span class="date-day">22</span>
+          <span class="date-year">2024</span>
+        </div>
+        <div class="changelog-content">
+          <div class="changelog-header">
+            <span class="version-tag">v2.6.5</span>
+            <span class="release-type improved">Improvements</span>
+          </div>
+          <h3>Integration Updates</h3>
+          <p>New integrations and improvements to existing connectors.</p>
+          <ul class="changelog-features">
+            <li>
+              <span class="feature-type new">New</span>
+              <span>HubSpot CRM integration</span>
+            </li>
+            <li>
+              <span class="feature-type new">New</span>
+              <span>Notion integration</span>
+            </li>
+            <li>
+              <span class="feature-type improved">Improved</span>
+              <span>Slack integration now supports threaded messages</span>
+            </li>
+            <li>
+              <span class="feature-type improved">Improved</span>
+              <span>Salesforce sync performance improvements</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="changelog-entry" data-animate="fade-up">
+        <div class="changelog-date">
+          <span class="date-month">Nov</span>
+          <span class="date-day">15</span>
+          <span class="date-year">2024</span>
+        </div>
+        <div class="changelog-content">
+          <div class="changelog-header">
+            <span class="version-tag">v2.6.0</span>
+            <span class="release-type new">New Feature</span>
+          </div>
+          <h3>Advanced Workflow Builder</h3>
+          <p>Major update to our workflow automation engine with new capabilities.</p>
+          <ul class="changelog-features">
+            <li>
+              <span class="feature-type new">New</span>
+              <span>Conditional branching with if/else logic</span>
+            </li>
+            <li>
+              <span class="feature-type new">New</span>
+              <span>Loop actions for batch processing</span>
+            </li>
+            <li>
+              <span class="feature-type new">New</span>
+              <span>Error handling and retry policies</span>
+            </li>
+            <li>
+              <span class="feature-type new">New</span>
+              <span>Workflow templates library (50+ templates)</span>
+            </li>
+            <li>
+              <span class="feature-type improved">Improved</span>
+              <span>Visual workflow builder redesign</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="changelog-entry" data-animate="fade-up">
+        <div class="changelog-date">
+          <span class="date-month">Nov</span>
+          <span class="date-day">8</span>
+          <span class="date-year">2024</span>
+        </div>
+        <div class="changelog-content">
+          <div class="changelog-header">
+            <span class="version-tag">v2.5.8</span>
+            <span class="release-type fixed">Bug Fixes</span>
+          </div>
+          <h3>Stability Improvements</h3>
+          <p>Various bug fixes and stability improvements.</p>
+          <ul class="changelog-features">
+            <li>
+              <span class="feature-type fixed">Fixed</span>
+              <span>Fixed memory leak in long-running workflows</span>
+            </li>
+            <li>
+              <span class="feature-type fixed">Fixed</span>
+              <span>Fixed pagination issue in record list API</span>
+            </li>
+            <li>
+              <span class="feature-type fixed">Fixed</span>
+              <span>Fixed SSO login redirect issues</span>
+            </li>
+            <li>
+              <span class="feature-type fixed">Fixed</span>
+              <span>Fixed date picker timezone handling</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Load More -->
+      <div class="changelog-load-more" data-animate="fade-up">
+        <button class="btn btn--outline btn--lg">
+          Load Older Releases
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Roadmap CTA -->
+<section class="roadmap-cta-section">
+  <div class="container">
+    <div class="roadmap-cta glass-card" data-animate="fade-up">
+      <div class="roadmap-content">
+        <h3>Want to see what's coming next?</h3>
+        <p>Check out our public roadmap to see planned features and vote on what matters most to you.</p>
+        <a href="#" class="btn btn--primary btn--lg">
+          View Roadmap
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

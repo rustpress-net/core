@@ -136,6 +136,14 @@ pub async fn rate_limit(
         return next.run(request).await;
     }
 
+    // Check if path is exempt from rate limiting
+    let path = request.uri().path();
+    for exempt_path in &rate_limit.exempt_paths {
+        if path.starts_with(exempt_path) {
+            return next.run(request).await;
+        }
+    }
+
     // Simple rate limit check using cache
     let cache_key = format!("rate_limit:{}", client_ip);
     let current_count: u32 = state

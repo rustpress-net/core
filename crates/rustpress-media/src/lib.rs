@@ -81,6 +81,19 @@ pub enum MediaType {
     Other,
 }
 
+impl std::fmt::Display for MediaType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            MediaType::Image => write!(f, "image"),
+            MediaType::Video => write!(f, "video"),
+            MediaType::Audio => write!(f, "audio"),
+            MediaType::Document => write!(f, "document"),
+            MediaType::Archive => write!(f, "archive"),
+            MediaType::Other => write!(f, "other"),
+        }
+    }
+}
+
 impl MediaType {
     /// Determine media type from MIME type
     pub fn from_mime(mime: &str) -> Self {
@@ -109,7 +122,7 @@ impl MediaType {
 }
 
 /// Media item representing a file in the media library
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct MediaItem {
     /// Unique identifier
     pub id: Uuid,
@@ -221,7 +234,7 @@ impl MediaItem {
 }
 
 /// Media folder for organization
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, sqlx::FromRow)]
 pub struct MediaFolder {
     /// Folder ID
     pub id: Uuid,
@@ -324,25 +337,22 @@ impl MediaService {
 
     /// Get media item by ID
     pub async fn get(&self, id: Uuid) -> MediaResult<MediaItem> {
-        let media = sqlx::query_as!(
-            MediaItem,
+        let media: Option<MediaItem> = sqlx::query_as(
             r#"
             SELECT
                 id, filename, title, alt_text, caption, description,
-                media_type as "media_type: MediaType",
-                mime_type, file_size, path, url, thumbnail_url,
+                media_type, mime_type, file_size, path, url, thumbnail_url,
                 width, height, duration, file_hash, folder_id,
                 metadata, uploaded_by, created_at, updated_at
             FROM media_items
             WHERE id = $1
-            "#,
-            id
+            "#
         )
+        .bind(id)
         .fetch_optional(&self.pool)
-        .await?
-        .ok_or(MediaError::NotFound(id))?;
+        .await?;
 
-        Ok(media)
+        media.ok_or(MediaError::NotFound(id))
     }
 
     /// List media items with pagination
@@ -353,26 +363,24 @@ impl MediaService {
         limit: i64,
         offset: i64,
     ) -> MediaResult<Vec<MediaItem>> {
-        let media = sqlx::query_as!(
-            MediaItem,
+        let media: Vec<MediaItem> = sqlx::query_as(
             r#"
             SELECT
                 id, filename, title, alt_text, caption, description,
-                media_type as "media_type: MediaType",
-                mime_type, file_size, path, url, thumbnail_url,
+                media_type, mime_type, file_size, path, url, thumbnail_url,
                 width, height, duration, file_hash, folder_id,
                 metadata, uploaded_by, created_at, updated_at
             FROM media_items
             WHERE ($1::uuid IS NULL OR folder_id = $1)
-            AND ($2::media_type IS NULL OR media_type = $2)
+            AND ($2::text IS NULL OR media_type::text = $2)
             ORDER BY created_at DESC
             LIMIT $3 OFFSET $4
-            "#,
-            folder_id,
-            media_type as Option<MediaType>,
-            limit,
-            offset
+            "#
         )
+        .bind(folder_id)
+        .bind(media_type.map(|t| t.to_string()))
+        .bind(limit)
+        .bind(offset)
         .fetch_all(&self.pool)
         .await?;
 
@@ -383,13 +391,11 @@ impl MediaService {
     pub async fn search(&self, query: &str, limit: i64) -> MediaResult<Vec<MediaItem>> {
         let search_pattern = format!("%{}%", query);
 
-        let media = sqlx::query_as!(
-            MediaItem,
+        let media: Vec<MediaItem> = sqlx::query_as(
             r#"
             SELECT
                 id, filename, title, alt_text, caption, description,
-                media_type as "media_type: MediaType",
-                mime_type, file_size, path, url, thumbnail_url,
+                media_type, mime_type, file_size, path, url, thumbnail_url,
                 width, height, duration, file_hash, folder_id,
                 metadata, uploaded_by, created_at, updated_at
             FROM media_items
@@ -399,10 +405,10 @@ impl MediaService {
             OR caption ILIKE $1
             ORDER BY created_at DESC
             LIMIT $2
-            "#,
-            search_pattern,
-            limit
+            "#
         )
+        .bind(&search_pattern)
+        .bind(limit)
         .fetch_all(&self.pool)
         .await?;
 
@@ -411,30 +417,27 @@ impl MediaService {
 
     /// Update media item metadata
     pub async fn update(&self, id: Uuid, title: &str, alt_text: &str, caption: &str, description: &str) -> MediaResult<MediaItem> {
-        let media = sqlx::query_as!(
-            MediaItem,
+        let media: Option<MediaItem> = sqlx::query_as(
             r#"
             UPDATE media_items
             SET title = $2, alt_text = $3, caption = $4, description = $5, updated_at = NOW()
             WHERE id = $1
             RETURNING
                 id, filename, title, alt_text, caption, description,
-                media_type as "media_type: MediaType",
-                mime_type, file_size, path, url, thumbnail_url,
+                media_type, mime_type, file_size, path, url, thumbnail_url,
                 width, height, duration, file_hash, folder_id,
                 metadata, uploaded_by, created_at, updated_at
-            "#,
-            id,
-            title,
-            alt_text,
-            caption,
-            description
+            "#
         )
+        .bind(id)
+        .bind(title)
+        .bind(alt_text)
+        .bind(caption)
+        .bind(description)
         .fetch_optional(&self.pool)
-        .await?
-        .ok_or(MediaError::NotFound(id))?;
+        .await?;
 
-        Ok(media)
+        media.ok_or(MediaError::NotFound(id))
     }
 
     /// Delete media item
@@ -449,7 +452,8 @@ impl MediaService {
         }
 
         // Delete from database
-        sqlx::query!("DELETE FROM media_items WHERE id = $1", id)
+        sqlx::query("DELETE FROM media_items WHERE id = $1")
+            .bind(id)
             .execute(&self.pool)
             .await?;
 
@@ -458,13 +462,11 @@ impl MediaService {
 
     /// Move media to folder
     pub async fn move_to_folder(&self, id: Uuid, folder_id: Option<Uuid>) -> MediaResult<()> {
-        sqlx::query!(
-            "UPDATE media_items SET folder_id = $2, updated_at = NOW() WHERE id = $1",
-            id,
-            folder_id
-        )
-        .execute(&self.pool)
-        .await?;
+        sqlx::query("UPDATE media_items SET folder_id = $2, updated_at = NOW() WHERE id = $1")
+            .bind(id)
+            .bind(folder_id)
+            .execute(&self.pool)
+            .await?;
 
         Ok(())
     }

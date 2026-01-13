@@ -2,7 +2,7 @@
 //!
 //! DTOs are used for transferring data between layers.
 
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
 /// Standard API response wrapper
 #[derive(Debug, Serialize)]

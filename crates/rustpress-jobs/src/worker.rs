@@ -1,7 +1,7 @@
 //! Job worker implementation.
 
-use crate::job::{Job, JobHandler, JobPayload, JobStatus};
-use crate::queue::{JobQueue, Queue, QueueConfig};
+use crate::job::{Job, JobHandler, JobPayload};
+use crate::queue::{JobQueue, Queue};
 use async_trait::async_trait;
 use dashmap::DashMap;
 use parking_lot::RwLock;
@@ -10,6 +10,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 use tokio::sync::Semaphore;
+#[allow(unused_imports)]
 use uuid::Uuid;
 
 /// Worker for processing jobs from a queue

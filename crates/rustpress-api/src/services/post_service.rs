@@ -2,7 +2,7 @@
 
 use chrono::{DateTime, Utc};
 use rustpress_core::error::{Error, Result};
-use rustpress_core::service::{ListParams, ListResult, SortOrder};
+use rustpress_core::service::{ListParams, SortOrder};
 use rustpress_database::repository::posts::{PostRepository, PostRow};
 use rustpress_admin::functions::EventDispatcher;
 use serde::{Deserialize, Serialize};
@@ -338,7 +338,7 @@ impl PostService {
             _ => SortOrder::Desc,
         };
 
-        let list_params = ListParams {
+        let _list_params = ListParams {
             page,
             per_page,
             search: params.search.clone(),
@@ -790,16 +790,24 @@ impl PostService {
 
     /// Generate a URL-friendly slug from a title
     fn generate_slug(&self, title: &str) -> String {
-        title
-            .to_lowercase()
-            .chars()
-            .map(|c| if c.is_alphanumeric() { c } else { '-' })
-            .collect::<String>()
-            .split('-')
-            .filter(|s| !s.is_empty())
-            .collect::<Vec<_>>()
-            .join("-")
+        generate_slug_impl(title)
     }
+}
+
+/// Standalone slug generation (for testing without database)
+fn generate_slug_impl(title: &str) -> String {
+    title
+        .to_lowercase()
+        .chars()
+        .map(|c| if c.is_alphanumeric() { c } else { '-' })
+        .collect::<String>()
+        .split('-')
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>()
+        .join("-")
+}
+
+impl PostService {
 
     /// Get terms (categories/tags) for a post
     async fn get_post_terms(&self, post_id: Uuid, taxonomy: &str) -> Result<Vec<TermResponse>> {
@@ -914,19 +922,9 @@ mod tests {
 
     #[test]
     fn test_generate_slug() {
-        // Create a mock service - just for testing the slug generation
-        // SAFETY: This is only for testing the synchronous generate_slug method
-        // which doesn't use the pool or dispatcher
-        let pool: PgPool = unsafe { std::mem::zeroed() };
-        let service = PostService {
-            pool: pool.clone(),
-            site_id: None,
-            dispatcher: EventDispatcher::new(pool),
-        };
-
-        assert_eq!(service.generate_slug("Hello World"), "hello-world");
-        assert_eq!(service.generate_slug("  Multiple   Spaces  "), "multiple-spaces");
-        assert_eq!(service.generate_slug("Special!@#$%Characters"), "special-characters");
+        assert_eq!(generate_slug_impl("Hello World"), "hello-world");
+        assert_eq!(generate_slug_impl("  Multiple   Spaces  "), "multiple-spaces");
+        assert_eq!(generate_slug_impl("Special!@#$%Characters"), "special-characters");
     }
 
     #[test]

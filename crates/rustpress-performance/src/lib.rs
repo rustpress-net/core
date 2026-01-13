@@ -172,7 +172,7 @@ impl PerformanceManager {
 
         Self {
             page_cache: PageCache::new(config.page_cache),
-            object_cache: ObjectCache::new(config.object_cache),
+            object_cache: ObjectCache::memory_only(config.object_cache),
             query_cache: QueryCache::new(config.query_cache),
             static_files: StaticFileServer::new(config.static_files),
             query_logger: QueryLogger::new(config.query_logging),
@@ -186,7 +186,7 @@ impl PerformanceManager {
     /// Clear all caches
     pub fn clear_all_caches(&self) {
         self.page_cache.clear();
-        self.object_cache.clear();
+        self.object_cache.clear_local();
         self.query_cache.clear();
     }
 
@@ -205,7 +205,7 @@ impl PerformanceManager {
 #[derive(Debug, Clone)]
 pub struct CombinedStats {
     pub page_cache: page_cache::CacheStats,
-    pub object_cache: object_cache::CacheStats,
+    pub object_cache: object_cache::ObjectCacheStats,
     pub query_cache: query_cache::QueryCacheStats,
     pub profiling: PerformanceMetrics,
 }
@@ -218,7 +218,7 @@ mod tests {
     fn test_default_config() {
         let config = default_performance_config();
         assert!(config.page_cache.max_entries > 0);
-        assert!(config.object_cache.memory_cache_size > 0);
+        assert!(config.object_cache.local_max_capacity > 0);
     }
 
     #[test]

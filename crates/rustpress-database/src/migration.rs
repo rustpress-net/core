@@ -2,6 +2,7 @@
 
 use rustpress_core::error::{Error, Result};
 use sqlx::PgPool;
+#[allow(unused_imports)]
 use std::path::Path;
 
 /// Migration entry

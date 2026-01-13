@@ -294,8 +294,8 @@ impl IsrHandler {
         generate_fn: F,
     ) -> Result<(StaticPage, bool), IsrError>
     where
-        F: FnOnce(String) -> Fut,
-        Fut: std::future::Future<Output = Result<StaticPage, IsrError>>,
+        F: FnOnce(String) -> Fut + Send + 'static,
+        Fut: std::future::Future<Output = Result<StaticPage, IsrError>> + Send + 'static,
     {
         // Check for existing page
         if let Some(page) = self.store.get(path) {
@@ -331,8 +331,8 @@ impl IsrHandler {
 
     fn trigger_regeneration<F, Fut>(&self, path: &str, generate_fn: F)
     where
-        F: FnOnce(String) -> Fut,
-        Fut: std::future::Future<Output = Result<StaticPage, IsrError>>,
+        F: FnOnce(String) -> Fut + Send + 'static,
+        Fut: std::future::Future<Output = Result<StaticPage, IsrError>> + Send + 'static,
     {
         if !self.store.start_regeneration(path) {
             return; // Already regenerating or at limit

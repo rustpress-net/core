@@ -62,7 +62,7 @@ async fn generate_sitemap(ctx: &CliContext) -> CliResult<()> {
     Ok(())
 }
 
-async fn sitemap_status(ctx: &CliContext) -> CliResult<()> {
+async fn sitemap_status(_ctx: &CliContext) -> CliResult<()> {
     print_header("Sitemap Status");
     print_kv("Last Generated", "2024-01-15 10:30:00");
     print_kv("Total URLs", "156");
@@ -93,7 +93,7 @@ async fn manage_robots(ctx: &CliContext, get: bool, set: Option<String>) -> CliR
         println!("Allow: /");
         println!("Disallow: /admin/");
         println!("Sitemap: /sitemap.xml");
-    } else if let Some(content) = set {
+    } else if let Some(_content) = set {
         println!("{}", ctx.output_format.success("robots.txt updated"));
     }
     Ok(())

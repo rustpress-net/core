@@ -1,0 +1,419 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Enterprise - {{ site.title }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-hero enterprise-hero">
+  <div class="hero-particles"></div>
+  <div class="container">
+    <div class="page-hero-content" data-animate="fade-up">
+      <span class="hero-badge">
+        <span class="badge-dot"></span>
+        Enterprise Solutions
+      </span>
+      <h1 class="page-hero-title">
+        Built for <span class="gradient-text">enterprise scale</span>
+      </h1>
+      <p class="page-hero-description">
+        The security, compliance, and scale your organization needs.
+        Trusted by Fortune 500 companies and industry leaders worldwide.
+      </p>
+      <div class="hero-cta-group">
+        <a href="/contact" class="btn btn--primary btn--glow btn--lg">
+          Contact Sales
+        </a>
+        <a href="/demo" class="btn btn--outline btn--lg">Request Demo</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Enterprise Logos -->
+<section class="enterprise-logos-section">
+  <div class="container">
+    <p class="logos-label" data-animate="fade-up">Trusted by industry leaders</p>
+    <div class="logo-cloud-large" data-animate="fade-up">
+      <div class="logo-item"><span>Microsoft</span></div>
+      <div class="logo-item"><span>IBM</span></div>
+      <div class="logo-item"><span>Deloitte</span></div>
+      <div class="logo-item"><span>Accenture</span></div>
+      <div class="logo-item"><span>KPMG</span></div>
+      <div class="logo-item"><span>PwC</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- Enterprise Features -->
+<section class="enterprise-features-section">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">Enterprise Features</span>
+      <h2 class="section-title">Everything you need at scale</h2>
+      <p class="section-description">
+        Purpose-built features for large organizations with complex requirements.
+      </p>
+    </div>
+
+    <div class="enterprise-features-grid">
+      <div class="enterprise-feature-card" data-animate="fade-up">
+        <div class="feature-icon-large">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <path d="M9 12l2 2 4-4"/>
+          </svg>
+        </div>
+        <h3>Advanced Security</h3>
+        <p>Enterprise-grade security with SSO, SAML, SCIM provisioning, and custom security policies.</p>
+        <ul class="feature-checklist">
+          <li>SSO & SAML 2.0</li>
+          <li>SCIM user provisioning</li>
+          <li>Custom security policies</li>
+          <li>IP allowlisting</li>
+        </ul>
+      </div>
+
+      <div class="enterprise-feature-card" data-animate="fade-up" data-delay="100">
+        <div class="feature-icon-large">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
+        </div>
+        <h3>Compliance Ready</h3>
+        <p>Meet regulatory requirements with SOC 2, HIPAA, GDPR, and other compliance certifications.</p>
+        <ul class="feature-checklist">
+          <li>SOC 2 Type II</li>
+          <li>HIPAA BAA available</li>
+          <li>GDPR compliant</li>
+          <li>Custom compliance</li>
+        </ul>
+      </div>
+
+      <div class="enterprise-feature-card" data-animate="fade-up" data-delay="200">
+        <div class="feature-icon-large">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+            <line x1="6" y1="6" x2="6.01" y2="6"/>
+            <line x1="6" y1="18" x2="6.01" y2="18"/>
+          </svg>
+        </div>
+        <h3>Scalable Infrastructure</h3>
+        <p>Handle millions of operations with auto-scaling, global CDN, and guaranteed uptime.</p>
+        <ul class="feature-checklist">
+          <li>99.99% uptime SLA</li>
+          <li>Auto-scaling</li>
+          <li>Global CDN</li>
+          <li>Dedicated resources</li>
+        </ul>
+      </div>
+
+      <div class="enterprise-feature-card" data-animate="fade-up" data-delay="300">
+        <div class="feature-icon-large">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <h3>Dedicated Support</h3>
+        <p>White-glove support with dedicated account managers, SLAs, and 24/7 priority assistance.</p>
+        <ul class="feature-checklist">
+          <li>Dedicated account manager</li>
+          <li>24/7 priority support</li>
+          <li>Custom SLAs</li>
+          <li>Onboarding assistance</li>
+        </ul>
+      </div>
+
+      <div class="enterprise-feature-card" data-animate="fade-up" data-delay="400">
+        <div class="feature-icon-large">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+          </svg>
+        </div>
+        <h3>Custom Integrations</h3>
+        <p>Build custom integrations with our API, or work with our team to create bespoke solutions.</p>
+        <ul class="feature-checklist">
+          <li>Custom API development</li>
+          <li>Private integrations</li>
+          <li>Data migration support</li>
+          <li>Legacy system connectors</li>
+        </ul>
+      </div>
+
+      <div class="enterprise-feature-card" data-animate="fade-up" data-delay="500">
+        <div class="feature-icon-large">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </div>
+        <h3>Advanced Controls</h3>
+        <p>Fine-grained administrative controls for complex organizational structures.</p>
+        <ul class="feature-checklist">
+          <li>Custom roles & permissions</li>
+          <li>Multi-team workspaces</li>
+          <li>Audit logging</li>
+          <li>Data retention policies</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Deployment Options -->
+<section class="deployment-section">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">Deployment</span>
+      <h2 class="section-title">Flexible deployment options</h2>
+      <p class="section-description">
+        Choose the deployment model that best fits your organization's requirements.
+      </p>
+    </div>
+
+    <div class="deployment-grid" data-animate="fade-up">
+      <div class="deployment-card">
+        <div class="deployment-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/>
+          </svg>
+        </div>
+        <h3>Cloud (Multi-tenant)</h3>
+        <p>Our standard cloud offering with all enterprise features. Fastest time to value with automatic updates.</p>
+        <ul class="deployment-features">
+          <li>Automatic updates</li>
+          <li>No infrastructure management</li>
+          <li>Shared infrastructure cost</li>
+          <li>Standard compliance</li>
+        </ul>
+        <span class="deployment-badge">Most Popular</span>
+      </div>
+
+      <div class="deployment-card">
+        <div class="deployment-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+            <line x1="6" y1="6" x2="6.01" y2="6"/>
+            <line x1="6" y1="18" x2="6.01" y2="18"/>
+          </svg>
+        </div>
+        <h3>Dedicated Cloud</h3>
+        <p>Single-tenant deployment in our cloud with dedicated resources and enhanced isolation.</p>
+        <ul class="deployment-features">
+          <li>Dedicated resources</li>
+          <li>Custom configurations</li>
+          <li>Enhanced isolation</li>
+          <li>Flexible compliance</li>
+        </ul>
+        <span class="deployment-badge">Enhanced Security</span>
+      </div>
+
+      <div class="deployment-card">
+        <div class="deployment-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </div>
+        <h3>On-Premise</h3>
+        <p>Deploy RustPress within your own data centers for maximum control and compliance.</p>
+        <ul class="deployment-features">
+          <li>Full data control</li>
+          <li>Your infrastructure</li>
+          <li>Air-gapped option</li>
+          <li>Custom compliance</li>
+        </ul>
+        <span class="deployment-badge">Maximum Control</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Enterprise Case Study -->
+<section class="enterprise-case-study">
+  <div class="container">
+    <div class="case-study-large glass-card" data-animate="fade-up">
+      <div class="case-study-content">
+        <span class="section-badge">Case Study</span>
+        <div class="case-study-logo-large">Fortune 500 Bank</div>
+        <blockquote>
+          "RustPress helped us consolidate 12 different content systems into a single platform, saving us over $2M annually while improving our security posture."
+        </blockquote>
+        <div class="case-study-author">
+          <span class="author-name">Chief Technology Officer</span>
+          <span class="author-company">Top 10 US Bank</span>
+        </div>
+        <div class="case-study-metrics">
+          <div class="metric">
+            <span class="metric-value">$2M+</span>
+            <span class="metric-label">Annual Savings</span>
+          </div>
+          <div class="metric">
+            <span class="metric-value">12→1</span>
+            <span class="metric-label">Tools Consolidated</span>
+          </div>
+          <div class="metric">
+            <span class="metric-value">50K+</span>
+            <span class="metric-label">Users</span>
+          </div>
+        </div>
+        <a href="/customers" class="btn btn--primary">Read More Case Studies</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Implementation Process -->
+<section class="implementation-section">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">Process</span>
+      <h2 class="section-title">Seamless implementation</h2>
+      <p class="section-description">
+        Our dedicated team ensures smooth deployment and adoption for your organization.
+      </p>
+    </div>
+
+    <div class="implementation-timeline" data-animate="fade-up">
+      <div class="timeline-step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h4>Discovery</h4>
+          <p>We learn about your requirements, integrations, and success criteria.</p>
+        </div>
+      </div>
+
+      <div class="timeline-connector"></div>
+
+      <div class="timeline-step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h4>Planning</h4>
+          <p>Custom implementation plan with timelines, milestones, and resource allocation.</p>
+        </div>
+      </div>
+
+      <div class="timeline-connector"></div>
+
+      <div class="timeline-step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h4>Configuration</h4>
+          <p>Setup SSO, integrations, custom workflows, and security policies.</p>
+        </div>
+      </div>
+
+      <div class="timeline-connector"></div>
+
+      <div class="timeline-step">
+        <div class="step-number">4</div>
+        <div class="step-content">
+          <h4>Migration</h4>
+          <p>Secure data migration from existing systems with validation and testing.</p>
+        </div>
+      </div>
+
+      <div class="timeline-connector"></div>
+
+      <div class="timeline-step">
+        <div class="step-number">5</div>
+        <div class="step-content">
+          <h4>Training</h4>
+          <p>Custom training programs for admins, power users, and end users.</p>
+        </div>
+      </div>
+
+      <div class="timeline-connector"></div>
+
+      <div class="timeline-step">
+        <div class="step-number">6</div>
+        <div class="step-content">
+          <h4>Go-Live & Support</h4>
+          <p>Monitored rollout with dedicated support and ongoing optimization.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Enterprise Services -->
+<section class="services-section">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">Services</span>
+      <h2 class="section-title">Enterprise services</h2>
+    </div>
+
+    <div class="services-grid" data-animate="fade-up">
+      <div class="service-card">
+        <div class="service-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+        </div>
+        <h4>Professional Services</h4>
+        <p>Custom implementation, integration development, and workflow optimization.</p>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+            <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+          </svg>
+        </div>
+        <h4>Training & Enablement</h4>
+        <p>Custom training programs, certification, and documentation for your team.</p>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <h4>Premium Support</h4>
+        <p>24/7 support with guaranteed response times and dedicated engineers.</p>
+      </div>
+
+      <div class="service-card">
+        <div class="service-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+          </svg>
+        </div>
+        <h4>Custom Development</h4>
+        <p>Build custom features, integrations, and extensions for your specific needs.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-card glass-card" data-animate="fade-up">
+      <div class="cta-content">
+        <h2>Ready to discuss enterprise solutions?</h2>
+        <p>Let's talk about how RustPress can help your organization succeed.</p>
+        <div class="cta-buttons">
+          <a href="/contact" class="btn btn--primary btn--glow btn--lg">
+            Contact Sales
+          </a>
+          <a href="/demo" class="btn btn--outline btn--lg">Request Demo</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

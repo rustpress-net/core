@@ -1,0 +1,552 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}API Documentation - {{ site.title }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-hero api-hero">
+  <div class="hero-particles"></div>
+  <div class="container">
+    <div class="page-hero-content" data-animate="fade-up">
+      <span class="hero-badge">
+        <span class="badge-dot"></span>
+        Developer Platform
+      </span>
+      <h1 class="page-hero-title">
+        Build with the <span class="gradient-text">RustPress API</span>
+      </h1>
+      <p class="page-hero-description">
+        A powerful, RESTful API that lets you integrate RustPress into any application.
+        Access content, pages, posts, and AI tools programmatically.
+      </p>
+      <div class="hero-cta-group">
+        <a href="#quickstart" class="btn btn--primary btn--glow btn--lg">
+          Get Started
+        </a>
+        <a href="#reference" class="btn btn--outline btn--lg">API Reference</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- API Overview -->
+<section class="api-overview-section">
+  <div class="container">
+    <div class="api-cards-grid" data-animate="fade-up">
+      <div class="api-card">
+        <div class="api-card-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <polyline points="16 18 22 12 16 6"/>
+            <polyline points="8 6 2 12 8 18"/>
+          </svg>
+        </div>
+        <h3>RESTful Design</h3>
+        <p>Clean, predictable REST API with JSON responses and standard HTTP methods.</p>
+      </div>
+
+      <div class="api-card">
+        <div class="api-card-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <h3>Secure by Default</h3>
+        <p>OAuth 2.0 authentication, API keys, and TLS encryption on all endpoints.</p>
+      </div>
+
+      <div class="api-card">
+        <div class="api-card-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <h3>Real-time Events</h3>
+        <p>Webhooks for real-time notifications when events occur in your account.</p>
+      </div>
+
+      <div class="api-card">
+        <div class="api-card-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+            <line x1="3" y1="9" x2="21" y2="9"/>
+            <line x1="9" y1="21" x2="9" y2="9"/>
+          </svg>
+        </div>
+        <h3>SDKs Available</h3>
+        <p>Official SDKs for JavaScript, Python, Ruby, Go, and more.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Quick Start -->
+<section id="quickstart" class="quickstart-section">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">Quick Start</span>
+      <h2 class="section-title">Get started in minutes</h2>
+    </div>
+
+    <div class="quickstart-steps" data-animate="fade-up">
+      <div class="quickstart-step">
+        <div class="step-number">1</div>
+        <div class="step-content">
+          <h4>Get your API key</h4>
+          <p>Generate an API key from your account settings. Keep it secure!</p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-dot"></span>
+              <span class="code-dot"></span>
+              <span class="code-dot"></span>
+              <span class="code-title">Dashboard → Settings → API Keys</span>
+            </div>
+            <pre class="code-content"><code>API_KEY=sk_live_xxxxxxxxxxxx</code></pre>
+          </div>
+        </div>
+      </div>
+
+      <div class="quickstart-step">
+        <div class="step-number">2</div>
+        <div class="step-content">
+          <h4>Install the SDK</h4>
+          <p>Choose your preferred language and install the official SDK.</p>
+          <div class="code-tabs">
+            <div class="code-tab-buttons">
+              <button class="code-tab-btn active" data-tab="node">Node.js</button>
+              <button class="code-tab-btn" data-tab="python">Python</button>
+              <button class="code-tab-btn" data-tab="ruby">Ruby</button>
+              <button class="code-tab-btn" data-tab="go">Go</button>
+            </div>
+            <div class="code-tab-content active" id="node">
+              <div class="code-block">
+                <pre class="code-content"><code><span class="code-keyword">npm</span> install @rustpress/sdk</code></pre>
+              </div>
+            </div>
+            <div class="code-tab-content" id="python">
+              <div class="code-block">
+                <pre class="code-content"><code><span class="code-keyword">pip</span> install rustpress</code></pre>
+              </div>
+            </div>
+            <div class="code-tab-content" id="ruby">
+              <div class="code-block">
+                <pre class="code-content"><code><span class="code-keyword">gem</span> install rustpress</code></pre>
+              </div>
+            </div>
+            <div class="code-tab-content" id="go">
+              <div class="code-block">
+                <pre class="code-content"><code><span class="code-keyword">go get</span> github.com/rustpress/rustpress-go</code></pre>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="quickstart-step">
+        <div class="step-number">3</div>
+        <div class="step-content">
+          <h4>Make your first request</h4>
+          <p>Initialize the client and start making API calls.</p>
+          <div class="code-block">
+            <div class="code-header">
+              <span class="code-dot"></span>
+              <span class="code-dot"></span>
+              <span class="code-dot"></span>
+              <span class="code-title">example.js</span>
+            </div>
+            <pre class="code-content"><code><span class="code-keyword">import</span> { RustPress } <span class="code-keyword">from</span> <span class="code-string">'@rustpress/sdk'</span>;
+
+<span class="code-keyword">const</span> client = <span class="code-keyword">new</span> RustPress({
+  apiKey: process.env.RUSTPRESS_API_KEY
+});
+
+<span class="code-comment">// Get all pages</span>
+<span class="code-keyword">const</span> pages = <span class="code-keyword">await</span> client.pages.list();
+console.log(pages);
+
+<span class="code-comment">// Create a new post with AI enhancement</span>
+<span class="code-keyword">const</span> post = <span class="code-keyword">await</span> client.posts.create({
+  title: <span class="code-string">'My New Post'</span>,
+  content: <span class="code-string">'Post content here...'</span>,
+  ai_enhance: <span class="code-keyword">true</span>
+});
+console.log(post);</code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- API Reference Preview -->
+<section id="reference" class="reference-section">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">Reference</span>
+      <h2 class="section-title">API Reference</h2>
+      <p class="section-description">
+        Explore the complete API documentation with examples and interactive testing.
+      </p>
+    </div>
+
+    <div class="api-endpoints" data-animate="fade-up">
+      <div class="endpoint-group">
+        <div class="endpoint-group-header">
+          <h3>Authentication</h3>
+          <span class="endpoint-count">3 endpoints</span>
+        </div>
+        <div class="endpoint-list">
+          <div class="endpoint-item">
+            <span class="method method--post">POST</span>
+            <span class="endpoint-path">/v1/auth/token</span>
+            <span class="endpoint-desc">Generate access token</span>
+          </div>
+          <div class="endpoint-item">
+            <span class="method method--post">POST</span>
+            <span class="endpoint-path">/v1/auth/refresh</span>
+            <span class="endpoint-desc">Refresh access token</span>
+          </div>
+          <div class="endpoint-item">
+            <span class="method method--delete">DELETE</span>
+            <span class="endpoint-path">/v1/auth/revoke</span>
+            <span class="endpoint-desc">Revoke token</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoint-group">
+        <div class="endpoint-group-header">
+          <h3>Users</h3>
+          <span class="endpoint-count">5 endpoints</span>
+        </div>
+        <div class="endpoint-list">
+          <div class="endpoint-item">
+            <span class="method method--get">GET</span>
+            <span class="endpoint-path">/v1/users</span>
+            <span class="endpoint-desc">List all users</span>
+          </div>
+          <div class="endpoint-item">
+            <span class="method method--get">GET</span>
+            <span class="endpoint-path">/v1/users/:id</span>
+            <span class="endpoint-desc">Get user by ID</span>
+          </div>
+          <div class="endpoint-item">
+            <span class="method method--post">POST</span>
+            <span class="endpoint-path">/v1/users</span>
+            <span class="endpoint-desc">Create user</span>
+          </div>
+          <div class="endpoint-item">
+            <span class="method method--patch">PATCH</span>
+            <span class="endpoint-path">/v1/users/:id</span>
+            <span class="endpoint-desc">Update user</span>
+          </div>
+          <div class="endpoint-item">
+            <span class="method method--delete">DELETE</span>
+            <span class="endpoint-path">/v1/users/:id</span>
+            <span class="endpoint-desc">Delete user</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoint-group">
+        <div class="endpoint-group-header">
+          <h3>Records</h3>
+          <span class="endpoint-count">6 endpoints</span>
+        </div>
+        <div class="endpoint-list">
+          <div class="endpoint-item">
+            <span class="method method--get">GET</span>
+            <span class="endpoint-path">/v1/records</span>
+            <span class="endpoint-desc">List records</span>
+          </div>
+          <div class="endpoint-item">
+            <span class="method method--get">GET</span>
+            <span class="endpoint-path">/v1/records/:id</span>
+            <span class="endpoint-desc">Get record</span>
+          </div>
+          <div class="endpoint-item">
+            <span class="method method--post">POST</span>
+            <span class="endpoint-path">/v1/records</span>
+            <span class="endpoint-desc">Create record</span>
+          </div>
+          <div class="endpoint-item">
+            <span class="method method--patch">PATCH</span>
+            <span class="endpoint-path">/v1/records/:id</span>
+            <span class="endpoint-desc">Update record</span>
+          </div>
+          <div class="endpoint-item">
+            <span class="method method--delete">DELETE</span>
+            <span class="endpoint-path">/v1/records/:id</span>
+            <span class="endpoint-desc">Delete record</span>
+          </div>
+          <div class="endpoint-item">
+            <span class="method method--post">POST</span>
+            <span class="endpoint-path">/v1/records/bulk</span>
+            <span class="endpoint-desc">Bulk operations</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="endpoint-group">
+        <div class="endpoint-group-header">
+          <h3>Webhooks</h3>
+          <span class="endpoint-count">4 endpoints</span>
+        </div>
+        <div class="endpoint-list">
+          <div class="endpoint-item">
+            <span class="method method--get">GET</span>
+            <span class="endpoint-path">/v1/webhooks</span>
+            <span class="endpoint-desc">List webhooks</span>
+          </div>
+          <div class="endpoint-item">
+            <span class="method method--post">POST</span>
+            <span class="endpoint-path">/v1/webhooks</span>
+            <span class="endpoint-desc">Create webhook</span>
+          </div>
+          <div class="endpoint-item">
+            <span class="method method--patch">PATCH</span>
+            <span class="endpoint-path">/v1/webhooks/:id</span>
+            <span class="endpoint-desc">Update webhook</span>
+          </div>
+          <div class="endpoint-item">
+            <span class="method method--delete">DELETE</span>
+            <span class="endpoint-path">/v1/webhooks/:id</span>
+            <span class="endpoint-desc">Delete webhook</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="reference-cta" data-animate="fade-up">
+      <a href="/docs" class="btn btn--primary btn--lg">View Full Documentation</a>
+    </div>
+  </div>
+</section>
+
+<!-- SDKs Section -->
+<section class="sdks-section">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">SDKs</span>
+      <h2 class="section-title">Official SDKs</h2>
+      <p class="section-description">
+        Use our official SDKs for the best developer experience.
+      </p>
+    </div>
+
+    <div class="sdks-grid" data-animate="fade-up">
+      <a href="#" class="sdk-card">
+        <div class="sdk-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93s3.05-7.44 7-7.93v15.86zm2-15.86c3.94.49 7 3.85 7 7.93s-3.05 7.44-7 7.93V4.07z"/>
+          </svg>
+        </div>
+        <h4>JavaScript</h4>
+        <span class="sdk-version">v2.4.1</span>
+      </a>
+
+      <a href="#" class="sdk-card">
+        <div class="sdk-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M14.25 2.26 13.2 2l-.82.81c-.55.54-.81 1.27-.72 2.02l.19 1.68-1.4 1.4-1.27-.77c-.4-.24-.86-.37-1.33-.37H6v1.5h1.85c.15 0 .3.04.44.12l1.27.77-1.4 1.4-1.68-.19c-.75-.09-1.48.17-2.02.72L3.65 12l.82.82c.54.55 1.27.81 2.02.72l1.68-.19 1.4 1.4-.77 1.27c-.24.4-.37.86-.37 1.33V19h1.5v-1.85c0-.15.04-.3.12-.44l.77-1.27 1.4 1.4-.19 1.68c-.09.75.17 1.48.72 2.02l.81.82.82-.81c.55-.54.81-1.27.72-2.02l-.19-1.68 1.4-1.4 1.27.77c.14.08.29.12.44.12H19v-1.5h-1.85c-.47 0-.93-.13-1.33-.37l-1.27-.77 1.4-1.4 1.68.19c.75.09 1.48-.17 2.02-.72l.81-.82-.82-.81c-.54-.55-1.27-.81-2.02-.72l-1.68.19-1.4-1.4.77-1.27c.08-.14.12-.29.12-.44V5h-1.5v1.85c0 .47-.13.93-.37 1.33l-.77 1.27-1.4-1.4.19-1.68c.09-.75-.17-1.48-.72-2.02l-.81-.82zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z"/>
+          </svg>
+        </div>
+        <h4>Python</h4>
+        <span class="sdk-version">v2.3.0</span>
+      </a>
+
+      <a href="#" class="sdk-card">
+        <div class="sdk-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M20.156 13.594c-.28-.656-.672-1.26-1.172-1.781L18 10.97l.25-1.313c.094-.48.156-.988.156-1.5 0-2.422-1.266-4.656-3.344-5.844l-.469-.28-.344.406c-.688.8-1.188 1.75-1.47 2.781A6.098 6.098 0 0012 7.47c-.344-.344-.844-.625-1.5-.844a4.934 4.934 0 00-2.156-.313c-1.875.22-3.5 1.25-4.438 2.813-.344.563-.594 1.188-.75 1.875-.156.688-.25 1.469-.25 2.375 0 2.906 1.063 5.5 3.032 7.438 1.968 1.937 4.624 3 7.687 3h.313c2.937 0 5.593-.875 7.656-2.563 1.5-1.218 2.5-2.875 2.812-4.812.156-.938.094-1.907-.25-2.844zm-1.844 2.562c-.25 1.563-1.062 2.907-2.312 3.907-1.688 1.374-4 2.124-6.688 2.124h-.312c-2.688 0-5-1-6.688-2.688-1.687-1.687-2.624-3.968-2.624-6.5 0-.78.062-1.467.187-2.062.125-.594.344-1.125.625-1.625.75-1.25 2-2.063 3.5-2.25.531-.063 1.063-.032 1.563.094.5.125.906.343 1.156.593.281.282.594.5.938.657.343.156.718.25 1.093.25a3.48 3.48 0 001.031-.157c.032-.031.063-.031.094-.062.031-.032.063-.063.094-.094a5.69 5.69 0 01.875-2.094c1.5.97 2.438 2.657 2.438 4.5 0 .407-.032.782-.125 1.157l-.25 1.312.937.938c.407.406.75.875 1 1.375.157.281.25.593.313.906.062.313.125.656.156 1.032z"/>
+          </svg>
+        </div>
+        <h4>Ruby</h4>
+        <span class="sdk-version">v2.2.0</span>
+      </a>
+
+      <a href="#" class="sdk-card">
+        <div class="sdk-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M2.572 11.396c-.054 0-.103.017-.147.05-.106.082-.147.246-.1.395.196.61.573 1.143 1.082 1.513l4.438 3.243c.18.131.423.131.603 0l4.438-3.243a2.32 2.32 0 001.082-1.513c.047-.149.006-.313-.1-.395a.234.234 0 00-.147-.05H2.572zm9.578-3.708c.054 0 .103-.017.147-.05.106-.082.147-.246.1-.395a2.32 2.32 0 00-1.082-1.513L6.877 2.487a.437.437 0 00-.603 0L1.836 5.73a2.32 2.32 0 00-1.082 1.513c-.047.149-.006.313.1.395.044.033.093.05.147.05h11.149zm9.278 3.708c-.054 0-.103.017-.147.05-.106.082-.147.246-.1.395.196.61.573 1.143 1.082 1.513l4.438 3.243c.18.131.423.131.603 0l4.438-3.243a2.32 2.32 0 001.082-1.513c.047-.149.006-.313-.1-.395a.234.234 0 00-.147-.05H21.428z"/>
+          </svg>
+        </div>
+        <h4>Go</h4>
+        <span class="sdk-version">v1.8.0</span>
+      </a>
+
+      <a href="#" class="sdk-card">
+        <div class="sdk-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8.851 18.56s-.917.534.653.714c1.902.218 2.874.187 4.969-.211 0 0 .552.346 1.321.646-4.699 2.013-10.633-.118-6.943-1.149M8.276 15.933s-1.028.761.542.924c2.032.209 3.636.227 6.413-.308 0 0 .384.389.987.602-5.679 1.661-12.007.13-7.942-1.218M13.116 11.475c1.158 1.333-.304 2.533-.304 2.533s2.939-1.518 1.589-3.418c-1.261-1.772-2.228-2.652 3.007-5.688 0-.001-8.216 2.051-4.292 6.573M19.33 20.504s.679.559-.747.991c-2.712.822-11.288 1.069-13.669.033-.856-.373.75-.89 1.254-.998.527-.114.828-.093.828-.093-.953-.671-6.156 1.317-2.643 1.887 9.58 1.553 17.462-.7 14.977-1.82M9.292 13.21s-4.362 1.036-1.544 1.412c1.189.159 3.561.123 5.77-.062 1.806-.152 3.618-.477 3.618-.477s-.637.272-1.098.587c-4.429 1.165-12.986.623-10.522-.568 2.082-1.006 3.776-.892 3.776-.892M17.116 17.584c4.503-2.34 2.421-4.589.968-4.285-.355.074-.515.138-.515.138s.132-.207.385-.297c2.875-1.011 5.086 2.981-.928 4.562 0-.001.07-.062.09-.118M14.401 0s2.494 2.494-2.365 6.33c-3.896 3.077-.889 4.832 0 6.836-2.274-2.053-3.943-3.858-2.824-5.539 1.644-2.469 6.197-3.665 5.189-7.627"/>
+          </svg>
+        </div>
+        <h4>Java</h4>
+        <span class="sdk-version">v2.1.0</span>
+      </a>
+
+      <a href="#" class="sdk-card">
+        <div class="sdk-icon">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 2c5.514 0 10 4.486 10 10s-4.486 10-10 10S2 17.514 2 12 6.486 2 12 2zm-.5 3v7.5H17v1h-6.5V5h1z"/>
+          </svg>
+        </div>
+        <h4>PHP</h4>
+        <span class="sdk-version">v2.0.0</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Webhooks Section -->
+<section class="webhooks-section">
+  <div class="container">
+    <div class="feature-split">
+      <div class="feature-split-content" data-animate="fade-right">
+        <span class="section-badge">Webhooks</span>
+        <h2 class="section-title">Real-time event notifications</h2>
+        <p class="section-description">
+          Receive instant notifications when events happen in RustPress. No polling required.
+        </p>
+
+        <div class="webhook-events">
+          <div class="webhook-event">
+            <span class="event-name">record.created</span>
+            <span class="event-desc">When a new record is created</span>
+          </div>
+          <div class="webhook-event">
+            <span class="event-name">record.updated</span>
+            <span class="event-desc">When a record is modified</span>
+          </div>
+          <div class="webhook-event">
+            <span class="event-name">record.deleted</span>
+            <span class="event-desc">When a record is deleted</span>
+          </div>
+          <div class="webhook-event">
+            <span class="event-name">user.created</span>
+            <span class="event-desc">When a new user joins</span>
+          </div>
+          <div class="webhook-event">
+            <span class="event-name">workflow.completed</span>
+            <span class="event-desc">When a workflow finishes</span>
+          </div>
+        </div>
+
+        <a href="/docs/webhooks" class="btn btn--outline">
+          View All Events
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+
+      <div class="feature-split-visual" data-animate="fade-left">
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-dot"></span>
+            <span class="code-dot"></span>
+            <span class="code-dot"></span>
+            <span class="code-title">Webhook Payload</span>
+          </div>
+          <pre class="code-content"><code>{
+  <span class="code-string">"id"</span>: <span class="code-string">"evt_1234567890"</span>,
+  <span class="code-string">"type"</span>: <span class="code-string">"record.created"</span>,
+  <span class="code-string">"created"</span>: <span class="code-number">1699123456</span>,
+  <span class="code-string">"data"</span>: {
+    <span class="code-string">"object"</span>: {
+      <span class="code-string">"id"</span>: <span class="code-string">"rec_abc123"</span>,
+      <span class="code-string">"type"</span>: <span class="code-string">"customer"</span>,
+      <span class="code-string">"fields"</span>: {
+        <span class="code-string">"name"</span>: <span class="code-string">"Acme Inc"</span>,
+        <span class="code-string">"email"</span>: <span class="code-string">"hello@acme.com"</span>
+      }
+    }
+  }
+}</code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Rate Limits -->
+<section class="rate-limits-section">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">Rate Limits</span>
+      <h2 class="section-title">API rate limits</h2>
+    </div>
+
+    <div class="rate-limits-table" data-animate="fade-up">
+      <table>
+        <thead>
+          <tr>
+            <th>Plan</th>
+            <th>Requests/min</th>
+            <th>Requests/day</th>
+            <th>Burst</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Starter</td>
+            <td>100</td>
+            <td>10,000</td>
+            <td>200</td>
+          </tr>
+          <tr>
+            <td>Professional</td>
+            <td>500</td>
+            <td>100,000</td>
+            <td>1,000</td>
+          </tr>
+          <tr>
+            <td>Enterprise</td>
+            <td>Custom</td>
+            <td>Unlimited</td>
+            <td>Custom</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-card glass-card" data-animate="fade-up">
+      <div class="cta-content">
+        <h2>Ready to start building?</h2>
+        <p>Get your API key and start integrating RustPress into your applications.</p>
+        <div class="cta-buttons">
+          <a href="/demo" class="btn btn--primary btn--glow btn--lg">
+            Get API Key
+          </a>
+          <a href="/docs" class="btn btn--outline btn--lg">Read the Docs</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Code tabs
+  const tabButtons = document.querySelectorAll('.code-tab-btn');
+  const tabContents = document.querySelectorAll('.code-tab-content');
+
+  tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const tab = button.dataset.tab;
+
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      tabContents.forEach(content => content.classList.remove('active'));
+
+      button.classList.add('active');
+      document.getElementById(tab).classList.add('active');
+    });
+  });
+});
+</script>
+{% endblock %}

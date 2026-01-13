@@ -14,6 +14,7 @@ pub mod shutdown;
 pub mod services;
 pub mod background;
 pub mod security;
+pub mod setup;
 
 pub use app::App;
 pub use state::AppState;

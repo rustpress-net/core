@@ -415,11 +415,11 @@ fn extract_tables_from_sql(sql: &str) -> Vec<String> {
     let upper = sql.to_uppercase();
 
     // Simple regex-based extraction
-    let from_regex = regex::Regex::new(r"(?i)FROM\s+([`\"]?[\w]+[`\"]?)").unwrap();
-    let join_regex = regex::Regex::new(r"(?i)JOIN\s+([`\"]?[\w]+[`\"]?)").unwrap();
-    let update_regex = regex::Regex::new(r"(?i)UPDATE\s+([`\"]?[\w]+[`\"]?)").unwrap();
-    let insert_regex = regex::Regex::new(r"(?i)INSERT\s+INTO\s+([`\"]?[\w]+[`\"]?)").unwrap();
-    let delete_regex = regex::Regex::new(r"(?i)DELETE\s+FROM\s+([`\"]?[\w]+[`\"]?)").unwrap();
+    let from_regex = regex::Regex::new(r#"(?i)FROM\s+([`"]?[\w]+[`"]?)"#).unwrap();
+    let join_regex = regex::Regex::new(r#"(?i)JOIN\s+([`"]?[\w]+[`"]?)"#).unwrap();
+    let update_regex = regex::Regex::new(r#"(?i)UPDATE\s+([`"]?[\w]+[`"]?)"#).unwrap();
+    let insert_regex = regex::Regex::new(r#"(?i)INSERT\s+INTO\s+([`"]?[\w]+[`"]?)"#).unwrap();
+    let delete_regex = regex::Regex::new(r#"(?i)DELETE\s+FROM\s+([`"]?[\w]+[`"]?)"#).unwrap();
 
     for cap in from_regex.captures_iter(sql) {
         if let Some(m) = cap.get(1) {

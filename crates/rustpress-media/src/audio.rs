@@ -7,7 +7,7 @@
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use sqlx::{PgPool, Row};
 use uuid::Uuid;
 
 use crate::{MediaError, MediaResult};
@@ -43,38 +43,39 @@ impl AudioService {
 
     /// Get audio metadata
     pub async fn get_metadata(&self, media_id: Uuid) -> MediaResult<AudioMetadata> {
-        let row = sqlx::query!(
+        let row = sqlx::query(
             r#"
             SELECT id, media_id, codec, bitrate, sample_rate, channels,
                    artist, album, title, genre, year, cover_art_url,
                    waveform_data, created_at
             FROM audio_metadata
             WHERE media_id = $1
-            "#,
-            media_id
+            "#
         )
+        .bind(media_id)
         .fetch_optional(&self.pool)
         .await?
         .ok_or(MediaError::NotFound(media_id))?;
 
-        let waveform: Option<Vec<f32>> = row.waveform_data
+        let waveform_value: Option<serde_json::Value> = row.try_get("waveform_data").ok();
+        let waveform: Option<Vec<f32>> = waveform_value
             .and_then(|v| serde_json::from_value(v).ok());
 
         Ok(AudioMetadata {
-            id: row.id,
-            media_id: row.media_id,
-            codec: row.codec,
-            bitrate: row.bitrate,
-            sample_rate: row.sample_rate,
-            channels: row.channels,
-            artist: row.artist,
-            album: row.album,
-            title: row.title,
-            genre: row.genre,
-            year: row.year,
-            cover_art_url: row.cover_art_url,
+            id: row.get("id"),
+            media_id: row.get("media_id"),
+            codec: row.get("codec"),
+            bitrate: row.get("bitrate"),
+            sample_rate: row.get("sample_rate"),
+            channels: row.get("channels"),
+            artist: row.get("artist"),
+            album: row.get("album"),
+            title: row.get("title"),
+            genre: row.get("genre"),
+            year: row.get("year"),
+            cover_art_url: row.get("cover_art_url"),
             waveform_data: waveform,
-            created_at: row.created_at,
+            created_at: row.get("created_at"),
         })
     }
 

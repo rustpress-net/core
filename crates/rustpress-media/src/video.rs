@@ -7,7 +7,7 @@
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use sqlx::{PgPool, Row};
 use uuid::Uuid;
 
 use crate::{MediaError, MediaResult};
@@ -51,34 +51,35 @@ impl VideoService {
 
     /// Get video metadata
     pub async fn get_metadata(&self, media_id: Uuid) -> MediaResult<VideoMetadata> {
-        let row = sqlx::query!(
+        let row = sqlx::query(
             r#"
             SELECT id, media_id, codec, bitrate, framerate, resolution,
                    has_audio, poster_url, transcoded_versions, created_at
             FROM video_metadata
             WHERE media_id = $1
-            "#,
-            media_id
+            "#
         )
+        .bind(media_id)
         .fetch_optional(&self.pool)
         .await?
         .ok_or(MediaError::NotFound(media_id))?;
 
-        let transcoded: Vec<TranscodedVersion> = serde_json::from_value(
-            row.transcoded_versions.unwrap_or_else(|| serde_json::json!([]))
-        ).unwrap_or_default();
+        let transcoded_value: serde_json::Value = row.try_get("transcoded_versions")
+            .unwrap_or_else(|_| serde_json::json!([]));
+        let transcoded: Vec<TranscodedVersion> = serde_json::from_value(transcoded_value)
+            .unwrap_or_default();
 
         Ok(VideoMetadata {
-            id: row.id,
-            media_id: row.media_id,
-            codec: row.codec,
-            bitrate: row.bitrate,
-            framerate: row.framerate,
-            resolution: row.resolution,
-            has_audio: row.has_audio.unwrap_or(true),
-            poster_url: row.poster_url,
+            id: row.get("id"),
+            media_id: row.get("media_id"),
+            codec: row.get("codec"),
+            bitrate: row.get("bitrate"),
+            framerate: row.get("framerate"),
+            resolution: row.get("resolution"),
+            has_audio: row.try_get("has_audio").unwrap_or(true),
+            poster_url: row.get("poster_url"),
             transcoded_versions: transcoded,
-            created_at: row.created_at,
+            created_at: row.get("created_at"),
         })
     }
 

@@ -54,7 +54,7 @@ async fn run(cli: Cli) -> CliResult<()> {
     // Commands that don't require authentication
     match &cli.command {
         Commands::Artifacts { .. } | Commands::Auth(_) | Commands::Completion(_) | Commands::Config(_)
-        | Commands::Interactive | Commands::Health { .. } | Commands::Info => {}
+        | Commands::Interactive | Commands::Health { .. } | Commands::Info | Commands::Server(_) => {}
         // ImportExport analyze doesn't need auth
         Commands::ImportExport(ref cmd) => {
             if !matches!(cmd.command, commands::import_export::ImportExportSubcommand::Analyze { .. }) {

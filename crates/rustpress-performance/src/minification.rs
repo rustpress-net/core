@@ -329,9 +329,21 @@ fn optimize_css(css: &str) -> String {
     // Remove last semicolon before closing brace
     result = result.replace(";}", "}");
 
-    // Shorten color values
-    let color_re = regex::Regex::new(r"#([0-9a-fA-F])\1([0-9a-fA-F])\2([0-9a-fA-F])\3\b").unwrap();
-    result = color_re.replace_all(&result, "#$1$2$3").to_string();
+    // Shorten color values (e.g., #aabbcc -> #abc)
+    // Rust regex doesn't support backreferences, so we find and shorten manually
+    let color_re = regex::Regex::new(r"#([0-9a-fA-F]{6})\b").unwrap();
+    result = color_re.replace_all(&result, |caps: &regex::Captures| {
+        let hex = &caps[1];
+        let chars: Vec<char> = hex.chars().collect();
+        // Check if it's a shortable color (pairs are identical)
+        if chars[0].eq_ignore_ascii_case(&chars[1])
+            && chars[2].eq_ignore_ascii_case(&chars[3])
+            && chars[4].eq_ignore_ascii_case(&chars[5]) {
+            format!("#{}{}{}", chars[0], chars[2], chars[4])
+        } else {
+            format!("#{}", hex)
+        }
+    }).to_string();
 
     // Remove units from zero values
     let zero_re = regex::Regex::new(r"\b0(px|em|rem|%|pt|cm|mm|in|pc|ex|ch|vw|vh|vmin|vmax)\b").unwrap();
@@ -477,8 +489,17 @@ fn optimize_js(js: &str) -> String {
 // HTML minification helpers
 fn remove_html_comments(html: &str) -> String {
     // Remove regular HTML comments but preserve conditional comments
-    let re = regex::Regex::new(r"<!--(?!\[if)(?!\[endif)[\s\S]*?-->").unwrap();
-    re.replace_all(html, "").to_string()
+    // Rust regex doesn't support look-ahead, so we match all comments and filter
+    let re = regex::Regex::new(r"<!--[\s\S]*?-->").unwrap();
+    re.replace_all(html, |caps: &regex::Captures| {
+        let comment = &caps[0];
+        // Preserve IE conditional comments
+        if comment.starts_with("<!--[if") || comment.starts_with("<!--[endif") {
+            comment.to_string()
+        } else {
+            String::new()
+        }
+    }).to_string()
 }
 
 fn collapse_html_whitespace(html: &str) -> String {

@@ -534,6 +534,18 @@ pub fn create_admin_component_registry() -> LazyLoadingRegistry {
     });
 
     registry.register(LazyComponent {
+        id: "posts-list".to_string(),
+        name: "Posts List".to_string(),
+        module_path: "/admin/js/components/posts-list.js".to_string(),
+        styles: vec!["/admin/css/posts.css".to_string()],
+        dependencies: vec![],
+        routes: vec!["/admin/posts".to_string()],
+        priority: 8,
+        size_bytes: 40000,
+        preload_on_idle: true,
+    });
+
+    registry.register(LazyComponent {
         id: "post-editor".to_string(),
         name: "Post Editor".to_string(),
         module_path: "/admin/js/components/post-editor.js".to_string(),

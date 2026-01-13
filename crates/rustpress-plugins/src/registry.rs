@@ -150,14 +150,21 @@ impl Default for PluginRegistry {
 mod tests {
     use super::*;
     use rustpress_core::plugin::PluginInfo;
+    use semver::Version;
 
     fn test_plugin_info() -> PluginInfo {
         PluginInfo {
-            name: "test-plugin".to_string(),
-            version: "1.0.0".to_string(),
+            id: "test-plugin".to_string(),
+            name: "test-plugin".to_string(), // Name matches id for registry key lookup
+            version: Version::new(1, 0, 0),
             description: "A test plugin".to_string(),
             author: "Test Author".to_string(),
+            author_url: None,
+            homepage: None,
+            license: "MIT".to_string(),
             dependencies: vec![],
+            min_rustpress_version: None,
+            tags: vec![],
         }
     }
 

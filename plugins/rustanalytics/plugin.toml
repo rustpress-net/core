@@ -1,0 +1,396 @@
+# RustAnalytics - Enterprise Google Analytics Integration for RustPress
+# Provides comprehensive analytics, real-time data, and enterprise reporting
+
+[plugin]
+id = "rustanalytics"
+name = "RustAnalytics - Google Analytics Integration"
+version = "1.0.0"
+description = "Enterprise-grade Google Analytics integration with comprehensive dashboards, real-time monitoring, advanced reporting, and data visualization for RustPress"
+author = "RustPress Team"
+author_uri = "https://rustpress.io"
+plugin_uri = "https://rustpress.io/plugins/rustanalytics"
+license = "MIT"
+license_uri = "https://opensource.org/licenses/MIT"
+min_rustpress_version = "1.0.0"
+text_domain = "rustanalytics"
+domain_path = "/languages"
+network = false
+
+[plugin.capabilities]
+manage_options = true
+add_shortcodes = true
+add_widgets = true
+add_admin_pages = true
+add_rest_api = true
+add_dashboard_widgets = true
+manage_settings = true
+view_analytics = true
+export_data = true
+
+[plugin.admin_pages]
+# Main analytics dashboard
+[[plugin.admin_pages.pages]]
+id = "rustanalytics-dashboard"
+title = "Analytics Dashboard"
+menu_title = "Analytics"
+capability = "view_analytics"
+icon = "chart-bar"
+position = 25
+
+# Settings page
+[[plugin.admin_pages.pages]]
+id = "rustanalytics-settings"
+title = "Analytics Settings"
+menu_title = "Settings"
+capability = "manage_options"
+parent = "rustanalytics-dashboard"
+
+# Reports page
+[[plugin.admin_pages.pages]]
+id = "rustanalytics-reports"
+title = "Custom Reports"
+menu_title = "Reports"
+capability = "view_analytics"
+parent = "rustanalytics-dashboard"
+
+# Real-time page
+[[plugin.admin_pages.pages]]
+id = "rustanalytics-realtime"
+title = "Real-Time Analytics"
+menu_title = "Real-Time"
+capability = "view_analytics"
+parent = "rustanalytics-dashboard"
+
+# Audience page
+[[plugin.admin_pages.pages]]
+id = "rustanalytics-audience"
+title = "Audience Insights"
+menu_title = "Audience"
+capability = "view_analytics"
+parent = "rustanalytics-dashboard"
+
+# Acquisition page
+[[plugin.admin_pages.pages]]
+id = "rustanalytics-acquisition"
+title = "Acquisition Analysis"
+menu_title = "Acquisition"
+capability = "view_analytics"
+parent = "rustanalytics-dashboard"
+
+# Behavior page
+[[plugin.admin_pages.pages]]
+id = "rustanalytics-behavior"
+title = "Behavior Analysis"
+menu_title = "Behavior"
+capability = "view_analytics"
+parent = "rustanalytics-dashboard"
+
+# Conversions page
+[[plugin.admin_pages.pages]]
+id = "rustanalytics-conversions"
+title = "Conversions & Goals"
+menu_title = "Conversions"
+capability = "view_analytics"
+parent = "rustanalytics-dashboard"
+
+# E-commerce page
+[[plugin.admin_pages.pages]]
+id = "rustanalytics-ecommerce"
+title = "E-commerce Analytics"
+menu_title = "E-commerce"
+capability = "view_analytics"
+parent = "rustanalytics-dashboard"
+
+[plugin.dashboard_widgets]
+# Real-time visitors widget
+[[plugin.dashboard_widgets.widgets]]
+id = "rustanalytics-realtime-widget"
+title = "Real-Time Visitors"
+description = "Shows current active users on your site"
+position = "normal"
+priority = "high"
+
+# Traffic overview widget
+[[plugin.dashboard_widgets.widgets]]
+id = "rustanalytics-traffic-widget"
+title = "Traffic Overview"
+description = "Quick view of today's traffic metrics"
+position = "normal"
+priority = "high"
+
+# Top pages widget
+[[plugin.dashboard_widgets.widgets]]
+id = "rustanalytics-toppages-widget"
+title = "Top Pages Today"
+description = "Most visited pages in the last 24 hours"
+position = "side"
+priority = "normal"
+
+# Acquisition widget
+[[plugin.dashboard_widgets.widgets]]
+id = "rustanalytics-acquisition-widget"
+title = "Traffic Sources"
+description = "Where your visitors come from"
+position = "side"
+priority = "normal"
+
+[plugin.settings]
+# Google Analytics Configuration
+ga_property_id = ""
+ga_measurement_id = ""
+ga_api_secret = ""
+service_account_json = ""
+
+# Tracking Options
+enable_tracking = true
+track_logged_in_users = true
+track_admin_users = false
+anonymize_ip = true
+respect_dnt = true
+cookie_consent_required = false
+enhanced_link_attribution = true
+enhanced_ecommerce = false
+
+# Data Retention
+data_retention_period = 26
+cache_duration_minutes = 15
+sync_frequency_hours = 1
+
+# Dashboard Preferences
+default_date_range = "last_30_days"
+show_realtime_widget = true
+show_traffic_widget = true
+show_toppages_widget = true
+show_acquisition_widget = true
+comparison_enabled = true
+
+# Advanced Options
+custom_dimensions = []
+custom_metrics = []
+excluded_ips = []
+excluded_user_roles = ["administrator"]
+cross_domain_tracking = []
+content_grouping = []
+
+# Report Settings
+report_email_enabled = false
+report_email_recipients = []
+report_frequency = "weekly"
+report_format = "pdf"
+
+# Privacy & Compliance
+gdpr_compliant = true
+ccpa_compliant = true
+data_processing_location = "auto"
+
+[plugin.hooks]
+actions = [
+    "init",
+    "wp_head",
+    "wp_footer",
+    "wp_enqueue_scripts",
+    "admin_enqueue_scripts",
+    "template_redirect",
+    "user_login",
+    "woocommerce_thankyou",
+    "woocommerce_add_to_cart",
+    "woocommerce_remove_cart_item",
+    "woocommerce_checkout_process"
+]
+filters = [
+    "the_content",
+    "script_loader_tag",
+    "analytics_tracking_data",
+    "analytics_report_data"
+]
+
+[plugin.rest_api]
+namespace = "rustanalytics/v1"
+endpoints = [
+    # Dashboard endpoints
+    "GET /overview",
+    "GET /realtime",
+    "GET /realtime/active-users",
+    "GET /realtime/pageviews",
+    "GET /realtime/events",
+    "GET /realtime/conversions",
+    "GET /realtime/locations",
+
+    # Audience endpoints
+    "GET /audience/overview",
+    "GET /audience/demographics",
+    "GET /audience/demographics/age",
+    "GET /audience/demographics/gender",
+    "GET /audience/interests",
+    "GET /audience/geo",
+    "GET /audience/geo/countries",
+    "GET /audience/geo/cities",
+    "GET /audience/geo/languages",
+    "GET /audience/behavior",
+    "GET /audience/behavior/new-vs-returning",
+    "GET /audience/behavior/frequency",
+    "GET /audience/behavior/engagement",
+    "GET /audience/technology",
+    "GET /audience/technology/browsers",
+    "GET /audience/technology/os",
+    "GET /audience/technology/devices",
+    "GET /audience/technology/screen-resolutions",
+    "GET /audience/mobile",
+    "GET /audience/benchmarking",
+    "GET /audience/users-flow",
+
+    # Acquisition endpoints
+    "GET /acquisition/overview",
+    "GET /acquisition/all-traffic",
+    "GET /acquisition/channels",
+    "GET /acquisition/source-medium",
+    "GET /acquisition/referrals",
+    "GET /acquisition/campaigns",
+    "GET /acquisition/keywords",
+    "GET /acquisition/social",
+    "GET /acquisition/social/network-referrals",
+    "GET /acquisition/social/landing-pages",
+    "GET /acquisition/social/conversions",
+    "GET /acquisition/search-console",
+    "GET /acquisition/search-console/queries",
+    "GET /acquisition/search-console/landing-pages",
+
+    # Behavior endpoints
+    "GET /behavior/overview",
+    "GET /behavior/flow",
+    "GET /behavior/site-content",
+    "GET /behavior/site-content/all-pages",
+    "GET /behavior/site-content/content-drilldown",
+    "GET /behavior/site-content/landing-pages",
+    "GET /behavior/site-content/exit-pages",
+    "GET /behavior/site-speed",
+    "GET /behavior/site-speed/overview",
+    "GET /behavior/site-speed/page-timings",
+    "GET /behavior/site-speed/speed-suggestions",
+    "GET /behavior/site-search",
+    "GET /behavior/site-search/usage",
+    "GET /behavior/site-search/terms",
+    "GET /behavior/events",
+    "GET /behavior/events/overview",
+    "GET /behavior/events/top-events",
+    "GET /behavior/events/pages",
+    "GET /behavior/publisher",
+    "GET /behavior/experiments",
+
+    # Conversions endpoints
+    "GET /conversions/goals",
+    "GET /conversions/goals/overview",
+    "GET /conversions/goals/urls",
+    "GET /conversions/goals/reverse-path",
+    "GET /conversions/goals/funnel",
+    "GET /conversions/goals/smart-goals",
+    "GET /conversions/ecommerce",
+    "GET /conversions/ecommerce/overview",
+    "GET /conversions/ecommerce/product-performance",
+    "GET /conversions/ecommerce/sales-performance",
+    "GET /conversions/ecommerce/transactions",
+    "GET /conversions/ecommerce/time-to-purchase",
+    "GET /conversions/multi-channel",
+    "GET /conversions/multi-channel/overview",
+    "GET /conversions/multi-channel/assisted-conversions",
+    "GET /conversions/multi-channel/top-paths",
+    "GET /conversions/multi-channel/path-length",
+    "GET /conversions/multi-channel/time-lag",
+    "GET /conversions/attribution",
+    "GET /conversions/attribution/model-comparison",
+
+    # Custom reports endpoints
+    "GET /reports",
+    "POST /reports",
+    "GET /reports/:id",
+    "PUT /reports/:id",
+    "DELETE /reports/:id",
+    "POST /reports/:id/run",
+    "POST /reports/:id/schedule",
+    "POST /reports/:id/export",
+
+    # Settings endpoints
+    "GET /settings",
+    "PUT /settings",
+    "POST /settings/test-connection",
+    "POST /settings/authenticate",
+    "POST /settings/revoke",
+
+    # Data management endpoints
+    "GET /data/export",
+    "POST /data/sync",
+    "DELETE /data/cache",
+
+    # Comparison endpoints
+    "GET /compare/periods",
+    "GET /compare/segments"
+]
+
+[plugin.cron]
+# Sync analytics data hourly
+[[plugin.cron.jobs]]
+hook = "rustanalytics_sync_data"
+schedule = "hourly"
+callback = "sync_analytics_data"
+
+# Daily summary email
+[[plugin.cron.jobs]]
+hook = "rustanalytics_daily_summary"
+schedule = "daily"
+callback = "send_daily_summary"
+
+# Weekly report
+[[plugin.cron.jobs]]
+hook = "rustanalytics_weekly_report"
+schedule = "weekly"
+callback = "generate_weekly_report"
+
+# Cache cleanup
+[[plugin.cron.jobs]]
+hook = "rustanalytics_cache_cleanup"
+schedule = "twicedaily"
+callback = "cleanup_cache"
+
+[plugin.database]
+# Tables for caching and custom reports
+tables = [
+    "rustanalytics_cache",
+    "rustanalytics_reports",
+    "rustanalytics_scheduled_reports",
+    "rustanalytics_goals",
+    "rustanalytics_events",
+    "rustanalytics_sessions"
+]
+
+[plugin.assets]
+# Frontend tracking script
+[[plugin.assets.scripts]]
+handle = "rustanalytics-tracking"
+src = "assets/js/tracking.js"
+deps = []
+version = "1.0.0"
+in_footer = true
+enqueue = "frontend"
+
+# Admin dashboard scripts
+[[plugin.assets.scripts]]
+handle = "rustanalytics-admin"
+src = "assets/js/admin.js"
+deps = ["react", "recharts"]
+version = "1.0.0"
+in_footer = true
+enqueue = "admin"
+
+# Admin styles
+[[plugin.assets.styles]]
+handle = "rustanalytics-admin-style"
+src = "assets/css/admin.css"
+deps = []
+version = "1.0.0"
+enqueue = "admin"
+
+[dependencies]
+# Optional integration with other RustPress plugins
+rustcommerce = { version = ">=1.0.0", optional = true }
+rustseo = { version = ">=1.0.0", optional = true }
+rustforms = { version = ">=1.0.0", optional = true }

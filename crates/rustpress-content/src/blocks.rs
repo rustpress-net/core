@@ -761,8 +761,10 @@ impl BlockParser {
     /// Parse WordPress block comments from HTML
     pub fn parse_block_html(html: &str) -> Vec<Block> {
         let mut blocks = Vec::new();
+        // Note: Rust's regex crate doesn't support backreferences, so we use a simpler pattern
+        // and accept any closing tag format
         let block_regex = regex::Regex::new(
-            r#"<!-- wp:([a-z-]+/[a-z-]+|[a-z-]+)(\s+(\{.*?\}))?\s*(/)?-->(.*?)(?:<!-- /wp:\1 -->)?"#
+            r#"<!-- wp:([a-z-]+/[a-z-]+|[a-z-]+)(\s+(\{.*?\}))?\s*(/)?-->(.*?)(?:<!-- /wp:[a-z-/]+ -->)?"#
         ).unwrap();
 
         for cap in block_regex.captures_iter(html) {

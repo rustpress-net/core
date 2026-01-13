@@ -1,0 +1,9 @@
+target/
+Cargo.lock
+*.log
+.env
+.env.local
+*.pdb
+*.dll
+*.so
+*.dylib

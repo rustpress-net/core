@@ -559,15 +559,7 @@ impl PageService {
     // =====================
 
     fn generate_slug(&self, title: &str) -> String {
-        title
-            .to_lowercase()
-            .chars()
-            .map(|c| if c.is_alphanumeric() { c } else { '-' })
-            .collect::<String>()
-            .split('-')
-            .filter(|s| !s.is_empty())
-            .collect::<Vec<_>>()
-            .join("-")
+        generate_page_slug_impl(title)
     }
 
     fn build_hierarchy(&self, pages: Vec<PageResponse>) -> Vec<PageResponse> {
@@ -640,6 +632,19 @@ impl PageService {
     }
 }
 
+/// Standalone slug generation for pages (for testing without database)
+fn generate_page_slug_impl(title: &str) -> String {
+    title
+        .to_lowercase()
+        .chars()
+        .map(|c| if c.is_alphanumeric() { c } else { '-' })
+        .collect::<String>()
+        .split('-')
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>()
+        .join("-")
+}
+
 impl Default for PageService {
     fn default() -> Self {
         panic!("PageService requires a database pool")
@@ -652,13 +657,8 @@ mod tests {
 
     #[test]
     fn test_generate_slug() {
-        let service = PageService {
-            pool: unsafe { std::mem::zeroed() },
-            site_id: None,
-        };
-
-        assert_eq!(service.generate_slug("About Us"), "about-us");
-        assert_eq!(service.generate_slug("Contact & Support"), "contact-support");
+        assert_eq!(generate_page_slug_impl("About Us"), "about-us");
+        assert_eq!(generate_page_slug_impl("Contact & Support"), "contact-support");
     }
 
     #[test]

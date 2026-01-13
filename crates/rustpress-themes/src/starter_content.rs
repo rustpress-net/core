@@ -246,6 +246,7 @@ impl Default for StarterContent {
 /// Starter content installer
 pub struct StarterContentInstaller {
     content: StarterContent,
+    #[allow(dead_code)]
     theme_path: std::path::PathBuf,
     dry_run: bool,
 }

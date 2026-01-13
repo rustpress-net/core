@@ -1,7 +1,7 @@
 # Rust
 /target/
 **/*.rs.bk
-Cargo.lock
+# Note: Cargo.lock is committed for reproducible builds
 
 # IDE
 .idea/
@@ -41,3 +41,12 @@ storage/
 
 # Documentation build
 /docs/book/
+
+# Artifacts and temp files
+artifacts-*.json
+artifacts-local/
+nul
+*.pdb
+
+# Node modules (for admin-ui)
+node_modules/

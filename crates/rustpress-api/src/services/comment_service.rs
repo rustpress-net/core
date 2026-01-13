@@ -103,7 +103,7 @@ impl From<CommentRow> for CommentResponse {
             depth: row.depth,
             content: row.content,
             content_html: row.content_html,
-            status: row.status,
+            status: row.status.parse().unwrap_or(CommentStatus::Pending),
             author,
             likes_count: row.likes_count,
             replies_count: row.replies_count,
@@ -134,7 +134,7 @@ impl From<CommentWithAuthor> for CommentResponse {
             depth: row.depth,
             content: row.content,
             content_html: row.content_html,
-            status: row.status,
+            status: row.status.parse().unwrap_or(CommentStatus::Pending),
             author,
             likes_count: row.likes_count,
             replies_count: row.replies_count,
@@ -292,7 +292,7 @@ impl CommentService {
             content: request.content,
             content_html,
             user_agent,
-            status: initial_status,
+            status: initial_status.to_string(),
         };
 
         let comment = self.repo().create(&create).await?;
@@ -475,42 +475,54 @@ impl CommentService {
     fn calculate_spam_score(
         &self,
         request: &CreateCommentRequest,
-        _ip: &Option<String>,
-        _user_agent: &Option<String>,
+        ip: &Option<String>,
+        user_agent: &Option<String>,
     ) -> f64 {
-        let mut score = 0.0;
-        let content = &request.content;
-
-        // Check for common spam patterns
-        let spam_keywords = ["viagra", "casino", "lottery", "click here", "buy now", "free money"];
-        let content_lower = content.to_lowercase();
-        for keyword in &spam_keywords {
-            if content_lower.contains(keyword) {
-                score += 0.3;
-            }
-        }
-
-        // Check for excessive links
-        let link_count = content.matches("http").count();
-        if link_count > 3 {
-            score += 0.2 * (link_count - 3) as f64;
-        }
-
-        // Check for all caps
-        let caps_ratio = content.chars().filter(|c| c.is_uppercase()).count() as f64
-            / content.chars().filter(|c| c.is_alphabetic()).count().max(1) as f64;
-        if caps_ratio > 0.7 {
-            score += 0.2;
-        }
-
-        // Very short or very long comments
-        let len = content.len();
-        if len < 10 || len > 5000 {
-            score += 0.1;
-        }
-
-        score.min(1.0)
+        calculate_spam_score_impl(request, ip, user_agent)
     }
+}
+
+/// Standalone spam score calculation (for testing without database)
+fn calculate_spam_score_impl(
+    request: &CreateCommentRequest,
+    _ip: &Option<String>,
+    _user_agent: &Option<String>,
+) -> f64 {
+    let mut score = 0.0;
+    let content = &request.content;
+
+    // Check for common spam patterns
+    let spam_keywords = ["viagra", "casino", "lottery", "click here", "buy now", "free money"];
+    let content_lower = content.to_lowercase();
+    for keyword in &spam_keywords {
+        if content_lower.contains(keyword) {
+            score += 0.3;
+        }
+    }
+
+    // Check for excessive links
+    let link_count = content.matches("http").count();
+    if link_count > 3 {
+        score += 0.2 * (link_count - 3) as f64;
+    }
+
+    // Check for all caps
+    let caps_ratio = content.chars().filter(|c| c.is_uppercase()).count() as f64
+        / content.chars().filter(|c| c.is_alphabetic()).count().max(1) as f64;
+    if caps_ratio > 0.7 {
+        score += 0.2;
+    }
+
+    // Very short or very long comments
+    let len = content.len();
+    if len < 10 || len > 5000 {
+        score += 0.1;
+    }
+
+    score.min(1.0)
+}
+
+impl CommentService {
 
     /// Render markdown content to HTML
     /// Supports limited markdown for comments: bold, italic, links, code, lists
@@ -562,11 +574,6 @@ mod tests {
 
     #[test]
     fn test_spam_score_clean() {
-        let service = CommentService {
-            pool: unsafe { std::mem::zeroed() }, // Just for test
-            site_id: None,
-        };
-
         let request = CreateCommentRequest {
             post_id: Uuid::new_v4(),
             parent_id: None,
@@ -576,17 +583,12 @@ mod tests {
             author_url: None,
         };
 
-        let score = service.calculate_spam_score(&request, &None, &None);
+        let score = calculate_spam_score_impl(&request, &None, &None);
         assert!(score < 0.3);
     }
 
     #[test]
     fn test_spam_score_spammy() {
-        let service = CommentService {
-            pool: unsafe { std::mem::zeroed() },
-            site_id: None,
-        };
-
         let request = CreateCommentRequest {
             post_id: Uuid::new_v4(),
             parent_id: None,
@@ -596,7 +598,7 @@ mod tests {
             author_url: None,
         };
 
-        let score = service.calculate_spam_score(&request, &None, &None);
+        let score = calculate_spam_score_impl(&request, &None, &None);
         assert!(score > 0.5);
     }
 }

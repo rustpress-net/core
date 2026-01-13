@@ -1,0 +1,123 @@
+[package]
+name = "rustcloudflare"
+version = "1.0.1"
+edition = "2021"
+authors = ["RustPress Team <team@rustpress.io>"]
+description = "Seamless Cloudflare integration for RustPress - CDN, DNS, Security, Workers, R2, KV, D1, and more"
+license = "MIT"
+repository = "https://github.com/rustpress/rustcloudflare"
+keywords = ["cloudflare", "cdn", "security", "rustpress", "plugin"]
+categories = ["web-programming", "caching", "network-programming"]
+
+[lib]
+name = "rustcloudflare"
+path = "src/lib.rs"
+
+[dependencies]
+# RustPress Core Dependencies
+rustpress-core = { path = "../../crates/rustpress-core" }
+rustpress-plugins = { path = "../../crates/rustpress-plugins" }
+rustpress-database = { path = "../../crates/rustpress-database" }
+rustpress-api = { path = "../../crates/rustpress-api" }
+rustpress-events = { path = "../../crates/rustpress-events" }
+
+# Async Runtime
+tokio = { version = "1.35", features = ["full"] }
+async-trait = "0.1"
+futures = "0.3"
+
+# Web Framework
+axum = { version = "0.7", features = ["macros", "multipart"] }
+tower = "0.4"
+tower-http = { version = "0.5", features = ["cors", "trace", "compression-gzip"] }
+hyper = { version = "1.1", features = ["full"] }
+
+# HTTP Client
+reqwest = { version = "0.11", features = ["json", "multipart", "stream", "rustls-tls"], default-features = false }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_urlencoded = "0.7"
+toml = "0.8"
+
+# Database
+sqlx = { version = "0.7", features = ["runtime-tokio", "postgres", "mysql", "sqlite", "uuid", "chrono", "json"] }
+
+# Validation
+validator = { version = "0.16", features = ["derive"] }
+
+# Error Handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Logging & Tracing
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+
+# Utilities
+uuid = { version = "1.6", features = ["v4", "v7", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+url = "2.5"
+urlencoding = "2.1"
+base64 = "0.21"
+sha2 = "0.10"
+hex = "0.4"
+rand = "0.8"
+regex = "1.10"
+semver = "1.0"
+
+# Rate Limiting
+governor = "0.6"
+
+# Caching
+moka = { version = "0.12", features = ["future"] }
+
+# Configuration
+config = "0.14"
+dotenvy = "0.15"
+
+# Cloudflare-specific
+# AWS SDK for R2 (S3-compatible)
+aws-config = { version = "1.1", default-features = false, features = ["behavior-version-latest"] }
+aws-sdk-s3 = { version = "1.12", default-features = false, features = ["behavior-version-latest"] }
+aws-credential-types = "1.1"
+aws-smithy-runtime = { version = "1.0", default-features = false, features = ["connector-hyper-0-14-x", "tls-rustls"] }
+
+# Multipart uploads
+multer = "3.0"
+bytes = "1.5"
+
+# Template rendering (for admin pages)
+minijinja = { version = "1.0", features = ["loader"] }
+
+# Metrics
+metrics = "0.22"
+
+[dev-dependencies]
+tokio-test = "0.4"
+mockall = "0.12"
+wiremock = "0.5"
+pretty_assertions = "1.4"
+fake = { version = "2.9", features = ["derive"] }
+proptest = "1.4"
+
+[features]
+default = ["full"]
+full = ["workers", "r2", "d1", "stream", "analytics"]
+workers = []
+r2 = []
+d1 = []
+stream = []
+analytics = []
+enterprise = ["bot-management", "argo", "load-balancing"]
+bot-management = []
+argo = []
+load-balancing = []
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+opt-level = 3

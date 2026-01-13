@@ -2,9 +2,8 @@
 //!
 //! Authentication and authorization middleware for protecting routes.
 
-use crate::jwt::{Claims, JwtManager, TokenType};
+use crate::jwt::{Claims, JwtManager};
 use crate::permission::{Permission, PermissionChecker};
-use crate::session::{Session, SessionManager, SessionStore};
 use rustpress_core::error::{Error, Result};
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;

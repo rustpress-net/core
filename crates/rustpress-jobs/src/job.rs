@@ -4,6 +4,7 @@ use async_trait::async_trait;
 use chrono::{DateTime, Utc};
 use rustpress_core::error::Result;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
+#[allow(unused_imports)]
 use std::any::Any;
 use uuid::Uuid;
 

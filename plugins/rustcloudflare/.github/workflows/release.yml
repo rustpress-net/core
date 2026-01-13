@@ -1,0 +1,295 @@
+name: Release Plugin
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    # Only run if commit message starts with [RELEASE]
+    if: startsWith(github.event.head_commit.message, '[RELEASE]')
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Rust
+        uses: dtolnay/rust-action@stable
+        with:
+          toolchain: stable
+          targets: x86_64-unknown-linux-gnu,x86_64-pc-windows-gnu,x86_64-apple-darwin,aarch64-apple-darwin
+
+      - name: Install cross-compilation dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-mingw-w64-x86-64 libssl-dev pkg-config
+
+      - name: Get current version
+        id: current_version
+        run: |
+          CURRENT_VERSION=$(grep -m1 'version = "' plugin.toml | sed 's/.*version = "\([^"]*\)".*/\1/')
+          echo "version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+          echo "Current version: $CURRENT_VERSION"
+
+      - name: Parse version bump type from commit message
+        id: bump_type
+        run: |
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+
+          # Check for version bump type in commit body (after newline)
+          if echo "$COMMIT_MSG" | grep -qi "MAJOR"; then
+            BUMP_TYPE="major"
+          elif echo "$COMMIT_MSG" | grep -qi "MINOR"; then
+            BUMP_TYPE="minor"
+          elif echo "$COMMIT_MSG" | grep -qi "PATCH"; then
+            BUMP_TYPE="patch"
+          else
+            # Default to patch if not specified
+            BUMP_TYPE="patch"
+          fi
+
+          echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
+          echo "Bump type: $BUMP_TYPE"
+
+      - name: Calculate new version
+        id: new_version
+        run: |
+          CURRENT="${{ steps.current_version.outputs.version }}"
+          BUMP_TYPE="${{ steps.bump_type.outputs.bump_type }}"
+
+          # Parse semantic version
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+
+          case $BUMP_TYPE in
+            major)
+              MAJOR=$((MAJOR + 1))
+              MINOR=0
+              PATCH=0
+              ;;
+            minor)
+              MINOR=$((MINOR + 1))
+              PATCH=0
+              ;;
+            patch)
+              PATCH=$((PATCH + 1))
+              ;;
+          esac
+
+          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "New version: $NEW_VERSION"
+
+      - name: Update version in plugin.toml
+        run: |
+          NEW_VERSION="${{ steps.new_version.outputs.version }}"
+          sed -i "s/^version = \"[^\"]*\"/version = \"$NEW_VERSION\"/" plugin.toml
+
+      - name: Update version in Cargo.toml
+        run: |
+          NEW_VERSION="${{ steps.new_version.outputs.version }}"
+          sed -i "0,/^version = \"[^\"]*\"/s//version = \"$NEW_VERSION\"/" Cargo.toml
+
+      - name: Build Rust binary (Linux x86_64)
+        run: |
+          cargo build --release --target x86_64-unknown-linux-gnu
+        env:
+          SQLX_OFFLINE: true
+
+      - name: Build Rust binary (Windows x86_64)
+        run: |
+          cargo build --release --target x86_64-pc-windows-gnu
+        env:
+          SQLX_OFFLINE: true
+        continue-on-error: true
+
+      - name: Build admin UI
+        working-directory: admin-ui
+        run: |
+          npm ci
+          npm run build
+
+      - name: Create release package
+        run: |
+          VERSION="${{ steps.new_version.outputs.version }}"
+          PACKAGE_NAME="rustcloudflare-v${VERSION}"
+
+          # Create release directories for each platform
+          mkdir -p "release/${PACKAGE_NAME}-linux-x86_64"
+          mkdir -p "release/${PACKAGE_NAME}-windows-x86_64"
+
+          # --- Linux x86_64 Package ---
+          # Copy compiled binary
+          if [ -f "target/x86_64-unknown-linux-gnu/release/librustcloudflare.so" ]; then
+            cp target/x86_64-unknown-linux-gnu/release/librustcloudflare.so "release/${PACKAGE_NAME}-linux-x86_64/"
+          elif [ -f "target/x86_64-unknown-linux-gnu/release/librustcloudflare.a" ]; then
+            cp target/x86_64-unknown-linux-gnu/release/librustcloudflare.a "release/${PACKAGE_NAME}-linux-x86_64/"
+          elif [ -f "target/x86_64-unknown-linux-gnu/release/rustcloudflare" ]; then
+            cp target/x86_64-unknown-linux-gnu/release/rustcloudflare "release/${PACKAGE_NAME}-linux-x86_64/"
+          fi
+
+          # Copy all .rlib files (Rust libraries)
+          find target/x86_64-unknown-linux-gnu/release -maxdepth 1 -name "*.rlib" -exec cp {} "release/${PACKAGE_NAME}-linux-x86_64/" \; 2>/dev/null || true
+
+          # Copy plugin metadata and assets
+          cp -r migrations "release/${PACKAGE_NAME}-linux-x86_64/"
+          [ -d templates ] && cp -r templates "release/${PACKAGE_NAME}-linux-x86_64/" || true
+          [ -d assets ] && cp -r assets "release/${PACKAGE_NAME}-linux-x86_64/" || true
+          cp plugin.toml "release/${PACKAGE_NAME}-linux-x86_64/"
+
+          # Copy built admin UI
+          mkdir -p "release/${PACKAGE_NAME}-linux-x86_64/admin-ui"
+          cp -r admin-ui/dist "release/${PACKAGE_NAME}-linux-x86_64/admin-ui/"
+
+          # --- Windows x86_64 Package ---
+          if [ -f "target/x86_64-pc-windows-gnu/release/rustcloudflare.dll" ]; then
+            cp target/x86_64-pc-windows-gnu/release/rustcloudflare.dll "release/${PACKAGE_NAME}-windows-x86_64/"
+          elif [ -f "target/x86_64-pc-windows-gnu/release/rustcloudflare.exe" ]; then
+            cp target/x86_64-pc-windows-gnu/release/rustcloudflare.exe "release/${PACKAGE_NAME}-windows-x86_64/"
+          fi
+
+          # Copy plugin metadata and assets for Windows
+          cp -r migrations "release/${PACKAGE_NAME}-windows-x86_64/"
+          [ -d templates ] && cp -r templates "release/${PACKAGE_NAME}-windows-x86_64/" || true
+          [ -d assets ] && cp -r assets "release/${PACKAGE_NAME}-windows-x86_64/" || true
+          cp plugin.toml "release/${PACKAGE_NAME}-windows-x86_64/"
+
+          # Copy built admin UI for Windows
+          mkdir -p "release/${PACKAGE_NAME}-windows-x86_64/admin-ui"
+          cp -r admin-ui/dist "release/${PACKAGE_NAME}-windows-x86_64/admin-ui/"
+
+          # Create README for the release
+          for dir in "release/${PACKAGE_NAME}-linux-x86_64" "release/${PACKAGE_NAME}-windows-x86_64"; do
+            cat > "$dir/README.md" << 'EOF'
+          # RustCloudflare Plugin
+
+          Seamless Cloudflare integration for RustPress - CDN, DNS, Security, Workers, R2, KV, D1, Stream, and more.
+
+          ## Installation
+
+          1. Extract this archive to your RustPress plugins directory:
+             ```
+             /path/to/rustpress/plugins/rustcloudflare/
+             ```
+
+          2. Activate the plugin in RustPress admin panel
+
+          3. Configure your Cloudflare API credentials in the plugin settings
+
+          ## Requirements
+
+          - RustPress 1.0.0 or higher
+          - Cloudflare account with API token
+
+          ## Features
+
+          - Cache Management (purge by URL, tags, prefix)
+          - DNS Records Management
+          - SSL/TLS Configuration
+          - Security Settings (WAF, Firewall Rules, Under Attack Mode)
+          - Workers Deployment and KV Storage
+          - R2 Object Storage
+          - D1 Serverless Databases
+          - Stream Video Hosting
+          - Analytics and Traffic Insights
+
+          ## Documentation
+
+          Visit https://rustpress.io/plugins/rustcloudflare for full documentation.
+          EOF
+          done
+
+          # Create zip files
+          cd release
+          zip -r "../${PACKAGE_NAME}-linux-x86_64.zip" "${PACKAGE_NAME}-linux-x86_64"
+
+          # Only create Windows zip if the package has binaries
+          if [ -n "$(ls -A ${PACKAGE_NAME}-windows-x86_64/*.dll 2>/dev/null || ls -A ${PACKAGE_NAME}-windows-x86_64/*.exe 2>/dev/null)" ]; then
+            zip -r "../${PACKAGE_NAME}-windows-x86_64.zip" "${PACKAGE_NAME}-windows-x86_64"
+          fi
+          cd ..
+
+          echo "package_name=${PACKAGE_NAME}" >> $GITHUB_OUTPUT
+          echo "linux_zip=${PACKAGE_NAME}-linux-x86_64.zip" >> $GITHUB_OUTPUT
+          echo "windows_zip=${PACKAGE_NAME}-windows-x86_64.zip" >> $GITHUB_OUTPUT
+        id: package
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add plugin.toml Cargo.toml
+          git commit -m "chore: bump version to ${{ steps.new_version.outputs.version }}"
+          git push
+
+      - name: Create Git tag
+        run: |
+          VERSION="${{ steps.new_version.outputs.version }}"
+          git tag -a "v${VERSION}" -m "Release v${VERSION}"
+          git push origin "v${VERSION}"
+
+      - name: Extract release notes from commit
+        id: release_notes
+        run: |
+          COMMIT_MSG="${{ github.event.head_commit.message }}"
+
+          # Extract everything after the first line as release notes
+          NOTES=$(echo "$COMMIT_MSG" | tail -n +2 | sed '/^$/d' | grep -v -E '^(MAJOR|MINOR|PATCH)$' || echo "")
+
+          if [ -z "$NOTES" ]; then
+            NOTES="Release version ${{ steps.new_version.outputs.version }}"
+          fi
+
+          # Handle multiline output
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$NOTES" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.new_version.outputs.version }}
+          name: RustCloudflare v${{ steps.new_version.outputs.version }}
+          body: |
+            ## RustCloudflare v${{ steps.new_version.outputs.version }}
+
+            ${{ steps.release_notes.outputs.notes }}
+
+            ### Installation
+
+            1. Download the appropriate package for your platform:
+               - **Linux x86_64**: `${{ steps.package.outputs.linux_zip }}`
+               - **Windows x86_64**: `${{ steps.package.outputs.windows_zip }}`
+            2. Extract to your RustPress plugins directory
+            3. Activate the plugin in the admin panel
+
+            ### What's Included
+
+            - Pre-compiled binary (no Rust source code)
+            - Built admin UI
+            - Database migrations
+            - Plugin configuration
+
+            ### Changelog
+
+            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
+          files: |
+            ${{ steps.package.outputs.linux_zip }}
+            ${{ steps.package.outputs.windows_zip }}
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

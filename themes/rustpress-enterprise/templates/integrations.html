@@ -1,0 +1,397 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Integrations - {{ site.title }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="page-hero">
+  <div class="hero-particles"></div>
+  <div class="container">
+    <div class="page-hero-content" data-animate="fade-up">
+      <span class="hero-badge">
+        <span class="badge-dot"></span>
+        100+ Integrations
+      </span>
+      <h1 class="page-hero-title">
+        Connect your <span class="gradient-text">entire stack</span>
+      </h1>
+      <p class="page-hero-description">
+        Seamlessly integrate with the tools you already use. From CRMs to analytics,
+        payments to communication - we've got you covered.
+      </p>
+      <div class="hero-search" data-animate="fade-up" data-delay="100">
+        <div class="search-input-wrapper">
+          <svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="M21 21l-4.35-4.35"/>
+          </svg>
+          <input type="text" id="integration-search" placeholder="Search integrations..." class="search-input">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Integration Categories -->
+<section class="integration-categories">
+  <div class="container">
+    <div class="category-tabs" data-animate="fade-up">
+      <button class="category-tab active" data-category="all">All</button>
+      <button class="category-tab" data-category="crm">CRM</button>
+      <button class="category-tab" data-category="analytics">Analytics</button>
+      <button class="category-tab" data-category="payment">Payments</button>
+      <button class="category-tab" data-category="communication">Communication</button>
+      <button class="category-tab" data-category="productivity">Productivity</button>
+      <button class="category-tab" data-category="developer">Developer</button>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Integrations -->
+<section class="featured-integrations">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <span class="section-badge">Featured</span>
+      <h2 class="section-title">Most popular integrations</h2>
+    </div>
+
+    <div class="integrations-featured-grid" data-animate="fade-up">
+      <div class="integration-card-large" data-category="communication">
+        <div class="integration-card-header">
+          <div class="integration-logo-box">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M5.042 15.165a2.528 2.528 0 0 1-2.52 2.523A2.528 2.528 0 0 1 0 15.165a2.527 2.527 0 0 1 2.522-2.52h2.52v2.52zM6.313 15.165a2.527 2.527 0 0 1 2.521-2.52 2.527 2.527 0 0 1 2.521 2.52v6.313A2.528 2.528 0 0 1 8.834 24a2.528 2.528 0 0 1-2.521-2.522v-6.313zM8.834 5.042a2.528 2.528 0 0 1-2.521-2.52A2.528 2.528 0 0 1 8.834 0a2.528 2.528 0 0 1 2.521 2.522v2.52H8.834zM8.834 6.313a2.528 2.528 0 0 1 2.521 2.521 2.528 2.528 0 0 1-2.521 2.521H2.522A2.528 2.528 0 0 1 0 8.834a2.528 2.528 0 0 1 2.522-2.521h6.312zM18.956 8.834a2.528 2.528 0 0 1 2.522-2.521A2.528 2.528 0 0 1 24 8.834a2.528 2.528 0 0 1-2.522 2.521h-2.522V8.834zM17.688 8.834a2.528 2.528 0 0 1-2.523 2.521 2.527 2.527 0 0 1-2.52-2.521V2.522A2.527 2.527 0 0 1 15.165 0a2.528 2.528 0 0 1 2.523 2.522v6.312zM15.165 18.956a2.528 2.528 0 0 1 2.523 2.522A2.528 2.528 0 0 1 15.165 24a2.527 2.527 0 0 1-2.52-2.522v-2.522h2.52zM15.165 17.688a2.527 2.527 0 0 1-2.52-2.523 2.526 2.526 0 0 1 2.52-2.52h6.313A2.527 2.527 0 0 1 24 15.165a2.528 2.528 0 0 1-2.522 2.523h-6.313z"/>
+            </svg>
+          </div>
+          <div class="integration-badge">Popular</div>
+        </div>
+        <div class="integration-card-content">
+          <h3>Slack</h3>
+          <p>Get real-time notifications, create tasks from messages, and share reports directly in your Slack channels.</p>
+          <ul class="integration-features">
+            <li>Real-time notifications</li>
+            <li>Slash commands</li>
+            <li>Channel sharing</li>
+          </ul>
+        </div>
+        <div class="integration-card-footer">
+          <a href="#" class="btn btn--outline btn--sm">Learn More</a>
+          <a href="#" class="btn btn--primary btn--sm">Connect</a>
+        </div>
+      </div>
+
+      <div class="integration-card-large" data-category="crm">
+        <div class="integration-card-header">
+          <div class="integration-logo-box salesforce">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+            </svg>
+          </div>
+          <div class="integration-badge">Enterprise</div>
+        </div>
+        <div class="integration-card-content">
+          <h3>Salesforce</h3>
+          <p>Sync contacts, opportunities, and custom objects between Salesforce and RustPress in real-time.</p>
+          <ul class="integration-features">
+            <li>Bi-directional sync</li>
+            <li>Custom field mapping</li>
+            <li>Workflow triggers</li>
+          </ul>
+        </div>
+        <div class="integration-card-footer">
+          <a href="#" class="btn btn--outline btn--sm">Learn More</a>
+          <a href="#" class="btn btn--primary btn--sm">Connect</a>
+        </div>
+      </div>
+
+      <div class="integration-card-large" data-category="payment">
+        <div class="integration-card-header">
+          <div class="integration-logo-box stripe">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M13.976 9.15c-2.172-.806-3.356-1.426-3.356-2.409 0-.831.683-1.305 1.901-1.305 2.227 0 4.515.858 6.09 1.631l.89-5.494C18.252.975 15.697 0 12.165 0 9.667 0 7.589.654 6.104 1.872 4.56 3.147 3.757 4.992 3.757 7.218c0 4.039 2.467 5.76 6.476 7.219 2.585.92 3.445 1.574 3.445 2.583 0 .98-.84 1.545-2.354 1.545-1.875 0-4.965-.921-6.99-2.109l-.9 5.555C5.175 22.99 8.385 24 11.714 24c2.641 0 4.843-.624 6.328-1.813 1.664-1.305 2.525-3.236 2.525-5.732 0-4.128-2.524-5.851-6.591-7.305z"/>
+            </svg>
+          </div>
+          <div class="integration-badge">Popular</div>
+        </div>
+        <div class="integration-card-content">
+          <h3>Stripe</h3>
+          <p>Process payments, manage subscriptions, and sync billing data automatically with Stripe.</p>
+          <ul class="integration-features">
+            <li>Payment processing</li>
+            <li>Subscription sync</li>
+            <li>Invoice automation</li>
+          </ul>
+        </div>
+        <div class="integration-card-footer">
+          <a href="#" class="btn btn--outline btn--sm">Learn More</a>
+          <a href="#" class="btn btn--primary btn--sm">Connect</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- All Integrations -->
+<section class="all-integrations">
+  <div class="container">
+    <div class="section-header" data-animate="fade-up">
+      <h2 class="section-title">All integrations</h2>
+    </div>
+
+    <div class="integrations-grid" data-animate="fade-up" id="integrations-grid">
+      <!-- CRM -->
+      <div class="integration-card" data-category="crm">
+        <div class="integration-logo-box"><span>SF</span></div>
+        <h4>Salesforce</h4>
+        <p>CRM & Sales</p>
+      </div>
+      <div class="integration-card" data-category="crm">
+        <div class="integration-logo-box"><span>HS</span></div>
+        <h4>HubSpot</h4>
+        <p>CRM & Marketing</p>
+      </div>
+      <div class="integration-card" data-category="crm">
+        <div class="integration-logo-box"><span>PD</span></div>
+        <h4>Pipedrive</h4>
+        <p>Sales CRM</p>
+      </div>
+      <div class="integration-card" data-category="crm">
+        <div class="integration-logo-box"><span>ZH</span></div>
+        <h4>Zoho CRM</h4>
+        <p>CRM Suite</p>
+      </div>
+
+      <!-- Analytics -->
+      <div class="integration-card" data-category="analytics">
+        <div class="integration-logo-box"><span>GA</span></div>
+        <h4>Google Analytics</h4>
+        <p>Web Analytics</p>
+      </div>
+      <div class="integration-card" data-category="analytics">
+        <div class="integration-logo-box"><span>MP</span></div>
+        <h4>Mixpanel</h4>
+        <p>Product Analytics</p>
+      </div>
+      <div class="integration-card" data-category="analytics">
+        <div class="integration-logo-box"><span>AM</span></div>
+        <h4>Amplitude</h4>
+        <p>Analytics Platform</p>
+      </div>
+      <div class="integration-card" data-category="analytics">
+        <div class="integration-logo-box"><span>SG</span></div>
+        <h4>Segment</h4>
+        <p>Customer Data</p>
+      </div>
+
+      <!-- Payment -->
+      <div class="integration-card" data-category="payment">
+        <div class="integration-logo-box"><span>ST</span></div>
+        <h4>Stripe</h4>
+        <p>Payments</p>
+      </div>
+      <div class="integration-card" data-category="payment">
+        <div class="integration-logo-box"><span>PP</span></div>
+        <h4>PayPal</h4>
+        <p>Payments</p>
+      </div>
+      <div class="integration-card" data-category="payment">
+        <div class="integration-logo-box"><span>SQ</span></div>
+        <h4>Square</h4>
+        <p>Payments & POS</p>
+      </div>
+      <div class="integration-card" data-category="payment">
+        <div class="integration-logo-box"><span>BR</span></div>
+        <h4>Braintree</h4>
+        <p>Payments</p>
+      </div>
+
+      <!-- Communication -->
+      <div class="integration-card" data-category="communication">
+        <div class="integration-logo-box"><span>SL</span></div>
+        <h4>Slack</h4>
+        <p>Team Chat</p>
+      </div>
+      <div class="integration-card" data-category="communication">
+        <div class="integration-logo-box"><span>MT</span></div>
+        <h4>Microsoft Teams</h4>
+        <p>Collaboration</p>
+      </div>
+      <div class="integration-card" data-category="communication">
+        <div class="integration-logo-box"><span>ZM</span></div>
+        <h4>Zoom</h4>
+        <p>Video Meetings</p>
+      </div>
+      <div class="integration-card" data-category="communication">
+        <div class="integration-logo-box"><span>IC</span></div>
+        <h4>Intercom</h4>
+        <p>Customer Support</p>
+      </div>
+
+      <!-- Productivity -->
+      <div class="integration-card" data-category="productivity">
+        <div class="integration-logo-box"><span>AS</span></div>
+        <h4>Asana</h4>
+        <p>Project Management</p>
+      </div>
+      <div class="integration-card" data-category="productivity">
+        <div class="integration-logo-box"><span>TR</span></div>
+        <h4>Trello</h4>
+        <p>Kanban Boards</p>
+      </div>
+      <div class="integration-card" data-category="productivity">
+        <div class="integration-logo-box"><span>NT</span></div>
+        <h4>Notion</h4>
+        <p>All-in-one Workspace</p>
+      </div>
+      <div class="integration-card" data-category="productivity">
+        <div class="integration-logo-box"><span>JR</span></div>
+        <h4>Jira</h4>
+        <p>Issue Tracking</p>
+      </div>
+
+      <!-- Developer -->
+      <div class="integration-card" data-category="developer">
+        <div class="integration-logo-box"><span>GH</span></div>
+        <h4>GitHub</h4>
+        <p>Code Repository</p>
+      </div>
+      <div class="integration-card" data-category="developer">
+        <div class="integration-logo-box"><span>GL</span></div>
+        <h4>GitLab</h4>
+        <p>DevOps Platform</p>
+      </div>
+      <div class="integration-card" data-category="developer">
+        <div class="integration-logo-box"><span>BB</span></div>
+        <h4>Bitbucket</h4>
+        <p>Code & CI/CD</p>
+      </div>
+      <div class="integration-card" data-category="developer">
+        <div class="integration-logo-box"><span>ZP</span></div>
+        <h4>Zapier</h4>
+        <p>Automation</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- API Section -->
+<section class="api-section">
+  <div class="container">
+    <div class="api-card glass-card" data-animate="fade-up">
+      <div class="api-content">
+        <span class="section-badge">For Developers</span>
+        <h2>Build custom integrations</h2>
+        <p>Our comprehensive REST API and webhooks let you build custom integrations for any use case. Access documentation, SDKs, and sample code to get started quickly.</p>
+        <div class="api-features">
+          <div class="api-feature">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>RESTful API</span>
+          </div>
+          <div class="api-feature">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>Webhooks</span>
+          </div>
+          <div class="api-feature">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>SDKs</span>
+          </div>
+          <div class="api-feature">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span>OAuth 2.0</span>
+          </div>
+        </div>
+        <a href="/api" class="btn btn--primary">
+          View API Documentation
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M5 12h14M12 5l7 7-7 7"/>
+          </svg>
+        </a>
+      </div>
+      <div class="api-visual">
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-dot"></span>
+            <span class="code-dot"></span>
+            <span class="code-dot"></span>
+            <span class="code-title">Example Request</span>
+          </div>
+          <pre class="code-content"><code><span class="code-keyword">curl</span> -X POST <span class="code-string">'https://api.rustpress.io/v1/content'</span> \
+  -H <span class="code-string">'Authorization: Bearer $API_KEY'</span> \
+  -H <span class="code-string">'Content-Type: application/json'</span> \
+  -d <span class="code-string">'{
+    "source": "custom_app",
+    "event": "user_signup",
+    "properties": {
+      "plan": "professional"
+    }
+  }'</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-card glass-card" data-animate="fade-up">
+      <div class="cta-content">
+        <h2>Don't see your integration?</h2>
+        <p>Request a new integration or build your own using our API.</p>
+        <div class="cta-buttons">
+          <a href="/contact" class="btn btn--primary btn--glow btn--lg">Request Integration</a>
+          <a href="/api" class="btn btn--outline btn--lg">Explore API</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Category filter
+  const categoryTabs = document.querySelectorAll('.category-tab');
+  const integrationCards = document.querySelectorAll('.integration-card, .integration-card-large');
+
+  categoryTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const category = tab.dataset.category;
+
+      categoryTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+
+      integrationCards.forEach(card => {
+        if (category === 'all' || card.dataset.category === category) {
+          card.style.display = '';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    });
+  });
+
+  // Search functionality
+  const searchInput = document.getElementById('integration-search');
+  searchInput.addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase();
+
+    integrationCards.forEach(card => {
+      const name = card.querySelector('h3, h4').textContent.toLowerCase();
+      if (name.includes(query)) {
+        card.style.display = '';
+      } else {
+        card.style.display = 'none';
+      }
+    });
+  });
+});
+</script>
+{% endblock %}

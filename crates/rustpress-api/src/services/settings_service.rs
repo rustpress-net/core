@@ -1,7 +1,7 @@
 //! Settings service for managing site configuration.
 
 use rustpress_core::error::{Error, Result};
-use rustpress_database::repository::options::{OptionRow, OptionsRepository, SettingsGroup};
+use rustpress_database::repository::options::{OptionRow, OptionsRepository};
 use sqlx::PgPool;
 use uuid::Uuid;
 

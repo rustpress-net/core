@@ -115,16 +115,39 @@ impl ShortcodeRegistry {
     /// Parse shortcode from content
     pub fn parse(&self, content: &str) -> Vec<ParsedShortcode> {
         let mut results = Vec::new();
-        let re = regex::Regex::new(r"\[(\w+)([^\]]*)\](?:(.*?)\[/\1\])?").unwrap();
+        // Match opening shortcode tags: [tag attrs]
+        let open_re = regex::Regex::new(r"\[(\w+)([^\]]*)\]").unwrap();
 
-        for cap in re.captures_iter(content) {
+        for cap in open_re.captures_iter(content) {
             let tag = cap.get(1).map(|m| m.as_str()).unwrap_or("");
-            if self.exists(tag) {
+            if !self.exists(tag) {
+                continue;
+            }
+
+            let open_match = cap.get(0).unwrap();
+            let attrs_str = cap.get(2).map(|m| m.as_str()).unwrap_or("");
+
+            // Look for corresponding closing tag [/tag]
+            let close_tag = format!("[/{}]", tag);
+            let after_open = &content[open_match.end()..];
+
+            if let Some(close_pos) = after_open.find(&close_tag) {
+                // Found closing tag - extract content between
+                let inner_content = &after_open[..close_pos];
+                let full_match = format!("{}{}{}", open_match.as_str(), inner_content, close_tag);
                 results.push(ParsedShortcode {
                     tag: tag.to_string(),
-                    attributes: Self::parse_attributes(cap.get(2).map(|m| m.as_str()).unwrap_or("")),
-                    content: cap.get(3).map(|m| m.as_str().to_string()),
-                    full_match: cap.get(0).map(|m| m.as_str().to_string()).unwrap_or_default(),
+                    attributes: Self::parse_attributes(attrs_str),
+                    content: Some(inner_content.to_string()),
+                    full_match,
+                });
+            } else {
+                // Self-closing shortcode (no closing tag)
+                results.push(ParsedShortcode {
+                    tag: tag.to_string(),
+                    attributes: Self::parse_attributes(attrs_str),
+                    content: None,
+                    full_match: open_match.as_str().to_string(),
                 });
             }
         }

@@ -3,7 +3,6 @@
 //! Color palette (201), typography (202), and layout (203) management.
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::sync::Arc;
 use parking_lot::RwLock;
 
@@ -110,6 +109,7 @@ fn srgb_to_linear(value: f64) -> f64 {
 pub struct ColorPalette {
     colors: Arc<RwLock<Vec<Color>>>,
     gradients: Arc<RwLock<Vec<Gradient>>>,
+    #[allow(dead_code)]
     duotones: Arc<RwLock<Vec<Duotone>>>,
 }
 
@@ -701,7 +701,7 @@ mod tests {
         let black = Color::new("black", "Black", "#000000");
 
         let ratio = white.contrast_ratio(&black).unwrap();
-        assert!(ratio > 21.0); // Max contrast ratio is 21:1
+        assert!((ratio - 21.0).abs() < 0.01); // Max contrast ratio is 21:1
 
         assert!(white.passes_aaa(&black));
     }

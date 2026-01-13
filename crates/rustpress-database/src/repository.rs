@@ -1,12 +1,9 @@
 //! Generic repository implementations for database operations.
 
-use async_trait::async_trait;
 use rustpress_core::error::{Error, Result};
 use rustpress_core::id::TenantId;
-use rustpress_core::repository::{QueryableRepository, Repository};
 use rustpress_core::service::{ListParams, ListResult, SortOrder};
-use serde::{de::DeserializeOwned, Serialize};
-use sqlx::{FromRow, PgPool, Postgres, Row};
+use sqlx::PgPool;
 use std::marker::PhantomData;
 use uuid::Uuid;
 
@@ -42,6 +39,7 @@ impl<T> PgRepository<T> {
     }
 
     /// Build a WHERE clause with tenant filtering
+    #[allow(dead_code)]
     fn tenant_filter(&self, alias: Option<&str>) -> String {
         if let Some(tenant_id) = &self.tenant_id {
             let prefix = alias.map(|a| format!("{}.", a)).unwrap_or_default();
@@ -786,7 +784,7 @@ pub mod comments {
         pub author_ip: Option<String>,
         pub content: String,
         pub content_html: Option<String>,
-        pub status: CommentStatus,
+        pub status: String,
         pub is_edited: bool,
         pub edited_at: Option<DateTime<Utc>>,
         pub moderated_by: Option<Uuid>,
@@ -834,7 +832,7 @@ pub mod comments {
         pub content: String,
         pub content_html: Option<String>,
         pub user_agent: Option<String>,
-        pub status: CommentStatus,
+        pub status: String,
     }
 
     /// Parameters for updating a comment
@@ -875,7 +873,7 @@ pub mod comments {
         pub depth: i32,
         pub content: String,
         pub content_html: Option<String>,
-        pub status: CommentStatus,
+        pub status: String,
         pub likes_count: i32,
         pub replies_count: i32,
         pub created_at: DateTime<Utc>,
@@ -947,7 +945,7 @@ pub mod comments {
             .bind(&comment.author_ip)
             .bind(&comment.content)
             .bind(&comment.content_html)
-            .bind(comment.status)
+            .bind(comment.status.to_string())
             .bind(&comment.user_agent)
             .fetch_one(&self.pool)
             .await

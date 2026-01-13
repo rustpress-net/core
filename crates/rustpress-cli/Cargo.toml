@@ -10,7 +10,7 @@ keywords = ["cms", "cli", "wordpress", "rust"]
 categories = ["command-line-utilities", "web-programming"]
 
 [[bin]]
-name = "rustpress"
+name = "rustpress-cli"
 path = "src/main.rs"
 
 [dependencies]

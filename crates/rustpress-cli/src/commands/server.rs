@@ -67,7 +67,7 @@ pub async fn execute(ctx: &CliContext, cmd: ServerCommand) -> CliResult<()> {
 }
 
 async fn start_server(
-    ctx: &CliContext,
+    _ctx: &CliContext,
     host: &str,
     port: u16,
     workers: Option<usize>,

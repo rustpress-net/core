@@ -237,7 +237,9 @@ impl AppContext {
 
     /// Trigger shutdown
     pub fn shutdown(&self) {
-        let _ = self.shutdown.send(true);
+        // Use send_replace instead of send to ensure the value is updated
+        // even if there are no active receivers
+        self.shutdown.send_replace(true);
     }
 
     /// Check if shutdown has been triggered

@@ -2,7 +2,7 @@
 //!
 //! Provides real-time theme customization with live preview capabilities.
 
-use crate::manifest::{ThemeManifest, ColorDefinition, FontFamily, LayoutSection};
+use crate::manifest::ThemeManifest;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;

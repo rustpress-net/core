@@ -7,6 +7,7 @@ use chrono::{DateTime, Utc};
 use rand::Rng;
 use rustpress_core::error::{Error, Result};
 use serde::{Deserialize, Serialize};
+#[allow(unused_imports)]
 use sha2::Sha256;
 use std::collections::HashMap;
 use std::sync::RwLock;

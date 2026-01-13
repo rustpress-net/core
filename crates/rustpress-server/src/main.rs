@@ -24,6 +24,7 @@ use rustpress_storage::{LocalBackend, Storage, StorageConfig};
 
 use rustpress_server::state::AppState;
 use rustpress_server::App;
+use rustpress_server::setup;
 
 /// Environment variable names
 mod env_vars {
@@ -48,11 +49,101 @@ fn init_tracing() {
         .init();
 }
 
-/// Load configuration from environment variables with defaults
+/// Get the config file path
+fn get_config_path() -> PathBuf {
+    env::var("RUSTPRESS_CONFIG")
+        .map(PathBuf::from)
+        .unwrap_or_else(|_| PathBuf::from("./config/rustpress.toml"))
+}
+
+/// Check if setup is needed (config file does not exist or is invalid)
+fn needs_setup() -> bool {
+    let config_path = get_config_path();
+
+    // If config file does not exist, we need setup
+    if !config_path.exists() {
+        return true;
+    }
+
+    // If DATABASE_URL is not set, check the config file
+    if env::var(env_vars::DATABASE_URL).is_err() {
+        // Try to load from config file
+        if let Ok(content) = std::fs::read_to_string(&config_path) {
+            if !content.contains("database_url") {
+                return true;
+            }
+        } else {
+            return true;
+        }
+    }
+
+    false
+}
+
+/// Test if database connection works
+async fn test_database_connection() -> bool {
+    let config = load_config();
+    
+    if config.database.url.is_empty() {
+        return false;
+    }
+    
+    // Try to connect to database
+    match sqlx::postgres::PgPoolOptions::new()
+        .max_connections(1)
+        .acquire_timeout(std::time::Duration::from_secs(5))
+        .connect(&config.database.url)
+        .await
+    {
+        Ok(pool) => {
+            // Try a simple query
+            match sqlx::query("SELECT 1").execute(&pool).await {
+                Ok(_) => true,
+                Err(_) => false,
+            }
+        }
+        Err(_) => false,
+    }
+}
+
+/// Load configuration from config file and environment variables
 fn load_config() -> AppConfig {
     let mut config = AppConfig::default();
 
-    // Server configuration
+    // Try to load from config file first
+    let config_path = get_config_path();
+    if config_path.exists() {
+        if let Ok(content) = std::fs::read_to_string(&config_path) {
+            if let Ok(file_config) = toml::from_str::<toml::Value>(&content) {
+                // Load database URL from config file
+                if let Some(db) = file_config.get("database") {
+                    if let Some(url) = db.get("database_url").and_then(|v| v.as_str()) {
+                        config.database.url = url.to_string();
+                        env::set_var(env_vars::DATABASE_URL, url);
+                    }
+                }
+
+                // Load server config
+                if let Some(server) = file_config.get("server") {
+                    if let Some(host) = server.get("host").and_then(|v| v.as_str()) {
+                        config.server.host = host.to_string();
+                    }
+                    if let Some(port) = server.get("port").and_then(|v| v.as_integer()) {
+                        config.server.port = port as u16;
+                    }
+                }
+
+                // Load auth config
+                if let Some(auth) = file_config.get("auth") {
+                    if let Some(secret) = auth.get("jwt_secret").and_then(|v| v.as_str()) {
+                        config.auth.jwt_secret = secret.to_string();
+                    }
+                }
+            }
+        }
+    }
+
+    // Environment variables override config file
     if let Ok(host) = env::var(env_vars::SERVER_HOST) {
         config.server.host = host;
     }
@@ -62,19 +153,16 @@ fn load_config() -> AppConfig {
         }
     }
 
-    // Database configuration
     if let Ok(url) = env::var(env_vars::DATABASE_URL) {
         config.database.url = url;
     }
 
-    // Auth configuration
     if let Ok(secret) = env::var(env_vars::JWT_SECRET) {
         config.auth.jwt_secret = secret;
-    } else {
+    } else if config.auth.jwt_secret.is_empty() || config.auth.jwt_secret == "change-me-in-production" {
         warn!("JWT_SECRET not set, using default (not recommended for production)");
     }
 
-    // Storage configuration
     if let Ok(path) = env::var(env_vars::STORAGE_PATH) {
         config.storage.local_path = PathBuf::from(path);
     }
@@ -212,7 +300,7 @@ fn print_banner() {
  |  _ \ _   _ __| |_|  _ \ _ __ ___  ___ ___
  | |_) | | | / _` __| |_) | '__/ _ \/ __/ __|
  |  _ <| |_| \__ \ |_|  __/| | |  __/\__ \__ \
- |_| \_\\__,_|___/\__|_|   |_|  \___||___/___/
+ |_| \_\__,_|___/\__|_|   |_|  \___||___/___/
 
     "#);
     println!("  RustPress CMS - A Modern WordPress Alternative in Rust");
@@ -220,14 +308,8 @@ fn print_banner() {
     println!();
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // Initialize tracing first
-    init_tracing();
-
-    // Print startup banner
-    print_banner();
-
+/// Run the main application
+async fn run_app() -> Result<(), Box<dyn std::error::Error>> {
     info!("Starting RustPress CMS Server");
     info!("Version: {}", env!("CARGO_PKG_VERSION"));
 
@@ -311,6 +393,71 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     info!("Server shutdown complete");
     Ok(())
+}
+
+/// Helper to run the setup wizard
+async fn start_setup_wizard() -> Result<(), Box<dyn std::error::Error>> {
+    info!("Setup required - starting setup wizard");
+    println!();
+    println!("  *** SETUP WIZARD ***");
+    println!("  RustPress needs to be configured before first use.");
+    println!();
+
+    let config_path = get_config_path();
+
+    // Create config directory if needed
+    if let Some(parent) = config_path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+
+    let addr: SocketAddr = "0.0.0.0:8080".parse()?;
+
+    println!("  Open http://localhost:8080 in your browser to complete setup.");
+    println!();
+
+    match setup::run_setup_wizard(addr, config_path).await {
+        Ok(true) => {
+            info!("Setup completed successfully!");
+            println!();
+            println!("  Setup completed! Starting RustPress...");
+            println!();
+
+            // Run the main application
+            run_app().await
+        }
+        Ok(false) => {
+            info!("Setup was cancelled");
+            Ok(())
+        }
+        Err(e) => {
+            error!("Setup wizard failed: {}", e);
+            Err(e)
+        }
+    }
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Initialize tracing first
+    init_tracing();
+
+    // Print startup banner
+    print_banner();
+
+    // Check if setup is needed (no config file)
+    if needs_setup() {
+        return start_setup_wizard().await;
+    }
+
+    // Config exists, but test if database connection works
+    info!("Testing database connection...");
+    if !test_database_connection().await {
+        error!("Database connection failed - starting setup wizard");
+        return start_setup_wizard().await;
+    }
+
+    // Run the main application directly
+    run_app().await
 }
 
 #[cfg(test)]

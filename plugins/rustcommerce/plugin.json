@@ -1,0 +1,144 @@
+{
+  "id": "rustcommerce",
+  "name": "RustCommerce",
+  "version": "1.0.0",
+  "description": "Full-featured e-commerce plugin for RustPress with customizable templates, shopping cart, checkout, and order management",
+  "author": "RustPress",
+  "license": "MIT",
+  "homepage": "https://rustpress.io/plugins/rustcommerce",
+  "repository": "https://github.com/rustpress/rustcommerce",
+  "keywords": ["ecommerce", "store", "shop", "cart", "checkout", "payments"],
+  "category": "ecommerce",
+  "icon": "shopping-cart",
+  "enabled": true,
+  "priority": 100,
+
+  "requirements": {
+    "rustpress_version": ">=1.0.0",
+    "node_version": ">=18.0.0"
+  },
+
+  "routes": {
+    "base_path": "/store",
+    "pages": [
+      { "path": "/", "component": "StoreFront", "title": "Store" },
+      { "path": "/products", "component": "ProductsPage", "title": "Products" },
+      { "path": "/products/:slug", "component": "ProductDetailPage", "title": "Product Details" },
+      { "path": "/category/:slug", "component": "CategoryPage", "title": "Category" },
+      { "path": "/cart", "component": "CartPage", "title": "Shopping Cart" },
+      { "path": "/checkout", "component": "CheckoutPage", "title": "Checkout" },
+      { "path": "/order/thank-you/:orderId", "component": "ThankYouPage", "title": "Order Confirmation" },
+      { "path": "/search", "component": "SearchPage", "title": "Search" },
+      { "path": "/login", "component": "LoginPage", "title": "Login" },
+      { "path": "/register", "component": "RegisterPage", "title": "Register" },
+      { "path": "/forgot-password", "component": "ForgotPasswordPage", "title": "Forgot Password" },
+      { "path": "/reset-password/:token", "component": "ResetPasswordPage", "title": "Reset Password" },
+      { "path": "/account", "component": "AccountPage", "title": "My Account" },
+      { "path": "/account/orders", "component": "OrdersPage", "title": "My Orders" },
+      { "path": "/account/orders/:orderId", "component": "OrderDetailPage", "title": "Order Details" },
+      { "path": "/account/addresses", "component": "AddressesPage", "title": "My Addresses" },
+      { "path": "/account/wishlist", "component": "WishlistPage", "title": "Wishlist" },
+      { "path": "/account/settings", "component": "SettingsPage", "title": "Account Settings" }
+    ],
+    "admin_pages": [
+      { "path": "/admin/store", "component": "AdminDashboard", "title": "Store Dashboard" },
+      { "path": "/admin/store/products", "component": "AdminProducts", "title": "Products" },
+      { "path": "/admin/store/orders", "component": "AdminOrders", "title": "Orders" },
+      { "path": "/admin/store/customers", "component": "AdminCustomers", "title": "Customers" },
+      { "path": "/admin/store/templates", "component": "AdminTemplates", "title": "Store Templates" },
+      { "path": "/admin/store/settings", "component": "AdminSettings", "title": "Store Settings" }
+    ]
+  },
+
+  "theme_integration": {
+    "inherit_header": true,
+    "inherit_footer": true,
+    "inherit_menu": true,
+    "content_wrapper": true,
+    "styles": [
+      "/plugins/rustcommerce/assets/css/store.css",
+      "/plugins/rustcommerce/assets/css/templates.css"
+    ],
+    "scripts": [
+      "/plugins/rustcommerce/assets/js/store.js"
+    ]
+  },
+
+  "templates": {
+    "upload_formats": ["zip", "html"],
+    "template_types": ["checkout", "thankyou", "product", "cart", "account", "login", "myAccount"],
+    "mock_data_enabled": true,
+    "live_preview": true,
+    "custom_templates_enabled": true,
+    "html_editor": true,
+    "css_editor": true,
+    "ai_style_generator": true,
+    "form_builder": true,
+    "compare_limit": 4
+  },
+
+  "settings": {
+    "currency": "USD",
+    "currency_symbol": "$",
+    "tax_enabled": true,
+    "shipping_enabled": true,
+    "guest_checkout": true,
+    "reviews_enabled": true,
+    "wishlist_enabled": true,
+    "compare_enabled": true,
+    "max_compare_items": 4
+  },
+
+  "admin_menu": {
+    "label": "Store",
+    "icon": "shopping-cart",
+    "position": 30,
+    "items": [
+      { "label": "Dashboard", "path": "/admin/store", "icon": "layout-dashboard" },
+      { "label": "Products", "path": "/admin/store/products", "icon": "package" },
+      { "label": "Orders", "path": "/admin/store/orders", "icon": "shopping-bag" },
+      { "label": "Customers", "path": "/admin/store/customers", "icon": "users" },
+      { "label": "Templates", "path": "/admin/store/templates", "icon": "palette" },
+      { "label": "Settings", "path": "/admin/store/settings", "icon": "settings" }
+    ]
+  },
+
+  "hooks": {
+    "on_activate": "onPluginActivate",
+    "on_deactivate": "onPluginDeactivate",
+    "on_theme_change": "onThemeChange"
+  },
+
+  "permissions": [
+    "manage_products",
+    "manage_orders",
+    "manage_customers",
+    "manage_store_settings",
+    "manage_store_templates",
+    "view_store_reports",
+    "manage_api_keys"
+  ],
+
+  "api": {
+    "enabled": true,
+    "rate_limiting": true,
+    "key_types": ["live", "test", "restricted"],
+    "endpoints": [
+      { "path": "/api/v1/products", "methods": ["GET", "POST", "PUT", "DELETE"] },
+      { "path": "/api/v1/orders", "methods": ["GET", "POST", "PUT"] },
+      { "path": "/api/v1/customers", "methods": ["GET", "POST", "PUT", "DELETE"] },
+      { "path": "/api/v1/cart", "methods": ["GET", "POST", "PUT", "DELETE"] },
+      { "path": "/api/v1/checkout", "methods": ["POST"] },
+      { "path": "/api/v1/templates", "methods": ["GET", "POST", "PUT", "DELETE"] },
+      { "path": "/api/v1/payments", "methods": ["POST"] },
+      { "path": "/api/v1/shipping", "methods": ["GET", "POST"] },
+      { "path": "/api/v1/inventory", "methods": ["GET", "PUT"] },
+      { "path": "/api/v1/analytics", "methods": ["GET"] }
+    ],
+    "default_rate_limits": {
+      "requests_per_minute": 60,
+      "requests_per_hour": 1000,
+      "requests_per_day": 10000
+    }
+  }
+}
