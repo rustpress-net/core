@@ -309,6 +309,9 @@ jobs:
     name: Build Docker Image
     needs: [determine-version, create-release]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - uses: actions/checkout@v4
