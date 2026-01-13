@@ -382,19 +382,19 @@ jobs:
       packages: write
 
     steps:
-      - name: Delete old releases (keep only latest)
+      - name: Cleanup draft and prerelease versions only
         uses: dev-drprasad/delete-older-releases@v0.3.4
         with:
+          delete_prerelease_only: true
           keep_latest: 1
           delete_tags: true
-          delete_tag_pattern: v.*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Cleanup old Docker images
+      - name: Cleanup old Docker images (untagged only)
         uses: actions/delete-package-versions@v5
         with:
           package-name: ${{ github.event.repository.name }}
           package-type: container
-          min-versions-to-keep: 1
-          delete-only-untagged-versions: false
+          min-versions-to-keep: 5
+          delete-only-untagged-versions: true
