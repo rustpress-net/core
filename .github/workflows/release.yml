@@ -19,7 +19,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   # Allow specific warnings for MVP release
-  RUSTFLAGS: -Adead_code -Amismatched_lifetime_syntaxes -Aunused_imports
+  RUSTFLAGS: -Adead_code -Amismatched_lifetime_syntaxes -Aunused_imports -Adependency_on_unit_never_type_fallback
 
 jobs:
   determine-version:
