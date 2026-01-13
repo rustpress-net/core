@@ -18,6 +18,8 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  # Allow dead_code and mismatched_lifetime_syntaxes for MVP release
+  RUSTFLAGS: -Adead_code -Amismatched_lifetime_syntaxes
 
 jobs:
   determine-version:
