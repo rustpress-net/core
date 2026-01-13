@@ -3,7 +3,7 @@
 use crate::key::CacheKey;
 use crate::CacheStats;
 use async_trait::async_trait;
-use rustpress_core::error::Result;
+use rustpress_core::error::{Error, Result};
 use std::time::Duration;
 
 /// Cache backend trait

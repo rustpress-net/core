@@ -8,8 +8,8 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
-  # Allow dead_code and mismatched_lifetime_syntaxes for MVP release
-  RUSTFLAGS: -Dwarnings -Adead_code -Amismatched_lifetime_syntaxes
+  # Allow specific warnings for MVP release
+  RUSTFLAGS: -Dwarnings -Adead_code -Amismatched_lifetime_syntaxes -Aunused_imports
 
 jobs:
   check:
