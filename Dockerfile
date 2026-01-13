@@ -15,6 +15,9 @@ COPY Cargo.toml Cargo.lock ./
 COPY crates ./crates
 COPY plugins ./plugins
 
+# Set RUSTFLAGS to allow warnings for MVP release
+ENV RUSTFLAGS="-Aunused -Amismatched_lifetime_syntaxes -Adependency_on_unit_never_type_fallback -Aunused_comparisons"
+
 # Build all release binaries
 RUN cargo build --release
 
