@@ -15,6 +15,16 @@ on:
           - patch
           - minor
           - major
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - release
+          - pre-release
+          - draft
       admin_ui_ref:
         description: 'Admin UI version override (leave empty to use ADMIN_UI_VERSION file)'
         required: false
@@ -35,6 +45,7 @@ jobs:
       current_version: ${{ steps.version.outputs.current_version }}
       should_release: ${{ steps.version.outputs.should_release }}
       bump_type: ${{ steps.version.outputs.bump_type }}
+      release_type: ${{ steps.version.outputs.release_type }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -47,19 +58,39 @@ jobs:
           CURRENT_VERSION=$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
 
+          # Analyze commit messages since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+          if [ -z "$LAST_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"%s" HEAD)
+          else
+            COMMITS=$(git log --pretty=format:"%s" ${LAST_TAG}..HEAD)
+          fi
+
+          # Determine release type from input or commits
+          if [ "${{ github.event.inputs.release_type }}" != "" ] && [ "${{ github.event.inputs.release_type }}" != "auto" ]; then
+            RELEASE_TYPE="${{ github.event.inputs.release_type }}"
+          else
+            # Check for release type indicators in commit messages
+            if echo "$COMMITS" | grep -qi "\[release\]"; then
+              RELEASE_TYPE="release"
+            elif echo "$COMMITS" | grep -qi "\[pre-release\]"; then
+              RELEASE_TYPE="pre-release"
+            elif echo "$COMMITS" | grep -qi "\[draft\]"; then
+              RELEASE_TYPE="draft"
+            else
+              # No release type specified, skip release
+              RELEASE_TYPE="none"
+            fi
+          fi
+
+          echo "release_type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
+          echo "Release type: $RELEASE_TYPE"
+
           # Get the bump type from input or analyze commits
           if [ "${{ github.event.inputs.version_bump }}" != "" ] && [ "${{ github.event.inputs.version_bump }}" != "auto" ]; then
             BUMP_TYPE="${{ github.event.inputs.version_bump }}"
           else
-            # Analyze commit messages since last tag
-            LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-
-            if [ -z "$LAST_TAG" ]; then
-              COMMITS=$(git log --pretty=format:"%s" HEAD)
-            else
-              COMMITS=$(git log --pretty=format:"%s" ${LAST_TAG}..HEAD)
-            fi
-
             # Default to no release
             BUMP_TYPE="none"
 
@@ -94,10 +125,11 @@ jobs:
 
           echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
 
-          # Calculate new version
-          if [ "$BUMP_TYPE" = "none" ]; then
+          # Calculate new version and determine if we should release
+          if [ "$RELEASE_TYPE" = "none" ] || [ "$BUMP_TYPE" = "none" ]; then
             echo "should_release=false" >> $GITHUB_OUTPUT
             echo "new_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            echo "No release triggered (release_type=$RELEASE_TYPE, bump_type=$BUMP_TYPE)"
           else
             IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
 
@@ -119,9 +151,8 @@ jobs:
             NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
             echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
             echo "should_release=true" >> $GITHUB_OUTPUT
+            echo "Version: $CURRENT_VERSION -> $NEW_VERSION (bump: $BUMP_TYPE, type: $RELEASE_TYPE)"
           fi
-
-          echo "Version: $CURRENT_VERSION -> $NEW_VERSION (bump: $BUMP_TYPE)"
 
   build-and-release:
     name: Build and Release
@@ -260,7 +291,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # Create tag on current commit (version bump should be done before release)
+          # Create tag on current commit
           git tag -a "v${{ needs.determine-version.outputs.new_version }}" -m "Release v${{ needs.determine-version.outputs.new_version }}"
           git push origin "v${{ needs.determine-version.outputs.new_version }}"
 
@@ -333,14 +364,16 @@ jobs:
           name: RustPress v${{ needs.determine-version.outputs.new_version }}
           body_path: changelog.md
           files: artifacts/**/*.zip
-          draft: false
-          prerelease: false
+          draft: ${{ needs.determine-version.outputs.release_type == 'draft' }}
+          prerelease: ${{ needs.determine-version.outputs.release_type == 'pre-release' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   docker:
     name: Build Docker Image
     needs: [determine-version, create-release]
+    # Only build Docker for official releases
+    if: needs.determine-version.outputs.release_type == 'release'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -371,30 +404,111 @@ jobs:
           cache-to: type=gha,mode=max
 
   # ---------------------------------------------------------------------------
-  # Cleanup Old Releases - Keep only the latest release to save disk space
+  # Cleanup - Only runs for official releases, removes all drafts/prereleases
   # ---------------------------------------------------------------------------
   cleanup-releases:
     name: Cleanup Old Releases
-    needs: [create-release, docker]
+    needs: [determine-version, create-release, docker]
+    # Only cleanup when creating an official release
+    if: needs.determine-version.outputs.release_type == 'release'
     runs-on: ubuntu-latest
     permissions:
       contents: write
       packages: write
 
     steps:
-      - name: Cleanup draft and prerelease versions only
-        uses: dev-drprasad/delete-older-releases@v0.3.4
+      - name: Delete all prereleases and drafts
+        uses: actions/github-script@v7
         with:
-          delete_prerelease_only: true
-          keep_latest: 1
-          delete_tags: true
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { owner, repo } = context.repo;
 
-      - name: Cleanup old Docker images (untagged only)
-        uses: actions/delete-package-versions@v5
+            // Get all releases
+            const releases = await github.rest.repos.listReleases({
+              owner,
+              repo,
+              per_page: 100
+            });
+
+            for (const release of releases.data) {
+              // Delete if it's a prerelease or draft
+              if (release.prerelease || release.draft) {
+                console.log(`Deleting ${release.draft ? 'draft' : 'prerelease'}: ${release.tag_name}`);
+
+                // Delete the release
+                await github.rest.repos.deleteRelease({
+                  owner,
+                  repo,
+                  release_id: release.id
+                });
+
+                // Delete the associated tag
+                try {
+                  await github.rest.git.deleteRef({
+                    owner,
+                    repo,
+                    ref: `tags/${release.tag_name}`
+                  });
+                  console.log(`Deleted tag: ${release.tag_name}`);
+                } catch (e) {
+                  console.log(`Tag ${release.tag_name} may already be deleted`);
+                }
+              }
+            }
+
+            console.log('Cleanup complete - only official releases remain');
+
+      - name: Cleanup non-release Docker images
+        uses: actions/github-script@v7
         with:
-          package-name: ${{ github.event.repository.name }}
-          package-type: container
-          min-versions-to-keep: 5
-          delete-only-untagged-versions: true
+          script: |
+            const { owner, repo } = context.repo;
+            const packageName = repo;
+
+            try {
+              // Get all package versions
+              const versions = await github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg({
+                package_type: 'container',
+                package_name: packageName,
+                org: owner,
+                per_page: 100
+              });
+
+              // Get list of official release tags
+              const releases = await github.rest.repos.listReleases({
+                owner,
+                repo,
+                per_page: 100
+              });
+
+              const officialVersions = new Set(['latest']);
+              for (const release of releases.data) {
+                if (!release.prerelease && !release.draft) {
+                  // Extract version from tag (e.g., v0.3.0 -> 0.3.0)
+                  const version = release.tag_name.replace(/^v/, '');
+                  officialVersions.add(version);
+                }
+              }
+
+              console.log('Official versions to keep:', [...officialVersions]);
+
+              // Delete non-official versions
+              for (const version of versions.data) {
+                const tags = version.metadata?.container?.tags || [];
+                const hasOfficialTag = tags.some(tag => officialVersions.has(tag));
+
+                if (!hasOfficialTag && tags.length > 0) {
+                  console.log(`Deleting Docker image with tags: ${tags.join(', ')}`);
+                  await github.rest.packages.deletePackageVersionForOrg({
+                    package_type: 'container',
+                    package_name: packageName,
+                    org: owner,
+                    package_version_id: version.id
+                  });
+                }
+              }
+
+              console.log('Docker cleanup complete');
+            } catch (e) {
+              console.log('Docker cleanup skipped:', e.message);
+            }
