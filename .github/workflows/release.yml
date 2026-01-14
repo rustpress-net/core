@@ -10,47 +10,68 @@ on:
         required: true
         default: 'auto'
         type: choice
-        options: [auto, patch, minor, major]
+        options:
+          - auto
+          - patch
+          - minor
+          - major
       release_type:
         description: 'Release type'
         required: true
         default: 'auto'
         type: choice
-        options: [auto, release, pre-release, draft]
+        options:
+          - auto
+          - release
+          - pre-release
+          - draft
+      admin_ui_ref:
+        description: 'Admin UI version override (leave empty to use ADMIN_UI_VERSION file)'
+        required: false
+        default: ''
+        type: string
+
+env:
+  CARGO_TERM_COLOR: always
+  # Allow specific warnings for MVP release (to be addressed in future versions)
+  RUSTFLAGS: -Aunused -Amismatched_lifetime_syntaxes -Adependency_on_unit_never_type_fallback -Aunused_comparisons
 
 jobs:
-  version:
+  determine-version:
     name: Determine Version
     runs-on: ubuntu-latest
     outputs:
       new_version: ${{ steps.version.outputs.new_version }}
-      release_type: ${{ steps.version.outputs.release_type }}
+      current_version: ${{ steps.version.outputs.current_version }}
       should_release: ${{ steps.version.outputs.should_release }}
+      bump_type: ${{ steps.version.outputs.bump_type }}
+      release_type: ${{ steps.version.outputs.release_type }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Determine version
+      - name: Determine version bump from commits
         id: version
         run: |
           # Get current version from Cargo.toml
-          CURRENT_VERSION=$(grep '^version' Cargo.toml | head -1 | sed 's/.*"\(.*\)".*/\1/')
+          CURRENT_VERSION=$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
           echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
 
-          # Get last tag
+          # Analyze commit messages since last tag
           LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
 
-          # Get commits since last tag
-          if [ -n "$LAST_TAG" ]; then
-            COMMITS=$(git log --pretty=format:"%s" ${LAST_TAG}..HEAD)
+          if [ -z "$LAST_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"%s" HEAD)
           else
-            COMMITS=$(git log --pretty=format:"%s")
+            COMMITS=$(git log --pretty=format:"%s" ${LAST_TAG}..HEAD)
           fi
 
-          # Determine release type from commits or input
-          RELEASE_TYPE="${{ inputs.release_type }}"
-          if [ "$RELEASE_TYPE" = "auto" ] || [ -z "$RELEASE_TYPE" ]; then
+          # Determine release type from input or commits
+          if [ "${{ github.event.inputs.release_type }}" != "" ] && [ "${{ github.event.inputs.release_type }}" != "auto" ]; then
+            RELEASE_TYPE="${{ github.event.inputs.release_type }}"
+          else
+            # Check for release type indicators in commit messages
             if echo "$COMMITS" | grep -qi "\[release\]"; then
               RELEASE_TYPE="release"
             elif echo "$COMMITS" | grep -qi "\[pre-release\]"; then
@@ -58,281 +79,306 @@ jobs:
             elif echo "$COMMITS" | grep -qi "\[draft\]"; then
               RELEASE_TYPE="draft"
             else
+              # No release type specified, skip release
               RELEASE_TYPE="none"
             fi
           fi
+
           echo "release_type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
+          echo "Release type: $RELEASE_TYPE"
 
-          # Check if we should release
-          if [ "$RELEASE_TYPE" = "none" ]; then
-            echo "should_release=false" >> $GITHUB_OUTPUT
-            echo "new_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
-            exit 0
-          fi
-          echo "should_release=true" >> $GITHUB_OUTPUT
+          # Get the bump type from input or analyze commits
+          if [ "${{ github.event.inputs.version_bump }}" != "" ] && [ "${{ github.event.inputs.version_bump }}" != "auto" ]; then
+            BUMP_TYPE="${{ github.event.inputs.version_bump }}"
+          else
+            # Default to no release
+            BUMP_TYPE="none"
 
-          # Determine version bump
-          BUMP_TYPE="${{ inputs.version_bump }}"
-          if [ "$BUMP_TYPE" = "auto" ] || [ -z "$BUMP_TYPE" ]; then
-            if echo "$COMMITS" | grep -qiE "^(feat|feature)!:|BREAKING CHANGE"; then
+            # Check for version bump indicators in commit messages
+            # Priority: major > minor > patch
+
+            # Check for BREAKING CHANGE or ! after type (major)
+            if echo "$COMMITS" | grep -qiE "(BREAKING CHANGE|^[a-z]+(\([^)]+\))?!:)"; then
               BUMP_TYPE="major"
-            elif echo "$COMMITS" | grep -qiE "^(feat|feature)(\(.*\))?:"; then
+            # Check for feat: (minor)
+            elif echo "$COMMITS" | grep -qiE "^feat(\([^)]+\))?:"; then
               BUMP_TYPE="minor"
-            else
+            # Check for fix:, perf:, refactor:, etc. (patch)
+            elif echo "$COMMITS" | grep -qiE "^(fix|perf|refactor|docs|style|test|chore|build|ci)(\([^)]+\))?:"; then
+              BUMP_TYPE="patch"
+            # Check for [major], [minor], [patch] in commit messages
+            elif echo "$COMMITS" | grep -qi "\[major\]"; then
+              BUMP_TYPE="major"
+            elif echo "$COMMITS" | grep -qi "\[minor\]"; then
+              BUMP_TYPE="minor"
+            elif echo "$COMMITS" | grep -qi "\[patch\]"; then
+              BUMP_TYPE="patch"
+            # Check for #major, #minor, #patch in commit messages
+            elif echo "$COMMITS" | grep -qi "#major"; then
+              BUMP_TYPE="major"
+            elif echo "$COMMITS" | grep -qi "#minor"; then
+              BUMP_TYPE="minor"
+            elif echo "$COMMITS" | grep -qi "#patch"; then
               BUMP_TYPE="patch"
             fi
           fi
 
-          # Calculate new version
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
-          case $BUMP_TYPE in
-            major) NEW_VERSION="$((MAJOR + 1)).0.0" ;;
-            minor) NEW_VERSION="${MAJOR}.$((MINOR + 1)).0" ;;
-            patch) NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))" ;;
-          esac
-          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
 
-  build-linux:
-    name: Build Linux
-    needs: version
-    if: needs.version.outputs.should_release == 'true'
-    runs-on: ubuntu-latest
+          # Calculate new version and determine if we should release
+          if [ "$RELEASE_TYPE" = "none" ] || [ "$BUMP_TYPE" = "none" ]; then
+            echo "should_release=false" >> $GITHUB_OUTPUT
+            echo "new_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            echo "No release triggered (release_type=$RELEASE_TYPE, bump_type=$BUMP_TYPE)"
+          else
+            IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+
+            case $BUMP_TYPE in
+              major)
+                MAJOR=$((MAJOR + 1))
+                MINOR=0
+                PATCH=0
+                ;;
+              minor)
+                MINOR=$((MINOR + 1))
+                PATCH=0
+                ;;
+              patch)
+                PATCH=$((PATCH + 1))
+                ;;
+            esac
+
+            NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+            echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+            echo "should_release=true" >> $GITHUB_OUTPUT
+            echo "Version: $CURRENT_VERSION -> $NEW_VERSION (bump: $BUMP_TYPE, type: $RELEASE_TYPE)"
+          fi
+
+  build-and-release:
+    name: Build and Release
+    needs: determine-version
+    if: needs.determine-version.outputs.should_release == 'true'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact_name: rustpress
+            asset_name: rustpress-linux-x86_64
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_name: rustpress.exe
+            asset_name: rustpress-windows-x86_64
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            artifact_name: rustpress
+            asset_name: rustpress-macos-x86_64
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            artifact_name: rustpress
+            asset_name: rustpress-macos-arm64
+
     steps:
       - uses: actions/checkout@v4
+
+      - name: Read required admin-ui version
+        id: admin_ui_version
+        shell: bash
+        run: |
+          if [ -f "ADMIN_UI_VERSION" ]; then
+            VERSION=$(cat ADMIN_UI_VERSION | tr -d '[:space:]')
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "Required admin-ui version: $VERSION"
+          else
+            echo "version=main" >> $GITHUB_OUTPUT
+            echo "No ADMIN_UI_VERSION file found, using main"
+          fi
+
+      - name: Clone admin-ui repository
+        uses: actions/checkout@v4
+        with:
+          repository: rustpress-net/rustpress-core-admin-ui
+          ref: ${{ github.event.inputs.admin_ui_ref || steps.admin_ui_version.outputs.version }}
+          path: admin-ui
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: admin-ui/package-lock.json
+
+      - name: Build admin-ui
+        run: |
+          cd admin-ui
+          npm ci
+          npm run build
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: x86_64-unknown-linux-gnu
+          targets: ${{ matrix.target }}
 
-      - name: Cache cargo
+      - name: Cache cargo registry
         uses: actions/cache@v4
         with:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: linux-cargo-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-${{ matrix.target }}-cargo-release-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Download Admin UI
+      - name: Update version in Cargo.toml
+        shell: bash
         run: |
-          mkdir -p admin-ui/dist
-          LATEST=$(curl -s https://api.github.com/repos/rustpress-net/rustpress-core-admin-ui/releases/latest | jq -r '.tag_name')
-          curl -sL "https://github.com/rustpress-net/rustpress-core-admin-ui/releases/download/${LATEST}/rustpress-admin-ui.zip" -o admin-ui.zip
-          unzip -o admin-ui.zip -d admin-ui/dist || true
+          sed -i.bak "s/^version = \".*\"/version = \"${{ needs.determine-version.outputs.new_version }}\"/" Cargo.toml
+          rm -f Cargo.toml.bak
 
-      - name: Build
-        run: cargo build --release --target x86_64-unknown-linux-gnu
+      - name: Build release binary
+        run: cargo build --release --target ${{ matrix.target }}
 
-      - name: Package
+      - name: Create release archive (Unix)
+        if: runner.os != 'Windows'
         run: |
-          mkdir -p artifacts
-          cp target/x86_64-unknown-linux-gnu/release/rustpress artifacts/
-          cp -r admin-ui/dist artifacts/admin-ui 2>/dev/null || true
-          cd artifacts && zip -r ../rustpress-linux-x86_64.zip .
+          mkdir -p release
+          # Copy all binaries
+          cp target/${{ matrix.target }}/release/rustpress release/
+          cp target/${{ matrix.target }}/release/rustpress-cli release/
+          cp target/${{ matrix.target }}/release/rustpress-migrate release/
+          # Copy admin-ui
+          cp -r admin-ui/dist release/admin-ui
+          # Copy documentation
+          cp README.md LICENSE* release/ 2>/dev/null || true
+          cd release
+          zip -r ../${{ matrix.asset_name }}-v${{ needs.determine-version.outputs.new_version }}.zip .
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: rustpress-linux-x86_64
-          path: rustpress-linux-x86_64.zip
-
-  build-windows:
-    name: Build Windows
-    needs: version
-    if: needs.version.outputs.should_release == 'true'
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-pc-windows-msvc
-
-      - name: Cache cargo
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: windows-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Download Admin UI
+      - name: Create release archive (Windows)
+        if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          New-Item -ItemType Directory -Force -Path admin-ui/dist
-          $latest = (Invoke-RestMethod https://api.github.com/repos/rustpress-net/rustpress-core-admin-ui/releases/latest).tag_name
-          Invoke-WebRequest "https://github.com/rustpress-net/rustpress-core-admin-ui/releases/download/$latest/rustpress-admin-ui.zip" -OutFile admin-ui.zip
-          Expand-Archive -Force admin-ui.zip -DestinationPath admin-ui/dist
+          New-Item -ItemType Directory -Force -Path release
+          # Copy all binaries
+          Copy-Item "target/${{ matrix.target }}/release/rustpress.exe" -Destination release/
+          Copy-Item "target/${{ matrix.target }}/release/rustpress-cli.exe" -Destination release/
+          Copy-Item "target/${{ matrix.target }}/release/rustpress-migrate.exe" -Destination release/
+          # Copy admin-ui
+          Copy-Item -Recurse "admin-ui/dist" -Destination "release/admin-ui"
+          # Copy documentation
+          Copy-Item README.md -Destination release/ -ErrorAction SilentlyContinue
+          Copy-Item LICENSE* -Destination release/ -ErrorAction SilentlyContinue
+          Compress-Archive -Path release/* -DestinationPath "${{ matrix.asset_name }}-v${{ needs.determine-version.outputs.new_version }}.zip"
 
-      - name: Build
-        run: cargo build --release --target x86_64-pc-windows-msvc
-
-      - name: Package
-        shell: pwsh
-        run: |
-          New-Item -ItemType Directory -Force -Path artifacts
-          Copy-Item target/x86_64-pc-windows-msvc/release/rustpress.exe artifacts/
-          Copy-Item -Recurse admin-ui/dist artifacts/admin-ui -ErrorAction SilentlyContinue
-          Compress-Archive -Path artifacts/* -DestinationPath rustpress-windows-x86_64.zip
-
-      - name: Upload artifact
+      - name: Upload release artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rustpress-windows-x86_64
-          path: rustpress-windows-x86_64.zip
+          name: ${{ matrix.asset_name }}
+          path: ${{ matrix.asset_name }}-v${{ needs.determine-version.outputs.new_version }}.zip
 
-  build-macos-x86:
-    name: Build macOS x86_64
-    needs: version
-    if: needs.version.outputs.should_release == 'true'
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: x86_64-apple-darwin
-
-      - name: Cache cargo
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: macos-x86-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Download Admin UI
-        run: |
-          mkdir -p admin-ui/dist
-          LATEST=$(curl -s https://api.github.com/repos/rustpress-net/rustpress-core-admin-ui/releases/latest | jq -r '.tag_name')
-          curl -sL "https://github.com/rustpress-net/rustpress-core-admin-ui/releases/download/${LATEST}/rustpress-admin-ui.zip" -o admin-ui.zip
-          unzip -o admin-ui.zip -d admin-ui/dist || true
-
-      - name: Build
-        run: cargo build --release --target x86_64-apple-darwin
-
-      - name: Package
-        run: |
-          mkdir -p artifacts
-          cp target/x86_64-apple-darwin/release/rustpress artifacts/
-          cp -r admin-ui/dist artifacts/admin-ui 2>/dev/null || true
-          cd artifacts && zip -r ../rustpress-macos-x86_64.zip .
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: rustpress-macos-x86_64
-          path: rustpress-macos-x86_64.zip
-
-  build-macos-arm:
-    name: Build macOS ARM64
-    needs: version
-    if: needs.version.outputs.should_release == 'true'
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-apple-darwin
-
-      - name: Cache cargo
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: macos-arm-cargo-${{ hashFiles('**/Cargo.lock') }}
-
-      - name: Download Admin UI
-        run: |
-          mkdir -p admin-ui/dist
-          LATEST=$(curl -s https://api.github.com/repos/rustpress-net/rustpress-core-admin-ui/releases/latest | jq -r '.tag_name')
-          curl -sL "https://github.com/rustpress-net/rustpress-core-admin-ui/releases/download/${LATEST}/rustpress-admin-ui.zip" -o admin-ui.zip
-          unzip -o admin-ui.zip -d admin-ui/dist || true
-
-      - name: Build
-        run: cargo build --release --target aarch64-apple-darwin
-
-      - name: Package
-        run: |
-          mkdir -p artifacts
-          cp target/aarch64-apple-darwin/release/rustpress artifacts/
-          cp -r admin-ui/dist artifacts/admin-ui 2>/dev/null || true
-          cd artifacts && zip -r ../rustpress-macos-arm64.zip .
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: rustpress-macos-arm64
-          path: rustpress-macos-arm64.zip
-
-  release:
-    name: Create Release
-    needs: [version, build-linux, build-windows, build-macos-x86, build-macos-arm]
+  create-release:
+    name: Create GitHub Release
+    needs: [determine-version, build-and-release]
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      - name: Create and push tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          # Create tag on current commit
+          git tag -a "v${{ needs.determine-version.outputs.new_version }}" -m "Release v${{ needs.determine-version.outputs.new_version }}"
+          git push origin "v${{ needs.determine-version.outputs.new_version }}"
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: release-artifacts
-          merge-multiple: true
+          path: artifacts
 
       - name: Generate changelog
         id: changelog
         run: |
-          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
-          if [ -n "$LAST_TAG" ]; then
-            CHANGES=$(git log --pretty=format:"- %s" ${LAST_TAG}..HEAD)
+          LAST_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+          if [ -z "$LAST_TAG" ]; then
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" HEAD)
           else
-            CHANGES=$(git log --pretty=format:"- %s" -10)
+            CHANGELOG=$(git log --pretty=format:"- %s (%h)" ${LAST_TAG}..HEAD^)
           fi
 
-          RELEASE_TYPE="${{ needs.version.outputs.release_type }}"
-          case $RELEASE_TYPE in
-            pre-release) LABEL="Pre-release" ;;
-            draft) LABEL="Draft" ;;
-            *) LABEL="Release" ;;
-          esac
+          # Group by type
+          echo "## What's Changed" > changelog.md
+          echo "" >> changelog.md
 
-          cat > changelog.md << EOF
-          ## RustPress v${{ needs.version.outputs.new_version }} (${LABEL})
+          # Breaking changes
+          BREAKING=$(echo "$CHANGELOG" | grep -iE "BREAKING|^- [a-z]+(\([^)]+\))?!:" || true)
+          if [ -n "$BREAKING" ]; then
+            echo "### ⚠️ Breaking Changes" >> changelog.md
+            echo "$BREAKING" >> changelog.md
+            echo "" >> changelog.md
+          fi
 
-          ### Changes
-          ${CHANGES}
-          EOF
+          # Features
+          FEATURES=$(echo "$CHANGELOG" | grep -iE "^- feat" || true)
+          if [ -n "$FEATURES" ]; then
+            echo "### ✨ Features" >> changelog.md
+            echo "$FEATURES" >> changelog.md
+            echo "" >> changelog.md
+          fi
+
+          # Fixes
+          FIXES=$(echo "$CHANGELOG" | grep -iE "^- fix" || true)
+          if [ -n "$FIXES" ]; then
+            echo "### 🐛 Bug Fixes" >> changelog.md
+            echo "$FIXES" >> changelog.md
+            echo "" >> changelog.md
+          fi
+
+          # Performance
+          PERF=$(echo "$CHANGELOG" | grep -iE "^- perf" || true)
+          if [ -n "$PERF" ]; then
+            echo "### ⚡ Performance" >> changelog.md
+            echo "$PERF" >> changelog.md
+            echo "" >> changelog.md
+          fi
+
+          # Other changes
+          OTHER=$(echo "$CHANGELOG" | grep -viE "BREAKING|^- feat|^- fix|^- perf|^- [a-z]+(\([^)]+\))?!:" || true)
+          if [ -n "$OTHER" ]; then
+            echo "### 📦 Other Changes" >> changelog.md
+            echo "$OTHER" >> changelog.md
+            echo "" >> changelog.md
+          fi
+
+          cat changelog.md
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ needs.version.outputs.new_version }}
-          name: RustPress v${{ needs.version.outputs.new_version }}
+          tag_name: v${{ needs.determine-version.outputs.new_version }}
+          name: RustPress v${{ needs.determine-version.outputs.new_version }}
           body_path: changelog.md
-          files: release-artifacts/*
-          draft: ${{ needs.version.outputs.release_type == 'draft' }}
-          prerelease: ${{ needs.version.outputs.release_type == 'pre-release' }}
+          files: artifacts/**/*.zip
+          draft: ${{ needs.determine-version.outputs.release_type == 'draft' }}
+          prerelease: ${{ needs.determine-version.outputs.release_type == 'pre-release' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   docker:
     name: Build Docker Image
-    needs: [version, release]
-    if: needs.version.outputs.release_type == 'release'
+    needs: [determine-version, create-release]
+    # Only build Docker for official releases
+    if: needs.determine-version.outputs.release_type == 'release'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+
     steps:
       - uses: actions/checkout@v4
 
@@ -346,51 +392,123 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build and push
+      - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/rustpress:latest
-            ghcr.io/${{ github.repository_owner }}/rustpress:v${{ needs.version.outputs.new_version }}
+            ghcr.io/${{ github.repository }}:${{ needs.determine-version.outputs.new_version }}
+            ghcr.io/${{ github.repository }}:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-  cleanup:
+  # ---------------------------------------------------------------------------
+  # Cleanup - Only runs for official releases, removes all drafts/prereleases
+  # ---------------------------------------------------------------------------
+  cleanup-releases:
     name: Cleanup Old Releases
-    needs: [version, release]
-    if: needs.version.outputs.release_type == 'release'
+    needs: [determine-version, create-release, docker]
+    # Only cleanup when creating an official release
+    if: needs.determine-version.outputs.release_type == 'release'
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      packages: write
+
     steps:
-      - name: Delete old prereleases and drafts
+      - name: Delete all prereleases and drafts
         uses: actions/github-script@v7
         with:
           script: |
+            const { owner, repo } = context.repo;
+
+            // Get all releases
             const releases = await github.rest.repos.listReleases({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
+              owner,
+              repo,
               per_page: 100
             });
 
             for (const release of releases.data) {
-              if (release.draft || release.prerelease) {
+              // Delete if it's a prerelease or draft
+              if (release.prerelease || release.draft) {
                 console.log(`Deleting ${release.draft ? 'draft' : 'prerelease'}: ${release.tag_name}`);
+
+                // Delete the release
                 await github.rest.repos.deleteRelease({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
+                  owner,
+                  repo,
                   release_id: release.id
                 });
-                if (release.tag_name) {
-                  try {
-                    await github.rest.git.deleteRef({
-                      owner: context.repo.owner,
-                      repo: context.repo.repo,
-                      ref: `tags/${release.tag_name}`
-                    });
-                  } catch (e) { }
+
+                // Delete the associated tag
+                try {
+                  await github.rest.git.deleteRef({
+                    owner,
+                    repo,
+                    ref: `tags/${release.tag_name}`
+                  });
+                  console.log(`Deleted tag: ${release.tag_name}`);
+                } catch (e) {
+                  console.log(`Tag ${release.tag_name} may already be deleted`);
                 }
               }
+            }
+
+            console.log('Cleanup complete - only official releases remain');
+
+      - name: Cleanup non-release Docker images
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const packageName = repo;
+
+            try {
+              // Get all package versions
+              const versions = await github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg({
+                package_type: 'container',
+                package_name: packageName,
+                org: owner,
+                per_page: 100
+              });
+
+              // Get list of official release tags
+              const releases = await github.rest.repos.listReleases({
+                owner,
+                repo,
+                per_page: 100
+              });
+
+              const officialVersions = new Set(['latest']);
+              for (const release of releases.data) {
+                if (!release.prerelease && !release.draft) {
+                  // Extract version from tag (e.g., v0.3.0 -> 0.3.0)
+                  const version = release.tag_name.replace(/^v/, '');
+                  officialVersions.add(version);
+                }
+              }
+
+              console.log('Official versions to keep:', [...officialVersions]);
+
+              // Delete non-official versions
+              for (const version of versions.data) {
+                const tags = version.metadata?.container?.tags || [];
+                const hasOfficialTag = tags.some(tag => officialVersions.has(tag));
+
+                if (!hasOfficialTag && tags.length > 0) {
+                  console.log(`Deleting Docker image with tags: ${tags.join(', ')}`);
+                  await github.rest.packages.deletePackageVersionForOrg({
+                    package_type: 'container',
+                    package_name: packageName,
+                    org: owner,
+                    package_version_id: version.id
+                  });
+                }
+              }
+
+              console.log('Docker cleanup complete');
+            } catch (e) {
+              console.log('Docker cleanup skipped:', e.message);
             }
