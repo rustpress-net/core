@@ -40,11 +40,11 @@ pub fn create_router(state: AppState) -> Router {
         .with_state(state)
 }
 
-/// Admin routes - serve static files from admin-ui/dist
+/// Admin routes - serve static files from admin-ui directory
 fn admin_routes() -> Router<AppState> {
-    // Path to admin UI dist directory
+    // Path to admin UI directory (release packages have built files at ./admin-ui)
     let admin_dist =
-        std::env::var("ADMIN_UI_PATH").unwrap_or_else(|_| "./admin-ui/dist".to_string());
+        std::env::var("ADMIN_UI_PATH").unwrap_or_else(|_| "./admin-ui".to_string());
 
     let index_path = format!("{}/index.html", admin_dist);
 
