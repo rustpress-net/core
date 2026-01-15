@@ -368,13 +368,14 @@ async fn run_schema_installation(
     .execute(pool)
     .await?;
 
-    // Insert default theme (using migration schema: id is VARCHAR primary key)
+    // Insert default theme (using new UUID-based schema)
     sqlx::query(
         r#"
-        INSERT INTO themes (id, name, version, description, author, is_active, settings, installed_at)
-        VALUES ('rustpress-enterprise', 'RustPress Enterprise', '1.0.0', 'Default RustPress theme', 'RustPress Team', true, '{}', NOW())
-        ON CONFLICT (id) DO UPDATE SET
+        INSERT INTO themes (theme_id, name, version, description, author, is_active, is_installed, activated_at, installed_at)
+        VALUES ('rustpress-default', 'RustPress Default', '1.0.0', 'Default RustPress theme', 'RustPress Team', true, true, NOW(), NOW())
+        ON CONFLICT (site_id, theme_id) DO UPDATE SET
             is_active = true,
+            activated_at = NOW(),
             updated_at = NOW()
         "#,
     )
@@ -575,19 +576,34 @@ CREATE TABLE IF NOT EXISTS settings (
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
 );
 
--- Themes table
+-- Themes table (matches ThemeRow struct in repository.rs)
 CREATE TABLE IF NOT EXISTS themes (
-    id VARCHAR(100) PRIMARY KEY,
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    site_id UUID,
+    theme_id VARCHAR(100) NOT NULL,
     name VARCHAR(255) NOT NULL,
-    version VARCHAR(50) NOT NULL,
     description TEXT,
+    version VARCHAR(50),
     author VARCHAR(255),
     author_url VARCHAR(500),
-    screenshot_url VARCHAR(500),
+    license VARCHAR(100),
     is_active BOOLEAN NOT NULL DEFAULT FALSE,
-    settings JSONB DEFAULT '{}'::jsonb,
-    installed_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW()
+    is_installed BOOLEAN NOT NULL DEFAULT TRUE,
+    parent_theme_id VARCHAR(100),
+    screenshot_url VARCHAR(500),
+    homepage_url VARCHAR(500),
+    tags TEXT[],
+    supports JSONB NOT NULL DEFAULT '{}'::jsonb,
+    menu_locations JSONB NOT NULL DEFAULT '{}'::jsonb,
+    widget_areas JSONB NOT NULL DEFAULT '[]'::jsonb,
+    customizer_schema JSONB NOT NULL DEFAULT '{}'::jsonb,
+    settings JSONB NOT NULL DEFAULT '{}'::jsonb,
+    template_count INTEGER DEFAULT 0,
+    activated_at TIMESTAMP WITH TIME ZONE,
+    installed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
+    UNIQUE(site_id, theme_id)
 );
 
 -- Menus table
