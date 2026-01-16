@@ -1,0 +1,54 @@
+name: 'Cleanup Releases'
+description: 'Delete all prereleases and drafts when creating an official release'
+
+inputs:
+  delete_prereleases:
+    description: 'Delete prereleases'
+    required: false
+    default: 'true'
+  delete_drafts:
+    description: 'Delete drafts'
+    required: false
+    default: 'true'
+  github_token:
+    description: 'GitHub token'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Delete prereleases and drafts
+      uses: actions/github-script@v7
+      with:
+        github-token: ${{ inputs.github_token }}
+        script: |
+          const { owner, repo } = context.repo;
+          const deletePrereleases = '${{ inputs.delete_prereleases }}' === 'true';
+          const deleteDrafts = '${{ inputs.delete_drafts }}' === 'true';
+
+          const releases = await github.rest.repos.listReleases({
+            owner,
+            repo,
+            per_page: 100
+          });
+
+          for (const release of releases.data) {
+            const shouldDelete = (release.prerelease && deletePrereleases) || (release.draft && deleteDrafts);
+            if (shouldDelete) {
+              console.log(`Deleting ${release.draft ? 'draft' : 'prerelease'}: ${release.tag_name}`);
+              await github.rest.repos.deleteRelease({
+                owner,
+                repo,
+                release_id: release.id
+              });
+              try {
+                await github.rest.git.deleteRef({
+                  owner,
+                  repo,
+                  ref: `tags/${release.tag_name}`
+                });
+              } catch (e) {
+                console.log(`Could not delete tag ${release.tag_name}: ${e.message}`);
+              }
+            }
+          }

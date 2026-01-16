@@ -1,0 +1,18 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    uses: rustpress-net/rustpress-core-devops/.github/workflows/ci-rust.yml@main
+    with:
+      run_tests: true
+      run_clippy: true
+      run_fmt: true
+      postgres_required: false
+      redis_required: false
+    secrets: inherit

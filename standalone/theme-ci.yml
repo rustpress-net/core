@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  validate:
+    name: Validate Theme
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate theme.json
+        run: |
+          if [ ! -f "theme.json" ]; then
+            echo "Error: theme.json not found"
+            exit 1
+          fi
+          jq empty theme.json || (echo "Error: Invalid JSON in theme.json" && exit 1)
+          echo "theme.json is valid"
+
+      - name: Check required structure
+        run: |
+          echo "Checking theme structure..."
+          for dir in templates static; do
+            if [ -d "$dir" ]; then
+              echo "✓ $dir/ exists"
+            else
+              echo "⚠ $dir/ not found"
+            fi
+          done

@@ -1,0 +1,49 @@
+name: 'Build Node.js'
+description: 'Build Node.js project and package for release'
+
+inputs:
+  node_version:
+    description: 'Node.js version'
+    required: false
+    default: '20'
+  build_command:
+    description: 'Build command'
+    required: false
+    default: 'npm run build'
+  dist_folder:
+    description: 'Distribution folder to package'
+    required: false
+    default: 'dist'
+  artifact_name:
+    description: 'Name for the artifact'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node_version }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      shell: bash
+      run: npm ci
+
+    - name: Build
+      shell: bash
+      run: ${{ inputs.build_command }}
+
+    - name: Package distribution
+      shell: bash
+      run: |
+        mkdir -p artifacts
+        cd ${{ inputs.dist_folder }}
+        zip -r ../artifacts/${{ inputs.artifact_name }}.zip .
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact_name }}
+        path: artifacts/*.zip

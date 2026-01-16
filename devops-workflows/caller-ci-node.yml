@@ -1,0 +1,16 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    uses: rustpress-net/rustpress-core-devops/.github/workflows/ci-node.yml@main
+    with:
+      run_tests: true
+      run_lint: true
+      run_build: true
+    secrets: inherit

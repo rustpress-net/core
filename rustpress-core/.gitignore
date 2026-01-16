@@ -1,0 +1,53 @@
+# Rust
+/target/
+**/*.rs.bk
+Cargo.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Build artifacts
+dist/
+build/
+
+# Test coverage
+coverage/
+*.lcov
+
+# Database
+*.db
+*.sqlite
+
+# Uploads (local development)
+uploads/
+storage/
+
+# Documentation build
+/docs/book/
+
+# Dependencies (cloned separately)
+admin-ui/
+crates/
+themes/
+plugins/
+
+# Local environment
+.env
+*.log

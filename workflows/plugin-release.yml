@@ -1,0 +1,105 @@
+name: Release
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: 'Version bump type'
+        required: true
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - release
+          - pre-release
+          - draft
+
+jobs:
+  version:
+    name: Determine Version
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.bump.outputs.new_version }}
+      release_type: ${{ steps.bump.outputs.release_type }}
+      should_release: ${{ steps.bump.outputs.should_release }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: rustpress-net/rustpress-core-devops/actions/version-bump@main
+        id: bump
+        with:
+          version_bump: ${{ inputs.version_bump || 'auto' }}
+          release_type: ${{ inputs.release_type || 'auto' }}
+          version_file: 'Cargo.toml'
+
+  build:
+    name: Build Plugin
+    needs: version
+    if: needs.version.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build plugin
+        run: cargo build --release
+
+      - name: Package plugin
+        run: |
+          mkdir -p artifacts
+          PLUGIN_NAME=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].name')
+          cp target/release/lib${PLUGIN_NAME}.so artifacts/${PLUGIN_NAME}.so 2>/dev/null || \
+          cp target/release/${PLUGIN_NAME}.dll artifacts/${PLUGIN_NAME}.dll 2>/dev/null || \
+          cp target/release/lib${PLUGIN_NAME}.dylib artifacts/${PLUGIN_NAME}.dylib 2>/dev/null || \
+          echo "Built as library"
+          zip -r artifacts/${{ github.event.repository.name }}.zip artifacts/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}
+          path: artifacts/*.zip
+
+  release:
+    name: Create Release
+    needs: [version, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: rustpress-net/rustpress-core-devops/actions/create-release@main
+        with:
+          version: ${{ needs.version.outputs.new_version }}
+          release_type: ${{ needs.version.outputs.release_type }}
+          artifact_pattern: ${{ github.event.repository.name }}
+          release_name_prefix: ''
+
+  cleanup:
+    name: Cleanup Old Releases
+    needs: [version, release]
+    if: needs.version.outputs.release_type == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: rustpress-net/rustpress-core-devops/actions/cleanup-releases@main
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}

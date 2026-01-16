@@ -1,0 +1,64 @@
+name: 'Create Release'
+description: 'Create a GitHub release with artifacts'
+
+inputs:
+  version:
+    description: 'Version for the release'
+    required: true
+  release_type:
+    description: 'Release type (release, pre-release, draft)'
+    required: true
+  artifact_pattern:
+    description: 'Pattern to match artifacts'
+    required: false
+    default: '*'
+  release_name_prefix:
+    description: 'Prefix for release name'
+    required: false
+    default: ''
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: release-artifacts
+        pattern: ${{ inputs.artifact_pattern }}
+        merge-multiple: true
+
+    - name: Generate changelog
+      shell: bash
+      run: |
+        LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+        if [ -z "$LAST_TAG" ]; then
+          CHANGES=$(git log --pretty=format:"- %s" HEAD | head -50)
+        else
+          CHANGES=$(git log --pretty=format:"- %s" ${LAST_TAG}..HEAD)
+        fi
+
+        RELEASE_TYPE="${{ inputs.release_type }}"
+        if [ "$RELEASE_TYPE" = "pre-release" ]; then
+          RELEASE_LABEL="Pre-release"
+        elif [ "$RELEASE_TYPE" = "draft" ]; then
+          RELEASE_LABEL="Draft"
+        else
+          RELEASE_LABEL="Release"
+        fi
+
+        cat > changelog.md << EOF
+        ## ${{ inputs.release_name_prefix }}v${{ inputs.version }} (${RELEASE_LABEL})
+
+        ### Changes
+        ${CHANGES}
+        EOF
+
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ inputs.version }}
+        name: ${{ inputs.release_name_prefix }}v${{ inputs.version }}
+        body_path: changelog.md
+        files: release-artifacts/**/*
+        draft: ${{ inputs.release_type == 'draft' }}
+        prerelease: ${{ inputs.release_type == 'pre-release' }}

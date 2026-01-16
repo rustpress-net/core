@@ -1,0 +1,242 @@
+name: Reusable Documentation Release Workflow
+
+on:
+  workflow_call:
+    inputs:
+      version_bump:
+        description: 'Version bump type'
+        required: false
+        default: 'auto'
+        type: string
+      release_type:
+        description: 'Release type'
+        required: false
+        default: 'auto'
+        type: string
+      build_command:
+        description: 'Build command (leave empty if no build needed)'
+        required: false
+        default: ''
+        type: string
+      dist_folder:
+        description: 'Distribution folder to package'
+        required: false
+        default: 'docs'
+        type: string
+
+jobs:
+  determine-version:
+    name: Determine Version
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.version.outputs.new_version }}
+      current_version: ${{ steps.version.outputs.current_version }}
+      should_release: ${{ steps.version.outputs.should_release }}
+      bump_type: ${{ steps.version.outputs.bump_type }}
+      release_type: ${{ steps.version.outputs.release_type }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version bump from commits
+        id: version
+        run: |
+          # Try to get version from package.json, VERSION file, or use 1.0.0 as default
+          if [ -f "package.json" ]; then
+            CURRENT_VERSION=$(jq -r '.version // "1.0.0"' package.json)
+          elif [ -f "VERSION" ]; then
+            CURRENT_VERSION=$(cat VERSION | tr -d '[:space:]')
+          else
+            CURRENT_VERSION="1.0.0"
+          fi
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"%s" HEAD)
+          else
+            COMMITS=$(git log --pretty=format:"%s" ${LAST_TAG}..HEAD)
+          fi
+
+          INPUT_RELEASE_TYPE="${{ inputs.release_type }}"
+          if [ "$INPUT_RELEASE_TYPE" != "" ] && [ "$INPUT_RELEASE_TYPE" != "auto" ]; then
+            RELEASE_TYPE="$INPUT_RELEASE_TYPE"
+          else
+            if echo "$COMMITS" | grep -qi "\[release\]"; then
+              RELEASE_TYPE="release"
+            elif echo "$COMMITS" | grep -qi "\[pre-release\]"; then
+              RELEASE_TYPE="pre-release"
+            elif echo "$COMMITS" | grep -qi "\[draft\]"; then
+              RELEASE_TYPE="draft"
+            else
+              RELEASE_TYPE="none"
+            fi
+          fi
+
+          echo "release_type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
+
+          if [ "$RELEASE_TYPE" = "none" ]; then
+            echo "should_release=false" >> $GITHUB_OUTPUT
+            echo "new_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            echo "bump_type=none" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          INPUT_BUMP="${{ inputs.version_bump }}"
+          if [ "$INPUT_BUMP" != "" ] && [ "$INPUT_BUMP" != "auto" ]; then
+            BUMP_TYPE="$INPUT_BUMP"
+          else
+            if echo "$COMMITS" | grep -qiE "^(feat|feature)!:|BREAKING CHANGE"; then
+              BUMP_TYPE="major"
+            elif echo "$COMMITS" | grep -qiE "^(feat|feature)(\(.*\))?:"; then
+              BUMP_TYPE="minor"
+            else
+              BUMP_TYPE="patch"
+            fi
+          fi
+
+          echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+          case $BUMP_TYPE in
+            major) NEW_VERSION="$((MAJOR + 1)).0.0" ;;
+            minor) NEW_VERSION="${MAJOR}.$((MINOR + 1)).0" ;;
+            patch) NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))" ;;
+          esac
+
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "should_release=true" >> $GITHUB_OUTPUT
+
+  build:
+    name: Build Documentation
+    needs: determine-version
+    if: needs.determine-version.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js (if needed)
+        if: inputs.build_command != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies (if needed)
+        if: inputs.build_command != ''
+        run: npm ci
+
+      - name: Build documentation (if needed)
+        if: inputs.build_command != ''
+        run: ${{ inputs.build_command }}
+
+      - name: Package documentation
+        run: |
+          REPO_NAME="${{ github.event.repository.name }}"
+          VERSION="${{ needs.determine-version.outputs.new_version }}"
+          DIST_FOLDER="${{ inputs.dist_folder }}"
+          mkdir -p artifacts
+          if [ -d "$DIST_FOLDER" ]; then
+            cd "$DIST_FOLDER"
+            zip -r ../artifacts/${REPO_NAME}-v${VERSION}.zip .
+          else
+            zip -r artifacts/${REPO_NAME}-v${VERSION}.zip . \
+              -x ".git/*" -x ".github/*" -x "artifacts/*" -x "node_modules/*"
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-package
+          path: artifacts/*.zip
+
+  create-release:
+    name: Create Release
+    needs: [determine-version, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docs-package
+          path: artifacts
+
+      - name: Generate changelog
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            CHANGES=$(git log --pretty=format:"- %s" HEAD | head -50)
+          else
+            CHANGES=$(git log --pretty=format:"- %s" ${LAST_TAG}..HEAD)
+          fi
+
+          RELEASE_TYPE="${{ needs.determine-version.outputs.release_type }}"
+
+          if [ "$RELEASE_TYPE" = "pre-release" ]; then
+            RELEASE_LABEL="Pre-release"
+          elif [ "$RELEASE_TYPE" = "draft" ]; then
+            RELEASE_LABEL="Draft"
+          else
+            RELEASE_LABEL="Release"
+          fi
+
+          cat > changelog.md << EOF
+          ## Documentation v${{ needs.determine-version.outputs.new_version }} (${RELEASE_LABEL})
+
+          ### Changes
+          ${CHANGES}
+          EOF
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.determine-version.outputs.new_version }}
+          name: v${{ needs.determine-version.outputs.new_version }}
+          body_path: changelog.md
+          files: artifacts/*.zip
+          draft: ${{ needs.determine-version.outputs.release_type == 'draft' }}
+          prerelease: ${{ needs.determine-version.outputs.release_type == 'pre-release' }}
+
+  cleanup-releases:
+    name: Cleanup Old Releases
+    needs: [determine-version, create-release]
+    if: needs.determine-version.outputs.release_type == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Delete all prereleases and drafts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const releases = await github.rest.repos.listReleases({
+              owner,
+              repo,
+              per_page: 100
+            });
+
+            for (const release of releases.data) {
+              if (release.prerelease || release.draft) {
+                console.log(`Deleting ${release.draft ? 'draft' : 'prerelease'}: ${release.tag_name}`);
+                await github.rest.repos.deleteRelease({
+                  owner,
+                  repo,
+                  release_id: release.id
+                });
+                try {
+                  await github.rest.git.deleteRef({
+                    owner,
+                    repo,
+                    ref: `tags/${release.tag_name}`
+                  });
+                } catch (e) {
+                  console.log(`Could not delete tag ${release.tag_name}: ${e.message}`);
+                }
+              }
+            }

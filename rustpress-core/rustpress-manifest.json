@@ -1,0 +1,42 @@
+{
+  "name": "RustPress",
+  "version": "1.0.0",
+  "description": "A modern, high-performance CMS built with Rust",
+  "dependencies": {
+    "admin-ui": {
+      "repository": "rustpress-net/admin-ui",
+      "version": "1.0.0",
+      "ref": "main",
+      "path": "admin-ui"
+    },
+    "crates": {
+      "repository": "rustpress-net/crates",
+      "version": "1.0.0",
+      "ref": "main",
+      "path": "crates"
+    }
+  },
+  "optional_dependencies": {
+    "themes": {
+      "repository": "rustpress-net/themes",
+      "version": "1.0.0",
+      "ref": "main",
+      "path": "themes"
+    },
+    "plugins": {
+      "repository": "rustpress-net/plugins",
+      "version": "1.0.0",
+      "ref": "main",
+      "path": "plugins"
+    }
+  },
+  "scripts": {
+    "init": "rustpress init",
+    "build": "cargo build --release",
+    "run": "cargo run --release",
+    "migrate": "cargo run --bin migrate",
+    "dev": "cargo run"
+  },
+  "rust_version": "1.75+",
+  "license": "MIT OR Apache-2.0"
+}

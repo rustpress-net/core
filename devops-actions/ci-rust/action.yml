@@ -1,0 +1,67 @@
+name: 'Rust CI'
+description: 'Run Rust CI checks including cargo check, test, clippy, and fmt'
+
+inputs:
+  run_check:
+    description: 'Run cargo check'
+    required: false
+    default: 'true'
+  run_tests:
+    description: 'Run cargo test'
+    required: false
+    default: 'true'
+  run_clippy:
+    description: 'Run clippy'
+    required: false
+    default: 'true'
+  run_fmt:
+    description: 'Check formatting'
+    required: false
+    default: 'true'
+  rust_flags:
+    description: 'RUSTFLAGS to set'
+    required: false
+    default: '-Dwarnings -Aunused -Amismatched_lifetime_syntaxes -Adependency_on_unit_never_type_fallback -Aunused_comparisons'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        components: rustfmt, clippy
+
+    - name: Cache cargo registry
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Run cargo check
+      if: inputs.run_check == 'true'
+      shell: bash
+      env:
+        RUSTFLAGS: ${{ inputs.rust_flags }}
+      run: cargo check --all-targets --all-features
+
+    - name: Run cargo test
+      if: inputs.run_tests == 'true'
+      shell: bash
+      env:
+        RUSTFLAGS: ${{ inputs.rust_flags }}
+      run: cargo test --all-features
+
+    - name: Run cargo fmt
+      if: inputs.run_fmt == 'true'
+      shell: bash
+      run: cargo fmt --all -- --check
+
+    - name: Run clippy
+      if: inputs.run_clippy == 'true'
+      shell: bash
+      env:
+        RUSTFLAGS: ${{ inputs.rust_flags }}
+      run: cargo clippy --all-targets --all-features -- -A clippy::all

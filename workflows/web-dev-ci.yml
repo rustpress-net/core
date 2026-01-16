@@ -1,0 +1,20 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  ci:
+    name: CI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: rustpress-net/rustpress-core-devops/actions/ci-node@main
+        with:
+          run_tests: 'false'
+          run_lint: 'true'
+          run_build: 'true'

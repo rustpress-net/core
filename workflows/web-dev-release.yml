@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: 'Version bump type'
+        required: true
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - release
+          - pre-release
+          - draft
+
+jobs:
+  version:
+    name: Determine Version
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.bump.outputs.new_version }}
+      release_type: ${{ steps.bump.outputs.release_type }}
+      should_release: ${{ steps.bump.outputs.should_release }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: rustpress-net/rustpress-core-devops/actions/version-bump@main
+        id: bump
+        with:
+          version_bump: ${{ inputs.version_bump || 'auto' }}
+          release_type: ${{ inputs.release_type || 'auto' }}
+          version_file: 'package.json'
+
+  build:
+    name: Build Documentation
+    needs: version
+    if: needs.version.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: rustpress-net/rustpress-core-devops/actions/build-node@main
+        with:
+          artifact_name: rustpress-docs
+          dist_folder: 'build'
+
+  release:
+    name: Create Release
+    needs: [version, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: rustpress-net/rustpress-core-devops/actions/create-release@main
+        with:
+          version: ${{ needs.version.outputs.new_version }}
+          release_type: ${{ needs.version.outputs.release_type }}
+          artifact_pattern: 'rustpress-docs'
+          release_name_prefix: 'RustPress Docs '
+
+  cleanup:
+    name: Cleanup Old Releases
+    needs: [version, release]
+    if: needs.version.outputs.release_type == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: rustpress-net/rustpress-core-devops/actions/cleanup-releases@main
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}

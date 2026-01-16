@@ -1,0 +1,169 @@
+name: Reusable Rust CI Workflow
+
+on:
+  workflow_call:
+    inputs:
+      run_tests:
+        description: 'Run tests'
+        required: false
+        default: true
+        type: boolean
+      run_clippy:
+        description: 'Run clippy linting'
+        required: false
+        default: true
+        type: boolean
+      run_fmt:
+        description: 'Check formatting'
+        required: false
+        default: true
+        type: boolean
+      postgres_required:
+        description: 'Require PostgreSQL service'
+        required: false
+        default: false
+        type: boolean
+      redis_required:
+        description: 'Require Redis service'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -Dwarnings -Aunused -Amismatched_lifetime_syntaxes -Adependency_on_unit_never_type_fallback -Aunused_comparisons
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Run cargo check
+        run: cargo check --all-targets --all-features
+
+  test:
+    name: Test
+    if: inputs.run_tests == true
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: ${{ inputs.postgres_required && 'postgres:15' || '' }}
+        env:
+          POSTGRES_USER: rustpress
+          POSTGRES_PASSWORD: rustpress
+          POSTGRES_DB: rustpress_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: ${{ inputs.redis_required && 'redis:7' || '' }}
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-test-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Run tests
+        env:
+          DATABASE_URL: ${{ inputs.postgres_required && 'postgres://rustpress:rustpress@localhost:5432/rustpress_test' || '' }}
+          REDIS_URL: ${{ inputs.redis_required && 'redis://localhost:6379' || '' }}
+        run: cargo test --all-features
+
+  fmt:
+    name: Formatting
+    if: inputs.run_fmt == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+  clippy:
+    name: Clippy
+    if: inputs.run_clippy == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-clippy-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Run clippy
+        run: cargo clippy --all-targets --all-features -- -A clippy::all
+
+  build:
+    name: Build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-build-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build
+        run: cargo build --release

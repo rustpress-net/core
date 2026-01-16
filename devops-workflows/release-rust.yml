@@ -1,0 +1,342 @@
+name: Reusable Rust Release Workflow
+
+on:
+  workflow_call:
+    inputs:
+      version_bump:
+        description: 'Version bump type'
+        required: false
+        default: 'auto'
+        type: string
+      release_type:
+        description: 'Release type'
+        required: false
+        default: 'auto'
+        type: string
+      build_docker:
+        description: 'Build Docker image'
+        required: false
+        default: true
+        type: boolean
+      docker_image_name:
+        description: 'Docker image name'
+        required: false
+        default: ''
+        type: string
+      admin_ui_ref:
+        description: 'Admin UI version override'
+        required: false
+        default: ''
+        type: string
+      include_admin_ui:
+        description: 'Include Admin UI in build'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -Aunused -Amismatched_lifetime_syntaxes -Adependency_on_unit_never_type_fallback -Aunused_comparisons
+
+jobs:
+  determine-version:
+    name: Determine Version
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.version.outputs.new_version }}
+      current_version: ${{ steps.version.outputs.current_version }}
+      should_release: ${{ steps.version.outputs.should_release }}
+      bump_type: ${{ steps.version.outputs.bump_type }}
+      release_type: ${{ steps.version.outputs.release_type }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version bump from commits
+        id: version
+        run: |
+          CURRENT_VERSION=$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/')
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"%s" HEAD)
+          else
+            COMMITS=$(git log --pretty=format:"%s" ${LAST_TAG}..HEAD)
+          fi
+
+          INPUT_RELEASE_TYPE="${{ inputs.release_type }}"
+          if [ "$INPUT_RELEASE_TYPE" != "" ] && [ "$INPUT_RELEASE_TYPE" != "auto" ]; then
+            RELEASE_TYPE="$INPUT_RELEASE_TYPE"
+          else
+            if echo "$COMMITS" | grep -qi "\[release\]"; then
+              RELEASE_TYPE="release"
+            elif echo "$COMMITS" | grep -qi "\[pre-release\]"; then
+              RELEASE_TYPE="pre-release"
+            elif echo "$COMMITS" | grep -qi "\[draft\]"; then
+              RELEASE_TYPE="draft"
+            else
+              RELEASE_TYPE="none"
+            fi
+          fi
+
+          echo "release_type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
+
+          if [ "$RELEASE_TYPE" = "none" ]; then
+            echo "should_release=false" >> $GITHUB_OUTPUT
+            echo "new_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            echo "bump_type=none" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          INPUT_BUMP="${{ inputs.version_bump }}"
+          if [ "$INPUT_BUMP" != "" ] && [ "$INPUT_BUMP" != "auto" ]; then
+            BUMP_TYPE="$INPUT_BUMP"
+          else
+            if echo "$COMMITS" | grep -qiE "^(feat|feature)!:|BREAKING CHANGE"; then
+              BUMP_TYPE="major"
+            elif echo "$COMMITS" | grep -qiE "^(feat|feature)(\(.*\))?:"; then
+              BUMP_TYPE="minor"
+            else
+              BUMP_TYPE="patch"
+            fi
+          fi
+
+          echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+          case $BUMP_TYPE in
+            major) NEW_VERSION="$((MAJOR + 1)).0.0" ;;
+            minor) NEW_VERSION="${MAJOR}.$((MINOR + 1)).0" ;;
+            patch) NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))" ;;
+          esac
+
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "should_release=true" >> $GITHUB_OUTPUT
+
+  build:
+    name: Build - ${{ matrix.target }}
+    needs: determine-version
+    if: needs.determine-version.outputs.should_release == 'true'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            artifact_name: linux-x86_64
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            artifact_name: windows-x86_64
+          - target: x86_64-apple-darwin
+            os: macos-latest
+            artifact_name: macos-x86_64
+          - target: aarch64-apple-darwin
+            os: macos-latest
+            artifact_name: macos-arm64
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Setup Admin UI (if needed)
+        if: inputs.include_admin_ui == true
+        run: |
+          ADMIN_UI_VERSION="${{ inputs.admin_ui_ref }}"
+          if [ -z "$ADMIN_UI_VERSION" ] && [ -f "ADMIN_UI_VERSION" ]; then
+            ADMIN_UI_VERSION=$(cat ADMIN_UI_VERSION | tr -d '[:space:]')
+          fi
+          echo "Using Admin UI version: $ADMIN_UI_VERSION"
+          git clone --depth 1 --branch "$ADMIN_UI_VERSION" https://github.com/rustpress-net/rustpress-core-admin-ui.git admin-ui-build
+          cd admin-ui-build
+          npm ci
+          npm run build
+          mkdir -p ../public/admin
+          cp -r dist/* ../public/admin/
+        shell: bash
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Build release binary
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Package artifacts (Unix)
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p artifacts
+          REPO_NAME="${{ github.event.repository.name }}"
+          cd target/${{ matrix.target }}/release
+          for bin in $(find . -maxdepth 1 -type f -executable ! -name "*.d" ! -name "*.rlib" 2>/dev/null || find . -maxdepth 1 -type f -perm +111 ! -name "*.d" ! -name "*.rlib"); do
+            chmod +x "$bin"
+          done
+          zip -r ../../../artifacts/${REPO_NAME}-${{ matrix.artifact_name }}.zip $(find . -maxdepth 1 -type f -executable ! -name "*.d" ! -name "*.rlib" 2>/dev/null || find . -maxdepth 1 -type f -perm +111 ! -name "*.d" ! -name "*.rlib") || true
+
+      - name: Package artifacts (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path artifacts
+          $repoName = "${{ github.event.repository.name }}"
+          $exes = Get-ChildItem -Path "target/${{ matrix.target }}/release/*.exe" -File
+          if ($exes) {
+            Compress-Archive -Path $exes.FullName -DestinationPath "artifacts/${repoName}-${{ matrix.artifact_name }}.zip"
+          }
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: binaries-${{ matrix.artifact_name }}
+          path: artifacts/*.zip
+          if-no-files-found: ignore
+
+  create-release:
+    name: Create Release
+    needs: [determine-version, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: binaries-*
+          merge-multiple: true
+
+      - name: Generate changelog
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            CHANGES=$(git log --pretty=format:"- %s" HEAD | head -50)
+          else
+            CHANGES=$(git log --pretty=format:"- %s" ${LAST_TAG}..HEAD)
+          fi
+
+          RELEASE_TYPE="${{ needs.determine-version.outputs.release_type }}"
+          if [ "$RELEASE_TYPE" = "pre-release" ]; then
+            RELEASE_LABEL="Pre-release"
+          elif [ "$RELEASE_TYPE" = "draft" ]; then
+            RELEASE_LABEL="Draft"
+          else
+            RELEASE_LABEL="Release"
+          fi
+
+          cat > changelog.md << EOF
+          ## v${{ needs.determine-version.outputs.new_version }} (${RELEASE_LABEL})
+
+          ### Changes
+          ${CHANGES}
+
+          ### Downloads
+          | Platform | Architecture | Download |
+          |----------|--------------|----------|
+          | Linux | x86_64 | \`*-linux-x86_64.zip\` |
+          | Windows | x86_64 | \`*-windows-x86_64.zip\` |
+          | macOS | x86_64 | \`*-macos-x86_64.zip\` |
+          | macOS | ARM64 | \`*-macos-arm64.zip\` |
+          EOF
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.determine-version.outputs.new_version }}
+          name: v${{ needs.determine-version.outputs.new_version }}
+          body_path: changelog.md
+          files: artifacts/*.zip
+          draft: ${{ needs.determine-version.outputs.release_type == 'draft' }}
+          prerelease: ${{ needs.determine-version.outputs.release_type == 'pre-release' }}
+
+  docker:
+    name: Build Docker Image
+    needs: [determine-version, create-release]
+    if: inputs.build_docker == true && needs.determine-version.outputs.release_type == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Determine image name
+        id: image
+        run: |
+          if [ -n "${{ inputs.docker_image_name }}" ]; then
+            echo "name=${{ inputs.docker_image_name }}" >> $GITHUB_OUTPUT
+          else
+            echo "name=${{ github.event.repository.name }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository_owner }}/${{ steps.image.outputs.name }}:latest
+            ghcr.io/${{ github.repository_owner }}/${{ steps.image.outputs.name }}:v${{ needs.determine-version.outputs.new_version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  cleanup-releases:
+    name: Cleanup Old Releases
+    needs: [determine-version, create-release]
+    if: needs.determine-version.outputs.release_type == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Delete all prereleases and drafts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const releases = await github.rest.repos.listReleases({
+              owner,
+              repo,
+              per_page: 100
+            });
+
+            for (const release of releases.data) {
+              if (release.prerelease || release.draft) {
+                console.log(`Deleting ${release.draft ? 'draft' : 'prerelease'}: ${release.tag_name}`);
+                await github.rest.repos.deleteRelease({
+                  owner,
+                  repo,
+                  release_id: release.id
+                });
+                try {
+                  await github.rest.git.deleteRef({
+                    owner,
+                    repo,
+                    ref: `tags/${release.tag_name}`
+                  });
+                } catch (e) {
+                  console.log(`Could not delete tag ${release.tag_name}: ${e.message}`);
+                }
+              }
+            }

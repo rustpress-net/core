@@ -1,0 +1,32 @@
+name: 'Build Theme'
+description: 'Package theme for release'
+
+inputs:
+  version:
+    description: 'Version to set in theme.json'
+    required: true
+  artifact_name:
+    description: 'Name for the artifact'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Update version in theme.json
+      shell: bash
+      run: |
+        jq '.version = "${{ inputs.version }}"' theme.json > theme.json.tmp
+        mv theme.json.tmp theme.json
+
+    - name: Create theme package
+      shell: bash
+      run: |
+        mkdir -p artifacts
+        zip -r "artifacts/${{ inputs.artifact_name }}.zip" . \
+          -x ".git/*" -x ".github/*" -x "artifacts/*" -x "*.md" -x ".gitignore"
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact_name }}
+        path: artifacts/*.zip

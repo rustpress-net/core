@@ -1,0 +1,93 @@
+name: 'Build Rust'
+description: 'Build Rust project for release'
+
+inputs:
+  target:
+    description: 'Rust target triple'
+    required: true
+  artifact_name:
+    description: 'Name for the artifact'
+    required: true
+  include_admin_ui:
+    description: 'Include Admin UI in build'
+    required: false
+    default: 'false'
+  admin_ui_version:
+    description: 'Admin UI version (reads from ADMIN_UI_VERSION if not set)'
+    required: false
+    default: ''
+  rust_flags:
+    description: 'RUSTFLAGS to set'
+    required: false
+    default: '-Aunused -Amismatched_lifetime_syntaxes -Adependency_on_unit_never_type_fallback -Aunused_comparisons'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Install Rust toolchain
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: ${{ inputs.target }}
+
+    - name: Setup Admin UI
+      if: inputs.include_admin_ui == 'true'
+      shell: bash
+      run: |
+        ADMIN_UI_VERSION="${{ inputs.admin_ui_version }}"
+        if [ -z "$ADMIN_UI_VERSION" ] && [ -f "ADMIN_UI_VERSION" ]; then
+          ADMIN_UI_VERSION=$(cat ADMIN_UI_VERSION | tr -d '[:space:]')
+        fi
+        if [ -z "$ADMIN_UI_VERSION" ]; then
+          echo "No Admin UI version specified, skipping"
+          exit 0
+        fi
+        echo "Using Admin UI version: $ADMIN_UI_VERSION"
+        git clone --depth 1 --branch "$ADMIN_UI_VERSION" https://github.com/rustpress-net/rustpress-core-admin-ui.git admin-ui-build
+        cd admin-ui-build
+        npm ci
+        npm run build
+        mkdir -p ../public/admin
+        cp -r dist/* ../public/admin/
+
+    - name: Cache cargo registry
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/registry
+          ~/.cargo/git
+          target
+        key: ${{ runner.os }}-${{ inputs.target }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: Build release binary
+      shell: bash
+      env:
+        RUSTFLAGS: ${{ inputs.rust_flags }}
+      run: cargo build --release --target ${{ inputs.target }}
+
+    - name: Package artifacts (Unix)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        mkdir -p artifacts
+        cd target/${{ inputs.target }}/release
+        BINS=$(find . -maxdepth 1 -type f -executable ! -name "*.d" ! -name "*.rlib" 2>/dev/null || find . -maxdepth 1 -type f -perm +111 ! -name "*.d" ! -name "*.rlib")
+        if [ -n "$BINS" ]; then
+          zip -r ../../../artifacts/${{ inputs.artifact_name }}.zip $BINS
+        fi
+
+    - name: Package artifacts (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Force -Path artifacts
+        $exes = Get-ChildItem -Path "target/${{ inputs.target }}/release/*.exe" -File -ErrorAction SilentlyContinue
+        if ($exes) {
+          Compress-Archive -Path $exes.FullName -DestinationPath "artifacts/${{ inputs.artifact_name }}.zip"
+        }
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact_name }}
+        path: artifacts/*.zip
+        if-no-files-found: ignore

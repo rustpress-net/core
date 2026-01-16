@@ -1,0 +1,193 @@
+name: Release
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: 'Version bump type'
+        required: true
+        default: 'auto'
+        type: choice
+        options: [auto, patch, minor, major]
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'auto'
+        type: choice
+        options: [auto, release, pre-release, draft]
+
+jobs:
+  version:
+    name: Determine Version
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.version.outputs.new_version }}
+      release_type: ${{ steps.version.outputs.release_type }}
+      should_release: ${{ steps.version.outputs.should_release }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version
+        id: version
+        run: |
+          CURRENT_VERSION=$(jq -r '.version' theme.json)
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"%s" ${LAST_TAG}..HEAD)
+          else
+            COMMITS=$(git log --pretty=format:"%s")
+          fi
+
+          RELEASE_TYPE="${{ inputs.release_type }}"
+          if [ "$RELEASE_TYPE" = "auto" ] || [ -z "$RELEASE_TYPE" ]; then
+            if echo "$COMMITS" | grep -qi "\[release\]"; then
+              RELEASE_TYPE="release"
+            elif echo "$COMMITS" | grep -qi "\[pre-release\]"; then
+              RELEASE_TYPE="pre-release"
+            elif echo "$COMMITS" | grep -qi "\[draft\]"; then
+              RELEASE_TYPE="draft"
+            else
+              RELEASE_TYPE="none"
+            fi
+          fi
+          echo "release_type=$RELEASE_TYPE" >> $GITHUB_OUTPUT
+
+          if [ "$RELEASE_TYPE" = "none" ]; then
+            echo "should_release=false" >> $GITHUB_OUTPUT
+            echo "new_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "should_release=true" >> $GITHUB_OUTPUT
+
+          BUMP_TYPE="${{ inputs.version_bump }}"
+          if [ "$BUMP_TYPE" = "auto" ] || [ -z "$BUMP_TYPE" ]; then
+            if echo "$COMMITS" | grep -qiE "^(feat|feature)!:|BREAKING CHANGE"; then
+              BUMP_TYPE="major"
+            elif echo "$COMMITS" | grep -qiE "^(feat|feature)(\(.*\))?:"; then
+              BUMP_TYPE="minor"
+            else
+              BUMP_TYPE="patch"
+            fi
+          fi
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT_VERSION"
+          case $BUMP_TYPE in
+            major) NEW_VERSION="$((MAJOR + 1)).0.0" ;;
+            minor) NEW_VERSION="${MAJOR}.$((MINOR + 1)).0" ;;
+            patch) NEW_VERSION="${MAJOR}.${MINOR}.$((PATCH + 1))" ;;
+          esac
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+  build:
+    name: Build Theme
+    needs: version
+    if: needs.version.outputs.should_release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update version in theme.json
+        run: |
+          jq '.version = "${{ needs.version.outputs.new_version }}"' theme.json > theme.json.tmp
+          mv theme.json.tmp theme.json
+
+      - name: Package theme
+        run: |
+          zip -r ${{ github.event.repository.name }}.zip . \
+            -x ".git/*" -x ".github/*" -x "*.md" -x ".gitignore"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ github.event.repository.name }}
+          path: ${{ github.event.repository.name }}.zip
+
+  release:
+    name: Create Release
+    needs: [version, build]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-artifacts
+          merge-multiple: true
+
+      - name: Get theme name
+        id: theme
+        run: |
+          THEME_NAME=$(jq -r '.name' theme.json)
+          echo "name=$THEME_NAME" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        run: |
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            CHANGES=$(git log --pretty=format:"- %s" ${LAST_TAG}..HEAD)
+          else
+            CHANGES=$(git log --pretty=format:"- %s" -10)
+          fi
+          cat > changelog.md << EOF
+          ## v${{ needs.version.outputs.new_version }}
+
+          ### Changes
+          ${CHANGES}
+          EOF
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.version.outputs.new_version }}
+          name: ${{ steps.theme.outputs.name }} v${{ needs.version.outputs.new_version }}
+          body_path: changelog.md
+          files: release-artifacts/*
+          draft: ${{ needs.version.outputs.release_type == 'draft' }}
+          prerelease: ${{ needs.version.outputs.release_type == 'pre-release' }}
+
+  cleanup:
+    name: Cleanup Old Releases
+    needs: [version, release]
+    if: needs.version.outputs.release_type == 'release'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Delete old prereleases and drafts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const releases = await github.rest.repos.listReleases({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100
+            });
+            for (const release of releases.data) {
+              if (release.draft || release.prerelease) {
+                await github.rest.repos.deleteRelease({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  release_id: release.id
+                });
+                if (release.tag_name) {
+                  try {
+                    await github.rest.git.deleteRef({
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      ref: `tags/${release.tag_name}`
+                    });
+                  } catch (e) { }
+                }
+              }
+            }

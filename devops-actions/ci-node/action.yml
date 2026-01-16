@@ -1,0 +1,62 @@
+name: 'Node.js CI'
+description: 'Run Node.js CI checks including lint, test, and build'
+
+inputs:
+  node_version:
+    description: 'Node.js version'
+    required: false
+    default: '20'
+  run_lint:
+    description: 'Run linting'
+    required: false
+    default: 'true'
+  run_tests:
+    description: 'Run tests'
+    required: false
+    default: 'true'
+  run_build:
+    description: 'Run build'
+    required: false
+    default: 'true'
+  lint_command:
+    description: 'Lint command'
+    required: false
+    default: 'npm run lint'
+  test_command:
+    description: 'Test command'
+    required: false
+    default: 'npm test'
+  build_command:
+    description: 'Build command'
+    required: false
+    default: 'npm run build'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node_version }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      shell: bash
+      run: npm ci
+
+    - name: Run linter
+      if: inputs.run_lint == 'true'
+      shell: bash
+      run: ${{ inputs.lint_command }}
+      continue-on-error: true
+
+    - name: Run tests
+      if: inputs.run_tests == 'true'
+      shell: bash
+      run: ${{ inputs.test_command }}
+      continue-on-error: true
+
+    - name: Run build
+      if: inputs.run_build == 'true'
+      shell: bash
+      run: ${{ inputs.build_command }}

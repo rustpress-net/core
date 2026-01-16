@@ -1,0 +1,329 @@
+# GitLab CI/CD Configuration for RustPress
+# Equivalent to .github/workflows/ci.yml
+
+stages:
+  - check
+  - test
+  - build
+  - release
+
+variables:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -Dwarnings
+  CARGO_HOME: $CI_PROJECT_DIR/.cargo
+  # Artifactory configuration
+  MINIO_ENDPOINT: ${MINIO_ENDPOINT:-http://host.docker.internal:9000}
+  MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+  MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+  # Artifact buckets
+  RELEASES_BUCKET: rustpress-releases
+  THEMES_BUCKET: rustpress-themes
+  PLUGINS_BUCKET: rustpress-plugins
+
+# Cache configuration
+.rust_cache: &rust_cache
+  cache:
+    key: ${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}
+    paths:
+      - .cargo/
+      - target/
+
+# Base Rust image
+.rust_base: &rust_base
+  image: rust:latest
+  before_script:
+    - rustc --version
+    - cargo --version
+
+# ============== CHECK STAGE ==============
+
+check:
+  <<: *rust_base
+  <<: *rust_cache
+  stage: check
+  script:
+    - cargo check --all-targets --all-features
+
+fmt:
+  <<: *rust_base
+  stage: check
+  script:
+    - rustup component add rustfmt
+    - cargo fmt --all -- --check
+
+clippy:
+  <<: *rust_base
+  <<: *rust_cache
+  stage: check
+  script:
+    - rustup component add clippy
+    - cargo clippy --all-targets --all-features
+
+# ============== TEST STAGE ==============
+
+test:
+  <<: *rust_base
+  <<: *rust_cache
+  stage: test
+  services:
+    - name: postgres:15
+      alias: postgres
+    - name: redis:7
+      alias: redis
+  variables:
+    POSTGRES_USER: rustpress
+    POSTGRES_PASSWORD: rustpress
+    POSTGRES_DB: rustpress_test
+    DATABASE_URL: postgres://rustpress:rustpress@postgres:5432/rustpress_test
+    REDIS_URL: redis://redis:6379
+  script:
+    - cargo test --all-features
+  needs:
+    - check
+
+# ============== BUILD STAGE ==============
+
+build:linux:
+  <<: *rust_base
+  <<: *rust_cache
+  stage: build
+  script:
+    - cargo build --release
+  artifacts:
+    paths:
+      - target/release/rustpress
+      - target/release/rustpress-cli
+    expire_in: 1 week
+  needs:
+    - check
+    - clippy
+    - fmt
+
+# Build for Windows (requires Windows runner)
+# build:windows:
+#   stage: build
+#   tags:
+#     - windows
+#   script:
+#     - cargo build --release
+#   artifacts:
+#     paths:
+#       - target/release/rustpress.exe
+#     expire_in: 1 week
+#   needs:
+#     - check
+
+# ============== OPTIONAL: SECURITY SCANNING ==============
+
+# sast:
+#   stage: test
+#   image: rust:latest
+#   script:
+#     - cargo install cargo-audit
+#     - cargo audit
+#   allow_failure: true
+
+# ============== RELEASE STAGE ==============
+
+# Upload release artifacts to RustPress Artifactory
+release:upload:
+  stage: release
+  image: alpine:latest
+  variables:
+    GIT_STRATEGY: none
+  before_script:
+    - apk add --no-cache curl ca-certificates
+    - curl -sSL https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc
+    - chmod +x /usr/local/bin/mc
+    - mc alias set rustpress-artifactory $MINIO_ENDPOINT $MINIO_ACCESS_KEY $MINIO_SECRET_KEY
+  script:
+    # Get version from Cargo.toml (passed as artifact)
+    - |
+      VERSION="${CI_COMMIT_TAG:-${CI_COMMIT_SHORT_SHA}}"
+      BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+      echo "Uploading RustPress release v${VERSION}"
+
+      # Create metadata JSON
+      cat > metadata.json << EOF
+      {
+        "version": "${VERSION}",
+        "commit": "${CI_COMMIT_SHA}",
+        "branch": "${CI_COMMIT_REF_NAME}",
+        "build_date": "${BUILD_DATE}",
+        "pipeline_id": "${CI_PIPELINE_ID}",
+        "artifact_type": "rustpress-core",
+        "tags": ["rustpress", "release", "${CI_COMMIT_REF_NAME}"]
+      }
+      EOF
+
+      # Upload Linux binary with tags
+      if [ -f target/release/rustpress ]; then
+        mc cp target/release/rustpress rustpress-artifactory/${RELEASES_BUCKET}/rustpress/${VERSION}/rustpress-linux-x86_64
+        mc cp metadata.json rustpress-artifactory/${RELEASES_BUCKET}/rustpress/${VERSION}/metadata.json
+
+        # Tag the release (tags in URL format: key1=value1&key2=value2)
+        mc tag set rustpress-artifactory/${RELEASES_BUCKET}/rustpress/${VERSION}/rustpress-linux-x86_64 \
+          "version=${VERSION}&type=rustpress&arch=x86_64&os=linux&commit=${CI_COMMIT_SHORT_SHA}"
+
+        echo "Uploaded rustpress-linux-x86_64"
+      fi
+
+      # Upload CLI binary
+      if [ -f target/release/rustpress-cli ]; then
+        mc cp target/release/rustpress-cli rustpress-artifactory/${RELEASES_BUCKET}/rustpress/${VERSION}/rustpress-cli-linux-x86_64
+
+        # Tag the CLI binary
+        mc tag set rustpress-artifactory/${RELEASES_BUCKET}/rustpress/${VERSION}/rustpress-cli-linux-x86_64 \
+          "version=${VERSION}&type=rustpress-cli&arch=x86_64&os=linux&commit=${CI_COMMIT_SHORT_SHA}"
+
+        echo "Uploaded rustpress-cli-linux-x86_64"
+      fi
+
+      # Create latest symlink/copy for non-tag builds
+      if [ -z "${CI_COMMIT_TAG}" ]; then
+        mc cp --recursive rustpress-artifactory/${RELEASES_BUCKET}/rustpress/${VERSION}/ \
+          rustpress-artifactory/${RELEASES_BUCKET}/rustpress/latest/
+        echo "Updated latest release pointer"
+      fi
+
+      echo ""
+      echo "=== Release Upload Complete ==="
+      echo "Version: ${VERSION}"
+      echo "Location: ${MINIO_ENDPOINT}/${RELEASES_BUCKET}/rustpress/${VERSION}/"
+  needs:
+    - job: build:linux
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "master"
+
+# Upload theme to RustPress Themes Artifactory
+.release:theme:
+  stage: release
+  image: alpine:latest
+  variables:
+    GIT_STRATEGY: none
+    THEME_NAME: ""
+    THEME_VERSION: ""
+  before_script:
+    - apk add --no-cache curl ca-certificates tar
+    - curl -sSL https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc
+    - chmod +x /usr/local/bin/mc
+    - mc alias set rustpress-artifactory $MINIO_ENDPOINT $MINIO_ACCESS_KEY $MINIO_SECRET_KEY
+  script:
+    - |
+      if [ -z "${THEME_NAME}" ] || [ -z "${THEME_VERSION}" ]; then
+        echo "Error: THEME_NAME and THEME_VERSION must be set"
+        exit 1
+      fi
+
+      BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+      # Create theme metadata
+      cat > theme-metadata.json << EOF
+      {
+        "name": "${THEME_NAME}",
+        "version": "${THEME_VERSION}",
+        "commit": "${CI_COMMIT_SHA}",
+        "build_date": "${BUILD_DATE}",
+        "pipeline_id": "${CI_PIPELINE_ID}",
+        "artifact_type": "theme",
+        "tags": ["theme", "${THEME_NAME}", "${THEME_VERSION}"]
+      }
+      EOF
+
+      # Package and upload theme
+      tar -czf ${THEME_NAME}-${THEME_VERSION}.tar.gz -C themes/${THEME_NAME} .
+
+      mc cp ${THEME_NAME}-${THEME_VERSION}.tar.gz \
+        rustpress-artifactory/${THEMES_BUCKET}/${THEME_NAME}/${THEME_VERSION}/${THEME_NAME}-${THEME_VERSION}.tar.gz
+      mc cp theme-metadata.json \
+        rustpress-artifactory/${THEMES_BUCKET}/${THEME_NAME}/${THEME_VERSION}/metadata.json
+
+      # Tag the theme
+      mc tag set rustpress-artifactory/${THEMES_BUCKET}/${THEME_NAME}/${THEME_VERSION}/${THEME_NAME}-${THEME_VERSION}.tar.gz \
+        "name=${THEME_NAME}&version=${THEME_VERSION}&type=theme&commit=${CI_COMMIT_SHORT_SHA}"
+
+      echo "Uploaded theme: ${THEME_NAME} v${THEME_VERSION}"
+
+# Upload plugin to RustPress Plugins Artifactory
+.release:plugin:
+  stage: release
+  image: alpine:latest
+  variables:
+    GIT_STRATEGY: none
+    PLUGIN_NAME: ""
+    PLUGIN_VERSION: ""
+  before_script:
+    - apk add --no-cache curl ca-certificates tar
+    - curl -sSL https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc
+    - chmod +x /usr/local/bin/mc
+    - mc alias set rustpress-artifactory $MINIO_ENDPOINT $MINIO_ACCESS_KEY $MINIO_SECRET_KEY
+  script:
+    - |
+      if [ -z "${PLUGIN_NAME}" ] || [ -z "${PLUGIN_VERSION}" ]; then
+        echo "Error: PLUGIN_NAME and PLUGIN_VERSION must be set"
+        exit 1
+      fi
+
+      BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+      # Create plugin metadata
+      cat > plugin-metadata.json << EOF
+      {
+        "name": "${PLUGIN_NAME}",
+        "version": "${PLUGIN_VERSION}",
+        "commit": "${CI_COMMIT_SHA}",
+        "build_date": "${BUILD_DATE}",
+        "pipeline_id": "${CI_PIPELINE_ID}",
+        "artifact_type": "plugin",
+        "tags": ["plugin", "${PLUGIN_NAME}", "${PLUGIN_VERSION}"]
+      }
+      EOF
+
+      # Package and upload plugin
+      tar -czf ${PLUGIN_NAME}-${PLUGIN_VERSION}.tar.gz -C plugins/${PLUGIN_NAME} .
+
+      mc cp ${PLUGIN_NAME}-${PLUGIN_VERSION}.tar.gz \
+        rustpress-artifactory/${PLUGINS_BUCKET}/${PLUGIN_NAME}/${PLUGIN_VERSION}/${PLUGIN_NAME}-${PLUGIN_VERSION}.tar.gz
+      mc cp plugin-metadata.json \
+        rustpress-artifactory/${PLUGINS_BUCKET}/${PLUGIN_NAME}/${PLUGIN_VERSION}/metadata.json
+
+      # Tag the plugin
+      mc tag set rustpress-artifactory/${PLUGINS_BUCKET}/${PLUGIN_NAME}/${PLUGIN_VERSION}/${PLUGIN_NAME}-${PLUGIN_VERSION}.tar.gz \
+        "name=${PLUGIN_NAME}&version=${PLUGIN_VERSION}&type=plugin&commit=${CI_COMMIT_SHORT_SHA}"
+
+      echo "Uploaded plugin: ${PLUGIN_NAME} v${PLUGIN_VERSION}"
+
+# List all artifacts in the artifactory (for debugging/verification)
+release:verify:
+  stage: release
+  image: alpine:latest
+  variables:
+    GIT_STRATEGY: none
+  before_script:
+    - apk add --no-cache curl ca-certificates
+    - curl -sSL https://dl.min.io/client/mc/release/linux-amd64/mc -o /usr/local/bin/mc
+    - chmod +x /usr/local/bin/mc
+    - mc alias set rustpress-artifactory $MINIO_ENDPOINT $MINIO_ACCESS_KEY $MINIO_SECRET_KEY
+  script:
+    - |
+      echo "=== RustPress Artifactory Contents ==="
+      echo ""
+      echo "--- Releases ---"
+      mc ls --recursive rustpress-artifactory/${RELEASES_BUCKET}/ || echo "No releases yet"
+      echo ""
+      echo "--- Themes ---"
+      mc ls --recursive rustpress-artifactory/${THEMES_BUCKET}/ || echo "No themes yet"
+      echo ""
+      echo "--- Plugins ---"
+      mc ls --recursive rustpress-artifactory/${PLUGINS_BUCKET}/ || echo "No plugins yet"
+  needs:
+    - job: release:upload
+      optional: true
+  rules:
+    - if: $CI_COMMIT_TAG
+    - if: $CI_COMMIT_BRANCH == "main"
+    - if: $CI_COMMIT_BRANCH == "master"

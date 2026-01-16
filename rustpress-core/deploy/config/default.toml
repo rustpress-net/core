@@ -1,0 +1,62 @@
+# RustPress Default Configuration
+# This file contains default settings for production deployment
+
+[server]
+# Host and port configuration (can be overridden by environment variables)
+host = "0.0.0.0"
+port = 8080
+metrics_port = 9090
+
+# Request limits
+max_body_size = "10mb"
+request_timeout = 30
+
+[database]
+# Connection pool settings
+min_connections = 5
+max_connections = 100
+acquire_timeout = 30
+idle_timeout = 600
+max_lifetime = 1800
+
+[cache]
+# Cache settings
+enabled = true
+ttl_seconds = 3600
+max_entries = 10000
+
+[storage]
+# File storage settings
+path = "/app/uploads"
+max_file_size = "50mb"
+allowed_types = ["image/*", "video/*", "audio/*", "application/pdf", "text/*"]
+
+[auth]
+# Authentication settings
+access_token_expires = 3600      # 1 hour
+refresh_token_expires = 604800   # 7 days
+session_expires = 86400          # 24 hours
+
+[email]
+# Email settings (configure via environment variables)
+enabled = false
+from_name = "RustPress"
+from_email = "noreply@localhost"
+
+[logging]
+# Logging settings
+level = "info"
+format = "json"
+
+[security]
+# Security settings
+bcrypt_cost = 12
+rate_limit_requests = 100
+rate_limit_window = 60
+
+[site]
+# Default site settings
+name = "RustPress"
+description = "A high-performance content management system"
+timezone = "UTC"
+language = "en"

@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      version_bump:
+        description: 'Version bump type'
+        required: true
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+      release_type:
+        description: 'Release type'
+        required: true
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - release
+          - pre-release
+          - draft
+
+jobs:
+  release:
+    uses: rustpress-net/rustpress-core-devops/.github/workflows/release-node.yml@main
+    with:
+      version_bump: ${{ inputs.version_bump || 'auto' }}
+      release_type: ${{ inputs.release_type || 'auto' }}
+    secrets: inherit

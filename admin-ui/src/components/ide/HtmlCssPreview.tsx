@@ -1,15 +1,22 @@
 /**
  * HtmlCssPreview - Real-time preview for HTML, CSS, and SVG files
  * Shows live preview with hot reload as you type
+ * Injects real-time theme data (posts, products, site config, etc.)
  */
 
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   Monitor, Tablet, Smartphone, RefreshCw,
   Maximize2, Minimize2, Sun, Moon, ZoomIn, ZoomOut,
-  RotateCcw
+  RotateCcw, Database, AlertCircle, CheckCircle
 } from 'lucide-react';
+import {
+  realTimeThemeDataService,
+  generateRealTimeContextScript,
+  processTemplateVariables,
+  type ThemeDataContext
+} from '../../services/themeDataService';
 
 // ============================================
 // TYPES
@@ -19,6 +26,10 @@ interface HtmlCssPreviewProps {
   content: string;
   language: 'html' | 'css' | 'svg';
   filePath?: string;
+  /** Enable real-time data injection from backend */
+  enableLiveData?: boolean;
+  /** Page type for context (affects which data is prioritized) */
+  pageType?: 'home' | 'post' | 'category' | 'product' | 'page';
 }
 
 type DeviceMode = 'desktop' | 'tablet' | 'mobile';
@@ -44,7 +55,9 @@ const DEVICE_PRESETS: Record<DeviceMode, DevicePreset> = {
 export const HtmlCssPreview: React.FC<HtmlCssPreviewProps> = ({
   content,
   language,
-  filePath = ''
+  filePath = '',
+  enableLiveData = true,
+  pageType = 'home'
 }) => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [deviceMode, setDeviceMode] = useState<DeviceMode>('desktop');
@@ -54,10 +67,86 @@ export const HtmlCssPreview: React.FC<HtmlCssPreviewProps> = ({
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [error, setError] = useState<string | null>(null);
 
+  // Real-time data state
+  const [themeData, setThemeData] = useState<ThemeDataContext | null>(null);
+  const [dataLoading, setDataLoading] = useState(false);
+  const [dataError, setDataError] = useState<string | null>(null);
+  const [dataSource, setDataSource] = useState<'cache' | 'backend' | 'mock'>('mock');
+
   const fileName = filePath.split('/').pop() || 'preview';
+
+  // Fetch theme data on mount (with caching - only one DB call)
+  useEffect(() => {
+    if (!enableLiveData) return;
+
+    let mounted = true;
+    const fetchData = async () => {
+      setDataLoading(true);
+      setDataError(null);
+
+      try {
+        const data = await realTimeThemeDataService.fetchAllThemeData();
+        if (mounted) {
+          setThemeData(data);
+          // Determine data source from logs (simplified check)
+          setDataSource('cache');
+        }
+      } catch (err) {
+        if (mounted) {
+          setDataError(err instanceof Error ? err.message : 'Failed to load data');
+          setDataSource('mock');
+        }
+      } finally {
+        if (mounted) {
+          setDataLoading(false);
+        }
+      }
+    };
+
+    fetchData();
+
+    // Subscribe to real-time updates
+    const unsubscribe = realTimeThemeDataService.subscribeToUpdates((type, data) => {
+      console.log('[HtmlCssPreview] Received real-time update:', type);
+      // Refetch data when updates occur
+      fetchData();
+    });
+
+    return () => {
+      mounted = false;
+      unsubscribe();
+    };
+  }, [enableLiveData]);
+
+  // Force refresh data
+  const refreshData = useCallback(async () => {
+    realTimeThemeDataService.invalidateCache();
+    setDataLoading(true);
+    try {
+      const data = await realTimeThemeDataService.fetchAllThemeData();
+      setThemeData(data);
+      setDataError(null);
+      setLastUpdate(new Date());
+    } catch (err) {
+      setDataError(err instanceof Error ? err.message : 'Failed to refresh data');
+    } finally {
+      setDataLoading(false);
+    }
+  }, []);
 
   // Generate the full HTML document for preview
   const previewHtml = useMemo(() => {
+    // Generate context script if data is available
+    const contextScript = themeData && enableLiveData
+      ? generateRealTimeContextScript(themeData as ThemeDataContext & { products?: any[] })
+      : '';
+
+    // Process template variables in content
+    let processedContent = content;
+    if (themeData && enableLiveData) {
+      processedContent = processTemplateVariables(content, themeData);
+    }
+
     // Base styles for preview
     const baseStyles = `
       <style>
@@ -118,17 +207,20 @@ export const HtmlCssPreview: React.FC<HtmlCssPreviewProps> = ({
 
     if (language === 'html') {
       // Check if it's a complete HTML document
-      if (content.includes('<html') || content.includes('<!DOCTYPE')) {
-        // Inject our styles into the head
-        let html = content;
+      if (processedContent.includes('<html') || processedContent.includes('<!DOCTYPE')) {
+        // Inject our styles and context script into the head
+        let html = processedContent;
         if (html.includes('</head>')) {
-          html = html.replace('</head>', `${baseStyles}</head>`);
+          html = html.replace('</head>', `${baseStyles}${contextScript}</head>`);
         } else if (html.includes('<body')) {
-          html = html.replace('<body', `<head>${baseStyles}</head><body`);
+          html = html.replace('<body', `<head>${baseStyles}${contextScript}</head><body`);
+        } else {
+          // No head or body, inject at the beginning
+          html = `${baseStyles}${contextScript}${html}`;
         }
         return html;
       } else {
-        // It's an HTML fragment, wrap it in a full document
+        // It's an HTML fragment, wrap it in a full document with live data
         return `
           <!DOCTYPE html>
           <html lang="en">
@@ -137,9 +229,10 @@ export const HtmlCssPreview: React.FC<HtmlCssPreviewProps> = ({
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Preview - ${fileName}</title>
             ${baseStyles}
+            ${contextScript}
           </head>
           <body>
-            ${content}
+            ${processedContent}
           </body>
           </html>
         `;
@@ -158,7 +251,7 @@ export const HtmlCssPreview: React.FC<HtmlCssPreviewProps> = ({
         <body>
           <div class="svg-preview-container">
             <div class="svg-preview-wrapper">
-              ${content}
+              ${processedContent}
             </div>
             <div class="svg-info">
               ${fileName}
@@ -336,7 +429,7 @@ export const HtmlCssPreview: React.FC<HtmlCssPreviewProps> = ({
     }
 
     return '';
-  }, [content, language, fileName, themeMode]);
+  }, [content, language, fileName, themeMode, themeData, enableLiveData]);
 
   // Update iframe content
   useEffect(() => {
@@ -388,6 +481,36 @@ export const HtmlCssPreview: React.FC<HtmlCssPreviewProps> = ({
           <span className="text-xs text-gray-500">
             {lastUpdate.toLocaleTimeString()}
           </span>
+
+          {/* Live Data Status Indicator */}
+          {enableLiveData && (
+            <div className="flex items-center gap-1.5 ml-2 pl-2 border-l border-gray-700">
+              {dataLoading ? (
+                <span className="flex items-center gap-1 text-xs text-blue-400">
+                  <div className="w-2 h-2 border border-blue-400 border-t-transparent rounded-full animate-spin" />
+                  Loading data...
+                </span>
+              ) : dataError ? (
+                <span className="flex items-center gap-1 text-xs text-yellow-400" title={dataError}>
+                  <AlertCircle className="w-3 h-3" />
+                  Using fallback
+                </span>
+              ) : (
+                <span className="flex items-center gap-1 text-xs text-green-400">
+                  <CheckCircle className="w-3 h-3" />
+                  Live data
+                </span>
+              )}
+              <button
+                onClick={refreshData}
+                disabled={dataLoading}
+                className="p-1 text-gray-400 hover:text-white hover:bg-gray-700 rounded disabled:opacity-50"
+                title="Refresh live data (clears cache)"
+              >
+                <Database className={`w-3 h-3 ${dataLoading ? 'animate-pulse' : ''}`} />
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="flex items-center gap-1">
@@ -533,9 +656,24 @@ export const HtmlCssPreview: React.FC<HtmlCssPreviewProps> = ({
           </span>
           <span className="text-gray-600">|</span>
           <span>{fileName}</span>
+          {/* Data Stats */}
+          {enableLiveData && themeData && (
+            <>
+              <span className="text-gray-600">|</span>
+              <span className="text-gray-500">
+                {themeData.posts?.length || 0} posts,{' '}
+                {themeData.categories?.length || 0} categories,{' '}
+                {(themeData as any).products?.length || 0} products
+              </span>
+            </>
+          )}
         </div>
-        <div className="text-gray-500">
-          Auto-refresh enabled
+        <div className="flex items-center gap-2 text-gray-500">
+          {enableLiveData && (
+            <span className="text-blue-400">Data cached (2min TTL)</span>
+          )}
+          <span className="text-gray-600">|</span>
+          <span>Auto-refresh enabled</span>
         </div>
       </div>
     </motion.div>

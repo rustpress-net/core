@@ -1,0 +1,1 @@
+import{j as s}from"./index-rtSsgAPH.js";function t(){return s.jsxs("div",{className:"p-8",children:[s.jsx("h1",{className:"text-2xl font-bold mb-4",children:"Functions"}),s.jsx("p",{className:"text-neutral-500",children:"Functions page coming soon."})]})}export{t as default};

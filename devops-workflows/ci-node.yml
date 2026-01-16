@@ -1,0 +1,107 @@
+name: Reusable Node.js CI Workflow
+
+on:
+  workflow_call:
+    inputs:
+      node_version:
+        description: 'Node.js version'
+        required: false
+        default: '20'
+        type: string
+      run_tests:
+        description: 'Run tests'
+        required: false
+        default: true
+        type: boolean
+      run_lint:
+        description: 'Run linting'
+        required: false
+        default: true
+        type: boolean
+      run_build:
+        description: 'Run build'
+        required: false
+        default: true
+        type: boolean
+      test_command:
+        description: 'Test command'
+        required: false
+        default: 'npm test'
+        type: string
+      lint_command:
+        description: 'Lint command'
+        required: false
+        default: 'npm run lint'
+        type: string
+      build_command:
+        description: 'Build command'
+        required: false
+        default: 'npm run build'
+        type: string
+
+jobs:
+  lint:
+    name: Lint
+    if: inputs.run_lint == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linter
+        run: ${{ inputs.lint_command }}
+        continue-on-error: true
+
+  test:
+    name: Test
+    if: inputs.run_tests == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: ${{ inputs.test_command }}
+        continue-on-error: true
+
+  build:
+    name: Build
+    if: inputs.run_build == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node_version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: ${{ inputs.build_command }}
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ github.sha }}
+          path: dist/
+          if-no-files-found: ignore
