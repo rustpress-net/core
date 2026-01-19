@@ -336,6 +336,59 @@ impl Error {
         }
     }
 
+    /// Create a storage error
+    pub fn storage(message: impl Into<String>) -> Self {
+        Error::Storage {
+            message: message.into(),
+            source: None,
+        }
+    }
+
+    /// Create a storage error with source
+    pub fn storage_with_source(
+        message: impl Into<String>,
+        source: impl std::error::Error + Send + Sync + 'static,
+    ) -> Self {
+        Error::Storage {
+            message: message.into(),
+            source: Some(Box::new(source)),
+        }
+    }
+
+    /// Create a serialization error
+    pub fn serialization(message: impl Into<String>) -> Self {
+        Error::Serialization {
+            message: message.into(),
+        }
+    }
+
+    /// Create a serialization error with source
+    pub fn serialization_with_source(
+        message: impl Into<String>,
+        source: impl std::error::Error + Send + Sync + 'static,
+    ) -> Self {
+        Error::Serialization {
+            message: format!("{}: {}", message.into(), source),
+        }
+    }
+
+    /// Create a deserialization error
+    pub fn deserialization(message: impl Into<String>) -> Self {
+        Error::Serialization {
+            message: message.into(),
+        }
+    }
+
+    /// Create a deserialization error with source
+    pub fn deserialization_with_source(
+        message: impl Into<String>,
+        source: impl std::error::Error + Send + Sync + 'static,
+    ) -> Self {
+        Error::Serialization {
+            message: format!("{}: {}", message.into(), source),
+        }
+    }
+
     /// Check if this error is retryable
     pub fn is_retryable(&self) -> bool {
         matches!(
