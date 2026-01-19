@@ -118,7 +118,10 @@ impl std::str::FromStr for StorageCategory {
             "functions" => Ok(Self::Functions),
             "plugins" => Ok(Self::Plugins),
             "apps" => Ok(Self::Apps),
-            _ => Err(Error::validation(format!("Invalid storage category: {}", s))),
+            _ => Err(Error::validation(format!(
+                "Invalid storage category: {}",
+                s
+            ))),
         }
     }
 }
@@ -368,19 +371,26 @@ impl StorageService {
                 .bind(site_id)
                 .fetch_all(&self.pool)
                 .await
-                .map_err(|e| Error::database_with_source("Failed to fetch storage configurations", e))?
+                .map_err(|e| {
+                    Error::database_with_source("Failed to fetch storage configurations", e)
+                })?
         } else {
             sqlx::query_as(&query)
                 .fetch_all(&self.pool)
                 .await
-                .map_err(|e| Error::database_with_source("Failed to fetch storage configurations", e))?
+                .map_err(|e| {
+                    Error::database_with_source("Failed to fetch storage configurations", e)
+                })?
         };
 
         rows.into_iter().map(|r| r.try_into()).collect()
     }
 
     /// Get storage configuration for a specific category
-    pub async fn get_configuration(&self, category: &StorageCategory) -> Result<Option<StorageConfiguration>> {
+    pub async fn get_configuration(
+        &self,
+        category: &StorageCategory,
+    ) -> Result<Option<StorageConfiguration>> {
         let row: Option<StorageConfigRow> = sqlx::query_as(
             r#"
             SELECT id, category, provider, config, is_active, created_at, updated_at
@@ -398,7 +408,10 @@ impl StorageService {
     }
 
     /// Get or create default configuration for a category
-    pub async fn get_or_create_default(&self, category: &StorageCategory) -> Result<StorageConfiguration> {
+    pub async fn get_or_create_default(
+        &self,
+        category: &StorageCategory,
+    ) -> Result<StorageConfiguration> {
         if let Some(config) = self.get_configuration(category).await? {
             return Ok(config);
         }
@@ -449,7 +462,9 @@ impl StorageService {
             .bind(existing_id)
             .execute(&self.pool)
             .await
-            .map_err(|e| Error::database_with_source("Failed to update storage configuration", e))?;
+            .map_err(|e| {
+                Error::database_with_source("Failed to update storage configuration", e)
+            })?;
 
             existing_id
         } else {
@@ -494,11 +509,14 @@ impl StorageService {
 
         let result = match provider {
             StorageProvider::Local => self.test_local_connection(config).await,
-            StorageProvider::S3 | StorageProvider::CloudflareR2 | StorageProvider::DigitaloceanSpaces
-            | StorageProvider::Minio | StorageProvider::Wasabi | StorageProvider::BackblazeB2
-            | StorageProvider::Linode | StorageProvider::Vultr => {
-                self.test_s3_connection(config).await
-            }
+            StorageProvider::S3
+            | StorageProvider::CloudflareR2
+            | StorageProvider::DigitaloceanSpaces
+            | StorageProvider::Minio
+            | StorageProvider::Wasabi
+            | StorageProvider::BackblazeB2
+            | StorageProvider::Linode
+            | StorageProvider::Vultr => self.test_s3_connection(config).await,
             StorageProvider::Ssh | StorageProvider::Sftp => self.test_ssh_connection(config).await,
             StorageProvider::Gcs => self.test_gcs_connection(config).await,
             StorageProvider::Azure => self.test_azure_connection(config).await,
@@ -509,7 +527,8 @@ impl StorageService {
             StorageProvider::Imagekit => self.test_imagekit_connection(config).await,
             _ => Ok(ConnectionTestResult {
                 success: true,
-                message: "Provider connection test not implemented, configuration saved".to_string(),
+                message: "Provider connection test not implemented, configuration saved"
+                    .to_string(),
                 latency_ms: None,
             }),
         };
@@ -528,24 +547,25 @@ impl StorageService {
     }
 
     async fn test_local_connection(&self, config: &ProviderConfig) -> Result<ConnectionTestResult> {
-        let path = config.local_path.as_ref().ok_or_else(|| {
-            Error::validation("Local path is required")
-        })?;
+        let path = config
+            .local_path
+            .as_ref()
+            .ok_or_else(|| Error::validation("Local path is required"))?;
 
         let path = std::path::Path::new(path);
 
         // Check if path exists or can be created
         if !path.exists() {
-            tokio::fs::create_dir_all(path).await.map_err(|e| {
-                Error::storage(format!("Cannot create directory: {}", e))
-            })?;
+            tokio::fs::create_dir_all(path)
+                .await
+                .map_err(|e| Error::storage(format!("Cannot create directory: {}", e)))?;
         }
 
         // Check if writable
         let test_file = path.join(".connection_test");
-        tokio::fs::write(&test_file, "test").await.map_err(|e| {
-            Error::storage(format!("Directory not writable: {}", e))
-        })?;
+        tokio::fs::write(&test_file, "test")
+            .await
+            .map_err(|e| Error::storage(format!("Directory not writable: {}", e)))?;
         tokio::fs::remove_file(&test_file).await.ok();
 
         Ok(ConnectionTestResult {
@@ -556,9 +576,18 @@ impl StorageService {
     }
 
     async fn test_s3_connection(&self, config: &ProviderConfig) -> Result<ConnectionTestResult> {
-        let bucket = config.bucket.as_ref().ok_or_else(|| Error::validation("Bucket is required"))?;
-        let access_key = config.access_key.as_ref().ok_or_else(|| Error::validation("Access key is required"))?;
-        let secret_key = config.secret_key.as_ref().ok_or_else(|| Error::validation("Secret key is required"))?;
+        let bucket = config
+            .bucket
+            .as_ref()
+            .ok_or_else(|| Error::validation("Bucket is required"))?;
+        let access_key = config
+            .access_key
+            .as_ref()
+            .ok_or_else(|| Error::validation("Access key is required"))?;
+        let secret_key = config
+            .secret_key
+            .as_ref()
+            .ok_or_else(|| Error::validation("Secret key is required"))?;
 
         // Build S3 client and test connection
         #[cfg(feature = "s3")]
@@ -578,9 +607,9 @@ impl StorageService {
                 builder = builder.with_region(region);
             }
 
-            let store = builder.build().map_err(|e| {
-                Error::storage(format!("Failed to create S3 client: {}", e))
-            })?;
+            let store = builder
+                .build()
+                .map_err(|e| Error::storage(format!("Failed to create S3 client: {}", e)))?;
 
             // Try to list objects (limited to 1) to test connection
             let prefix = object_store::path::Path::from("");
@@ -597,9 +626,15 @@ impl StorageService {
     }
 
     async fn test_ssh_connection(&self, config: &ProviderConfig) -> Result<ConnectionTestResult> {
-        let host = config.host.as_ref().ok_or_else(|| Error::validation("Host is required"))?;
+        let host = config
+            .host
+            .as_ref()
+            .ok_or_else(|| Error::validation("Host is required"))?;
         let port = config.port.unwrap_or(22);
-        let username = config.username.as_ref().ok_or_else(|| Error::validation("Username is required"))?;
+        let username = config
+            .username
+            .as_ref()
+            .ok_or_else(|| Error::validation("Username is required"))?;
 
         // Test TCP connection to SSH port
         let addr = format!("{}:{}", host, port);
@@ -613,14 +648,23 @@ impl StorageService {
 
         Ok(ConnectionTestResult {
             success: true,
-            message: format!("SSH connection to {}@{}:{} successful", username, host, port),
+            message: format!(
+                "SSH connection to {}@{}:{} successful",
+                username, host, port
+            ),
             latency_ms: None,
         })
     }
 
     async fn test_gcs_connection(&self, config: &ProviderConfig) -> Result<ConnectionTestResult> {
-        let bucket = config.bucket.as_ref().ok_or_else(|| Error::validation("Bucket is required"))?;
-        let _project_id = config.project_id.as_ref().ok_or_else(|| Error::validation("Project ID is required"))?;
+        let bucket = config
+            .bucket
+            .as_ref()
+            .ok_or_else(|| Error::validation("Bucket is required"))?;
+        let _project_id = config
+            .project_id
+            .as_ref()
+            .ok_or_else(|| Error::validation("Project ID is required"))?;
 
         // For now, just validate that required fields are present
         // Full GCS implementation would use google-cloud-storage crate
@@ -633,10 +677,14 @@ impl StorageService {
     }
 
     async fn test_azure_connection(&self, config: &ProviderConfig) -> Result<ConnectionTestResult> {
-        let container = config.container.as_ref().ok_or_else(|| Error::validation("Container is required"))?;
-        let _connection_string = config.connection_string.as_ref().ok_or_else(|| {
-            Error::validation("Connection string is required")
-        })?;
+        let container = config
+            .container
+            .as_ref()
+            .ok_or_else(|| Error::validation("Container is required"))?;
+        let _connection_string = config
+            .connection_string
+            .as_ref()
+            .ok_or_else(|| Error::validation("Connection string is required"))?;
 
         // For now, just validate that required fields are present
         // Full Azure implementation would use azure_storage_blobs crate
@@ -649,9 +697,15 @@ impl StorageService {
     }
 
     async fn test_ftp_connection(&self, config: &ProviderConfig) -> Result<ConnectionTestResult> {
-        let host = config.host.as_ref().ok_or_else(|| Error::validation("Host is required"))?;
+        let host = config
+            .host
+            .as_ref()
+            .ok_or_else(|| Error::validation("Host is required"))?;
         let port = config.port.unwrap_or(21);
-        let _username = config.username.as_ref().ok_or_else(|| Error::validation("Username is required"))?;
+        let _username = config
+            .username
+            .as_ref()
+            .ok_or_else(|| Error::validation("Username is required"))?;
 
         // Test TCP connection to FTP port
         let addr = format!("{}:{}", host, port);
@@ -671,10 +725,14 @@ impl StorageService {
     }
 
     async fn test_bunny_connection(&self, config: &ProviderConfig) -> Result<ConnectionTestResult> {
-        let storage_zone = config.storage_zone.as_ref().ok_or_else(|| {
-            Error::validation("Storage zone is required")
-        })?;
-        let api_key = config.api_key.as_ref().ok_or_else(|| Error::validation("API key is required"))?;
+        let storage_zone = config
+            .storage_zone
+            .as_ref()
+            .ok_or_else(|| Error::validation("Storage zone is required"))?;
+        let api_key = config
+            .api_key
+            .as_ref()
+            .ok_or_else(|| Error::validation("API key is required"))?;
 
         // Test Bunny.net API connection
         let client = reqwest::Client::new();
@@ -688,7 +746,10 @@ impl StorageService {
         if response.status().is_success() || response.status() == reqwest::StatusCode::NOT_FOUND {
             Ok(ConnectionTestResult {
                 success: true,
-                message: format!("Bunny CDN storage zone '{}' connection successful", storage_zone),
+                message: format!(
+                    "Bunny CDN storage zone '{}' connection successful",
+                    storage_zone
+                ),
                 latency_ms: None,
             })
         } else {
@@ -700,12 +761,22 @@ impl StorageService {
         }
     }
 
-    async fn test_cloudinary_connection(&self, config: &ProviderConfig) -> Result<ConnectionTestResult> {
-        let cloud_name = config.cloud_name.as_ref().ok_or_else(|| {
-            Error::validation("Cloud name is required")
-        })?;
-        let _api_key = config.api_key.as_ref().ok_or_else(|| Error::validation("API key is required"))?;
-        let _api_secret = config.api_secret.as_ref().ok_or_else(|| Error::validation("API secret is required"))?;
+    async fn test_cloudinary_connection(
+        &self,
+        config: &ProviderConfig,
+    ) -> Result<ConnectionTestResult> {
+        let cloud_name = config
+            .cloud_name
+            .as_ref()
+            .ok_or_else(|| Error::validation("Cloud name is required"))?;
+        let _api_key = config
+            .api_key
+            .as_ref()
+            .ok_or_else(|| Error::validation("API key is required"))?;
+        let _api_secret = config
+            .api_secret
+            .as_ref()
+            .ok_or_else(|| Error::validation("API secret is required"))?;
 
         Ok(ConnectionTestResult {
             success: true,
@@ -714,9 +785,18 @@ impl StorageService {
         })
     }
 
-    async fn test_imagekit_connection(&self, config: &ProviderConfig) -> Result<ConnectionTestResult> {
-        let _api_key = config.api_key.as_ref().ok_or_else(|| Error::validation("API key (URL endpoint) is required"))?;
-        let _api_secret = config.api_secret.as_ref().ok_or_else(|| Error::validation("Private key is required"))?;
+    async fn test_imagekit_connection(
+        &self,
+        config: &ProviderConfig,
+    ) -> Result<ConnectionTestResult> {
+        let _api_key = config
+            .api_key
+            .as_ref()
+            .ok_or_else(|| Error::validation("API key (URL endpoint) is required"))?;
+        let _api_secret = config
+            .api_secret
+            .as_ref()
+            .ok_or_else(|| Error::validation("Private key is required"))?;
 
         Ok(ConnectionTestResult {
             success: true,
@@ -731,7 +811,9 @@ impl StorageService {
         let now = chrono::Utc::now();
 
         // Get source configuration
-        let _source_config = self.get_configuration(&request.source_category).await?
+        let _source_config = self
+            .get_configuration(&request.source_category)
+            .await?
             .ok_or_else(|| Error::not_found("Source storage configuration not found"))?;
 
         // Get files to migrate with their metadata
@@ -778,13 +860,18 @@ impl StorageService {
         }
 
         // Create initial checkpoint
-        Self::save_checkpoint(&self.pool, id, MigrationCheckpoint {
-            last_processed_file_id: None,
-            processed_count: 0,
-            failed_count: 0,
-            bytes_transferred: 0,
-            timestamp: now,
-        }).await?;
+        Self::save_checkpoint(
+            &self.pool,
+            id,
+            MigrationCheckpoint {
+                last_processed_file_id: None,
+                processed_count: 0,
+                failed_count: 0,
+                bytes_transferred: 0,
+                timestamp: now,
+            },
+        )
+        .await?;
 
         // Spawn background migration task
         let pool = self.pool.clone();
@@ -814,7 +901,9 @@ impl StorageService {
     /// Resume a paused or interrupted migration
     pub async fn resume_migration(&self, migration_id: Uuid) -> Result<MigrationStatus> {
         // Check if migration exists and can be resumed
-        let status = self.get_migration_status(migration_id).await?
+        let status = self
+            .get_migration_status(migration_id)
+            .await?
             .ok_or_else(|| Error::not_found("Migration not found"))?;
 
         if !status.can_resume {
@@ -840,12 +929,17 @@ impl StorageService {
             }
         });
 
-        self.get_migration_status(migration_id).await?
+        self.get_migration_status(migration_id)
+            .await?
             .ok_or_else(|| Error::not_found("Migration not found"))
     }
 
     /// Get list of files that need to be transferred for a migration
-    pub async fn get_migration_files(&self, migration_id: Uuid, status_filter: Option<FileTransferState>) -> Result<Vec<FileTransferStatus>> {
+    pub async fn get_migration_files(
+        &self,
+        migration_id: Uuid,
+        status_filter: Option<FileTransferState>,
+    ) -> Result<Vec<FileTransferStatus>> {
         let rows: Vec<FileTransferRow> = if let Some(status) = status_filter {
             sqlx::query_as(
                 r#"
@@ -896,8 +990,10 @@ impl StorageService {
 
         match row {
             Some((data,)) => {
-                let checkpoint: MigrationCheckpoint = serde_json::from_value(data)
-                    .map_err(|e| Error::deserialization_with_source("Invalid checkpoint data", e))?;
+                let checkpoint: MigrationCheckpoint =
+                    serde_json::from_value(data).map_err(|e| {
+                        Error::deserialization_with_source("Invalid checkpoint data", e)
+                    })?;
                 Ok(Some(checkpoint))
             }
             None => Ok(None),
@@ -905,7 +1001,11 @@ impl StorageService {
     }
 
     /// Save a checkpoint for a migration
-    async fn save_checkpoint(pool: &PgPool, migration_id: Uuid, checkpoint: MigrationCheckpoint) -> Result<()> {
+    async fn save_checkpoint(
+        pool: &PgPool,
+        migration_id: Uuid,
+        checkpoint: MigrationCheckpoint,
+    ) -> Result<()> {
         let data = serde_json::to_value(&checkpoint)
             .map_err(|e| Error::serialization_with_source("Failed to serialize checkpoint", e))?;
 
@@ -928,106 +1028,125 @@ impl StorageService {
 
     async fn count_files_to_migrate(&self, request: &MigrationRequest) -> Result<u64> {
         // For assets, count from media table based on asset types
-        let count: (i64,) = if request.asset_types.is_empty() || request.asset_types.contains(&"all".to_string()) {
-            sqlx::query_as("SELECT COUNT(*) FROM media WHERE deleted_at IS NULL")
-                .fetch_one(&self.pool)
-                .await
-                .map_err(|e| Error::database_with_source("Failed to count files", e))?
-        } else {
-            // Filter by MIME type
-            let mime_patterns: Vec<String> = request.asset_types.iter()
-                .flat_map(|t| match t.as_str() {
-                    "images" => vec!["image/%".to_string()],
-                    "videos" => vec!["video/%".to_string()],
-                    "documents" => vec!["application/pdf".to_string(), "application/%document%".to_string(), "text/%".to_string()],
-                    _ => vec![],
-                })
-                .collect();
-
-            if mime_patterns.is_empty() {
+        let count: (i64,) =
+            if request.asset_types.is_empty() || request.asset_types.contains(&"all".to_string()) {
                 sqlx::query_as("SELECT COUNT(*) FROM media WHERE deleted_at IS NULL")
                     .fetch_one(&self.pool)
                     .await
                     .map_err(|e| Error::database_with_source("Failed to count files", e))?
             } else {
-                let conditions: Vec<String> = mime_patterns.iter()
-                    .enumerate()
-                    .map(|(i, _)| format!("mime_type LIKE ${}", i + 1))
+                // Filter by MIME type
+                let mime_patterns: Vec<String> = request
+                    .asset_types
+                    .iter()
+                    .flat_map(|t| match t.as_str() {
+                        "images" => vec!["image/%".to_string()],
+                        "videos" => vec!["video/%".to_string()],
+                        "documents" => vec![
+                            "application/pdf".to_string(),
+                            "application/%document%".to_string(),
+                            "text/%".to_string(),
+                        ],
+                        _ => vec![],
+                    })
                     .collect();
-                let query = format!(
-                    "SELECT COUNT(*) FROM media WHERE deleted_at IS NULL AND ({})",
-                    conditions.join(" OR ")
-                );
 
-                let mut builder = sqlx::query_as::<_, (i64,)>(&query);
-                for pattern in &mime_patterns {
-                    builder = builder.bind(pattern);
+                if mime_patterns.is_empty() {
+                    sqlx::query_as("SELECT COUNT(*) FROM media WHERE deleted_at IS NULL")
+                        .fetch_one(&self.pool)
+                        .await
+                        .map_err(|e| Error::database_with_source("Failed to count files", e))?
+                } else {
+                    let conditions: Vec<String> = mime_patterns
+                        .iter()
+                        .enumerate()
+                        .map(|(i, _)| format!("mime_type LIKE ${}", i + 1))
+                        .collect();
+                    let query = format!(
+                        "SELECT COUNT(*) FROM media WHERE deleted_at IS NULL AND ({})",
+                        conditions.join(" OR ")
+                    );
+
+                    let mut builder = sqlx::query_as::<_, (i64,)>(&query);
+                    for pattern in &mime_patterns {
+                        builder = builder.bind(pattern);
+                    }
+                    builder
+                        .fetch_one(&self.pool)
+                        .await
+                        .map_err(|e| Error::database_with_source("Failed to count files", e))?
                 }
-                builder.fetch_one(&self.pool).await
-                    .map_err(|e| Error::database_with_source("Failed to count files", e))?
-            }
-        };
+            };
 
         Ok(count.0 as u64)
     }
 
     /// Get files to migrate with their metadata
     async fn get_files_to_migrate(&self, request: &MigrationRequest) -> Result<Vec<MediaFileInfo>> {
-        let rows: Vec<MediaFileInfo> = if request.asset_types.is_empty() || request.asset_types.contains(&"all".to_string()) {
-            sqlx::query_as(
-                r#"
+        let rows: Vec<MediaFileInfo> =
+            if request.asset_types.is_empty() || request.asset_types.contains(&"all".to_string()) {
+                sqlx::query_as(
+                    r#"
                 SELECT id as media_id, file_path as path, COALESCE(file_size, 0) as size
                 FROM media WHERE deleted_at IS NULL
                 ORDER BY created_at
                 "#,
-            )
-            .fetch_all(&self.pool)
-            .await
-            .map_err(|e| Error::database_with_source("Failed to fetch files", e))?
-        } else {
-            // Filter by MIME type
-            let mime_patterns: Vec<String> = request.asset_types.iter()
-                .flat_map(|t| match t.as_str() {
-                    "images" => vec!["image/%".to_string()],
-                    "videos" => vec!["video/%".to_string()],
-                    "documents" => vec!["application/pdf".to_string(), "application/%document%".to_string(), "text/%".to_string()],
-                    _ => vec![],
-                })
-                .collect();
-
-            if mime_patterns.is_empty() {
-                sqlx::query_as(
-                    r#"
-                    SELECT id as media_id, file_path as path, COALESCE(file_size, 0) as size
-                    FROM media WHERE deleted_at IS NULL
-                    ORDER BY created_at
-                    "#,
                 )
                 .fetch_all(&self.pool)
                 .await
                 .map_err(|e| Error::database_with_source("Failed to fetch files", e))?
             } else {
-                // Build dynamic query for mime type filtering
-                let conditions: Vec<String> = (0..mime_patterns.len())
-                    .map(|i| format!("mime_type LIKE ${}", i + 1))
+                // Filter by MIME type
+                let mime_patterns: Vec<String> = request
+                    .asset_types
+                    .iter()
+                    .flat_map(|t| match t.as_str() {
+                        "images" => vec!["image/%".to_string()],
+                        "videos" => vec!["video/%".to_string()],
+                        "documents" => vec![
+                            "application/pdf".to_string(),
+                            "application/%document%".to_string(),
+                            "text/%".to_string(),
+                        ],
+                        _ => vec![],
+                    })
                     .collect();
-                let query = format!(
-                    r#"
+
+                if mime_patterns.is_empty() {
+                    sqlx::query_as(
+                        r#"
+                    SELECT id as media_id, file_path as path, COALESCE(file_size, 0) as size
+                    FROM media WHERE deleted_at IS NULL
+                    ORDER BY created_at
+                    "#,
+                    )
+                    .fetch_all(&self.pool)
+                    .await
+                    .map_err(|e| Error::database_with_source("Failed to fetch files", e))?
+                } else {
+                    // Build dynamic query for mime type filtering
+                    let conditions: Vec<String> = (0..mime_patterns.len())
+                        .map(|i| format!("mime_type LIKE ${}", i + 1))
+                        .collect();
+                    let query = format!(
+                        r#"
                     SELECT id as media_id, file_path as path, COALESCE(file_size, 0) as size
                     FROM media WHERE deleted_at IS NULL AND ({})
                     ORDER BY created_at
                     "#,
-                    conditions.join(" OR ")
-                );
+                        conditions.join(" OR ")
+                    );
 
-                let mut builder = sqlx::query_as::<_, MediaFileInfo>(&query);
-                for pattern in &mime_patterns {
-                    builder = builder.bind(pattern);
+                    let mut builder = sqlx::query_as::<_, MediaFileInfo>(&query);
+                    for pattern in &mime_patterns {
+                        builder = builder.bind(pattern);
+                    }
+                    builder
+                        .fetch_all(&self.pool)
+                        .await
+                        .map_err(|e| Error::database_with_source("Failed to fetch files", e))?
                 }
-                builder.fetch_all(&self.pool).await
-                    .map_err(|e| Error::database_with_source("Failed to fetch files", e))?
-            }
-        };
+            };
 
         Ok(rows)
     }
@@ -1063,13 +1182,14 @@ impl StorageService {
 
         loop {
             // Check if migration was cancelled
-            let status_check: Option<(String,)> = sqlx::query_as(
-                "SELECT status FROM storage_migrations WHERE id = $1"
-            )
-            .bind(migration_id)
-            .fetch_optional(&pool)
-            .await
-            .map_err(|e| Error::database_with_source("Failed to check migration status", e))?;
+            let status_check: Option<(String,)> =
+                sqlx::query_as("SELECT status FROM storage_migrations WHERE id = $1")
+                    .bind(migration_id)
+                    .fetch_optional(&pool)
+                    .await
+                    .map_err(|e| {
+                        Error::database_with_source("Failed to check migration status", e)
+                    })?;
 
             if let Some((status,)) = status_check {
                 if status == "cancelled" {
@@ -1149,7 +1269,7 @@ impl StorageService {
 
                         // Update migration progress
                         sqlx::query(
-                            "UPDATE storage_migrations SET migrated_files = $1 WHERE id = $2"
+                            "UPDATE storage_migrations SET migrated_files = $1 WHERE id = $2",
                         )
                         .bind(processed_count as i64)
                         .bind(migration_id)
@@ -1176,7 +1296,7 @@ impl StorageService {
 
                         // Update failed count
                         sqlx::query(
-                            "UPDATE storage_migrations SET failed_files = $1 WHERE id = $2"
+                            "UPDATE storage_migrations SET failed_files = $1 WHERE id = $2",
                         )
                         .bind(failed_count as i64)
                         .bind(migration_id)
@@ -1187,13 +1307,19 @@ impl StorageService {
                 }
 
                 // Save checkpoint after each file
-                Self::save_checkpoint(&pool, migration_id, MigrationCheckpoint {
-                    last_processed_file_id: Some(file.id),
-                    processed_count,
-                    failed_count,
-                    bytes_transferred,
-                    timestamp: chrono::Utc::now(),
-                }).await.ok();
+                Self::save_checkpoint(
+                    &pool,
+                    migration_id,
+                    MigrationCheckpoint {
+                        last_processed_file_id: Some(file.id),
+                        processed_count,
+                        failed_count,
+                        bytes_transferred,
+                        timestamp: chrono::Utc::now(),
+                    },
+                )
+                .await
+                .ok();
             }
         }
 
@@ -1257,7 +1383,10 @@ impl StorageService {
     }
 
     /// Get migration status
-    pub async fn get_migration_status(&self, migration_id: Uuid) -> Result<Option<MigrationStatus>> {
+    pub async fn get_migration_status(
+        &self,
+        migration_id: Uuid,
+    ) -> Result<Option<MigrationStatus>> {
         let row: Option<MigrationStatusRow> = sqlx::query_as(
             r#"
             SELECT id, status, total_files, migrated_files, failed_files, current_file,
@@ -1304,9 +1433,9 @@ impl TryFrom<StorageConfigRow> for StorageConfiguration {
 
     fn try_from(row: StorageConfigRow) -> std::result::Result<Self, Self::Error> {
         let category: StorageCategory = row.category.parse()?;
-        let provider: StorageProvider = serde_json::from_value(
-            serde_json::Value::String(row.provider)
-        ).map_err(|e| Error::deserialization_with_source("Invalid provider", e))?;
+        let provider: StorageProvider =
+            serde_json::from_value(serde_json::Value::String(row.provider))
+                .map_err(|e| Error::deserialization_with_source("Invalid provider", e))?;
         let config: ProviderConfig = serde_json::from_value(row.config)
             .map_err(|e| Error::deserialization_with_source("Invalid config", e))?;
 

@@ -462,7 +462,10 @@ fn storage_routes() -> Router<AppState> {
         .route("/", get(list_storage_configurations_handler))
         .route("/test", post(test_storage_connection_handler))
         .route("/migrations", post(start_migration_handler))
-        .route("/migrations/:id", get(get_migration_status_handler).delete(cancel_migration_handler))
+        .route(
+            "/migrations/:id",
+            get(get_migration_status_handler).delete(cancel_migration_handler),
+        )
         .route(
             "/:category",
             get(get_storage_configuration_handler).put(update_storage_configuration_handler),
@@ -2416,9 +2419,8 @@ async fn get_permalinks_settings_handler(
 // =============================================================================
 
 use rustpress_api::services::storage_service::{
+    MigrationRequest, ProviderConfig, StorageCategory, StorageConfigRequest, StorageProvider,
     StorageService as StorageConfigService,
-    StorageCategory, StorageProvider, ProviderConfig,
-    StorageConfigRequest, MigrationRequest,
 };
 
 /// List all storage configurations
@@ -2428,7 +2430,9 @@ async fn list_storage_configurations_handler(
 ) -> HttpResult<impl axum::response::IntoResponse> {
     let service = StorageConfigService::new(state.db().inner().clone());
     let configurations = service.get_all_configurations().await?;
-    Ok(json(serde_json::json!({ "configurations": configurations })))
+    Ok(json(
+        serde_json::json!({ "configurations": configurations }),
+    ))
 }
 
 /// Get storage configuration for a specific category
@@ -2479,7 +2483,9 @@ async fn test_storage_connection_handler(
     Json(request): Json<TestConnectionRequest>,
 ) -> HttpResult<impl axum::response::IntoResponse> {
     let service = StorageConfigService::new(state.db().inner().clone());
-    let result = service.test_connection(&request.provider, &request.config).await?;
+    let result = service
+        .test_connection(&request.provider, &request.config)
+        .await?;
     Ok(json(result))
 }
 
@@ -2505,7 +2511,9 @@ async fn get_migration_status_handler(
 
     match status {
         Some(s) => Ok(json(s)),
-        None => Err(rustpress_core::error::Error::not_found("Migration not found")),
+        None => Err(rustpress_core::error::Error::not_found(
+            "Migration not found",
+        )),
     }
 }
 
@@ -2519,9 +2527,13 @@ async fn cancel_migration_handler(
     let cancelled = service.cancel_migration(id).await?;
 
     if cancelled {
-        Ok(json(serde_json::json!({ "message": "Migration cancelled" })))
+        Ok(json(
+            serde_json::json!({ "message": "Migration cancelled" }),
+        ))
     } else {
-        Err(rustpress_core::error::Error::validation("Migration not found or already completed"))
+        Err(rustpress_core::error::Error::validation(
+            "Migration not found or already completed",
+        ))
     }
 }
 
