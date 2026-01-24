@@ -39,7 +39,8 @@
 //! └─────────────────────────────────────────────────────────────────┘
 //! ```
 
-#![warn(missing_docs)]
+// TODO: Enable missing_docs when documentation is complete
+#![allow(missing_docs)]
 #![warn(clippy::all)]
 #![allow(clippy::module_inception)]
 

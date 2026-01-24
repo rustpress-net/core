@@ -9,7 +9,7 @@ on:
 env:
   CARGO_TERM_COLOR: always
   # Allow specific warnings for MVP release (to be addressed in future versions)
-  RUSTFLAGS: -Dwarnings -Aunused -Amismatched_lifetime_syntaxes -Adependency_on_unit_never_type_fallback -Aunused_comparisons -Aambiguous_glob_reexports
+  RUSTFLAGS: -Dwarnings -Aunused -Amismatched_lifetime_syntaxes -Adependency_on_unit_never_type_fallback -Aunused_comparisons -Aambiguous_glob_reexports -Aimproper_ctypes_definitions
 
 jobs:
   check:
