@@ -11,7 +11,7 @@
 //! - Attachments with media download
 //! - Custom fields (post meta)
 
-use chrono::{DateTime, NaiveDateTime, Utc};
+use chrono::{DateTime, Datelike, NaiveDateTime, Utc};
 use quick_xml::events::{BytesEnd, BytesStart, BytesText, Event};
 use quick_xml::reader::Reader;
 use quick_xml::writer::Writer;
@@ -192,7 +192,7 @@ impl WxrParser {
     /// Parse WXR from XML string
     pub fn parse(xml: &str) -> Result<WxrDocument, WxrError> {
         let mut reader = Reader::from_str(xml);
-        reader.config_mut().trim_text(true);
+        reader.trim_text(true);
 
         let mut doc = WxrDocument::default();
         let mut buf = Vec::new();

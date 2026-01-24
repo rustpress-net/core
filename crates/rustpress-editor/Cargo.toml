@@ -1,0 +1,49 @@
+[package]
+name = "rustpress-editor"
+description = "Advanced block-based post editor for RustPress CMS"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[features]
+default = ["collaboration", "seo-analysis"]
+collaboration = []
+seo-analysis = []
+ai-assistant = []
+
+[dependencies]
+# Async
+tokio.workspace = true
+async-trait.workspace = true
+futures.workspace = true
+
+# Serialization
+serde.workspace = true
+serde_json.workspace = true
+
+# Error handling
+thiserror.workspace = true
+anyhow.workspace = true
+
+# Logging
+tracing.workspace = true
+
+# Types
+uuid.workspace = true
+chrono.workspace = true
+
+# Text processing
+pulldown-cmark = "0.10"
+ammonia = "4.0"
+unicode-segmentation = "1.11"
+regex.workspace = true
+
+# SEO Analysis
+url.workspace = true
+
+# Diff/History
+similar = "2.4"
+
+[dev-dependencies]
+tokio = { workspace = true, features = ["test-util", "macros"] }

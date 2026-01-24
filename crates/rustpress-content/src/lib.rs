@@ -11,30 +11,62 @@
 //! - Custom post types
 //! - Taxonomy management
 
+pub mod access;
 pub mod autosave;
 pub mod blocks;
+pub mod bulk;
 pub mod elementor;
+pub mod excerpt;
+pub mod featured;
+pub mod fields;
+pub mod i18n;
 pub mod markdown;
+pub mod media;
+pub mod oembed;
 pub mod post_types;
+pub mod related;
+pub mod revision;
+pub mod sanitize;
 pub mod scheduler;
+pub mod shortcode;
 pub mod taxonomy;
 pub mod templates;
+pub mod toc;
+pub mod trash;
 pub mod versioning;
+pub mod workflow;
+pub mod wxr;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 use uuid::Uuid;
 
+pub use access::*;
 pub use autosave::*;
 pub use blocks::*;
+pub use bulk::*;
 pub use elementor::*;
+pub use excerpt::*;
+pub use featured::*;
+pub use fields::*;
+pub use i18n::*;
 pub use markdown::*;
+pub use media::*;
+pub use oembed::*;
 pub use post_types::*;
+pub use related::*;
+pub use revision::*;
+pub use sanitize::*;
 pub use scheduler::*;
+pub use shortcode::*;
 pub use taxonomy::*;
 pub use templates::*;
+pub use toc::*;
+pub use trash::*;
 pub use versioning::*;
+pub use workflow::*;
+pub use wxr::*;
 
 /// Content management errors
 #[derive(Debug, Error)]
@@ -187,8 +219,38 @@ pub struct Content {
 }
 
 impl Content {
-    /// Create new content
-    pub fn new(post_type: &str, title: &str, author_id: Uuid) -> Self {
+    /// Create new content with just post type (uses defaults for other fields)
+    pub fn new(post_type: &str) -> Self {
+        let now = Utc::now();
+        Self {
+            id: Uuid::new_v4(),
+            post_type: post_type.to_string(),
+            title: String::new(),
+            slug: String::new(),
+            content: String::new(),
+            blocks: Vec::new(),
+            format: ContentFormat::default(),
+            excerpt: None,
+            featured_image: None,
+            status: ContentStatus::Draft,
+            author_id: Uuid::nil(),
+            parent_id: None,
+            menu_order: 0,
+            comment_status: true,
+            ping_status: true,
+            meta: serde_json::json!({}),
+            template: None,
+            revision: 1,
+            created_at: now,
+            updated_at: now,
+            published_at: None,
+            scheduled_at: None,
+            terms: Vec::new(),
+        }
+    }
+
+    /// Create new content with title and author
+    pub fn with_author_and_title(post_type: &str, title: &str, author_id: Uuid) -> Self {
         let now = Utc::now();
         Self {
             id: Uuid::new_v4(),
@@ -215,6 +277,63 @@ impl Content {
             scheduled_at: None,
             terms: Vec::new(),
         }
+    }
+
+    /// Builder: set title
+    pub fn with_title(mut self, title: &str) -> Self {
+        self.title = title.to_string();
+        if self.slug.is_empty() {
+            self.slug = slug::slugify(title);
+        }
+        self
+    }
+
+    /// Builder: set slug
+    pub fn with_slug(mut self, slug: &str) -> Self {
+        self.slug = slug.to_string();
+        self
+    }
+
+    /// Builder: set content
+    pub fn with_content(mut self, content: &str) -> Self {
+        self.content = content.to_string();
+        self
+    }
+
+    /// Builder: set author
+    pub fn with_author(mut self, author_id: Uuid) -> Self {
+        self.author_id = author_id;
+        self
+    }
+
+    /// Builder: set parent
+    pub fn with_parent(mut self, parent_id: Uuid) -> Self {
+        self.parent_id = Some(parent_id);
+        self
+    }
+
+    /// Builder: set excerpt
+    pub fn with_excerpt(mut self, excerpt: &str) -> Self {
+        self.excerpt = Some(excerpt.to_string());
+        self
+    }
+
+    /// Builder: set blocks
+    pub fn with_blocks(mut self, blocks: Vec<Block>) -> Self {
+        self.blocks = blocks;
+        self
+    }
+
+    /// Builder: set format
+    pub fn with_format(mut self, format: ContentFormat) -> Self {
+        self.format = format;
+        self
+    }
+
+    /// Builder: set status
+    pub fn with_status(mut self, status: ContentStatus) -> Self {
+        self.status = status;
+        self
     }
 
     /// Check if content is published
@@ -295,7 +414,7 @@ impl Content {
 pub struct ContentService {
     pool: sqlx::PgPool,
     versioning: VersioningService,
-    scheduler: PublishScheduler,
+    scheduler: scheduler::PublishScheduler,
     autosave: AutosaveService,
 }
 
@@ -305,7 +424,7 @@ impl ContentService {
         Self {
             pool: pool.clone(),
             versioning: VersioningService::new(pool.clone()),
-            scheduler: PublishScheduler::new(pool.clone()),
+            scheduler: scheduler::PublishScheduler::new(pool.clone()),
             autosave: AutosaveService::new(pool),
         }
     }
@@ -513,7 +632,7 @@ impl ContentService {
     }
 
     /// Get scheduler
-    pub fn scheduler(&self) -> &PublishScheduler {
+    pub fn scheduler(&self) -> &scheduler::PublishScheduler {
         &self.scheduler
     }
 

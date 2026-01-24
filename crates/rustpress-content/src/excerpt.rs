@@ -361,11 +361,21 @@ impl ContentAnalyzer {
 
     /// Separate code blocks from regular content
     fn separate_code_blocks(&self, content: &str) -> (String, String) {
-        let code_re = Regex::new(r"<(pre|code)[^>]*>([\s\S]*?)</\1>").unwrap();
+        // Use separate patterns for pre and code tags since Rust regex doesn't support backreferences
+        let pre_re = Regex::new(r"<pre[^>]*>([\s\S]*?)</pre>").unwrap();
+        let code_re = Regex::new(r"<code[^>]*>([\s\S]*?)</code>").unwrap();
         let mut code_content = String::new();
 
-        let regular = code_re.replace_all(content, |caps: &regex::Captures| {
-            code_content.push_str(caps.get(2).map(|m| m.as_str()).unwrap_or(""));
+        // Extract pre blocks
+        let content = pre_re.replace_all(content, |caps: &regex::Captures| {
+            code_content.push_str(caps.get(1).map(|m| m.as_str()).unwrap_or(""));
+            code_content.push(' ');
+            "" // Remove from regular content
+        }).to_string();
+
+        // Extract code blocks
+        let regular = code_re.replace_all(&content, |caps: &regex::Captures| {
+            code_content.push_str(caps.get(1).map(|m| m.as_str()).unwrap_or(""));
             code_content.push(' ');
             "" // Remove from regular content
         }).to_string();

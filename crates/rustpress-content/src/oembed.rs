@@ -118,11 +118,11 @@ impl OembedResponse {
             let title = self.title.as_deref().unwrap_or("Embedded content");
             if let Some(ref provider) = self.provider_name {
                 format!(
-                    r#"<div class="wp-embed-link"><a href="#">{}</a> - {}</div>"#,
+                    "<div class=\"wp-embed-link\"><a href=\"#\">{}</a> - {}</div>",
                     title, provider
                 )
             } else {
-                format!(r#"<div class="wp-embed-link"><a href="#">{}</a></div>"#, title)
+                format!("<div class=\"wp-embed-link\"><a href=\"#\">{}</a></div>", title)
             }
         }
     }

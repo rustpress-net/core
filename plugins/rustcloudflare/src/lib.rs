@@ -326,10 +326,10 @@ impl LifecycleHook for RustCloudflarePlugin {
     }
 }
 
-/// Plugin entry point - called by RustPress plugin loader
+/// Plugin entry point - called by RustPress plugin loader for dynamic loading
 #[no_mangle]
 #[allow(improper_ctypes_definitions)]
-pub extern "C" fn create_plugin() -> Box<dyn Plugin> {
+pub extern "C" fn create_rustcloudflare_plugin() -> Box<dyn Plugin> {
     Box::new(RustCloudflarePlugin::new())
 }
 

@@ -30,6 +30,10 @@ serde_json.workspace = true
 
 # Error handling
 thiserror.workspace = true
+anyhow.workspace = true
+
+# Regex
+regex.workspace = true
 
 # Logging
 tracing.workspace = true

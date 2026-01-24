@@ -37,7 +37,7 @@ pub enum RevisionError {
 }
 
 /// A content revision
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Revision {
     /// Unique revision ID
     pub id: Uuid,

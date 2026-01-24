@@ -428,12 +428,23 @@ impl Sanitizer {
             entry.extend(custom_attrs.iter().map(|s| s.as_str()));
         }
 
-        // Convert to ammonia format
-        for (tag, tag_attrs) in &attrs {
-            if all_tags.contains(tag) {
-                builder.tag_attributes(*tag, tag_attrs.clone());
-            }
-        }
+        // Convert to ammonia format - filter to only allowed tags
+        // Also remove 'rel' from <a> tag attributes since ammonia doesn't allow
+        // setting 'rel' in tag_attributes when using link_rel()
+        let filtered_attrs: HashMap<&str, HashSet<&str>> = attrs
+            .iter()
+            .filter(|(tag, _)| all_tags.contains(*tag))
+            .map(|(tag, attr_set)| {
+                if *tag == "a" {
+                    let mut filtered_set = attr_set.clone();
+                    filtered_set.remove("rel");
+                    (*tag, filtered_set)
+                } else {
+                    (*tag, attr_set.clone())
+                }
+            })
+            .collect();
+        builder.tag_attributes(filtered_attrs);
 
         // URL schemes
         let schemes: HashSet<&str> = self.config.url_schemes.iter().map(|s| s.as_str()).collect();
@@ -574,29 +585,62 @@ impl Sanitizer {
     /// Convert plain URLs to links
     fn linkify(&self, text: &str) -> String {
         // Don't linkify inside existing tags
-        let url_re = Regex::new(r#"(?<![="'>])(https?://[^\s<>"']+)"#).unwrap();
+        // Use a simpler pattern and check preceding character manually
+        // since Rust regex doesn't support look-behind
+        let url_re = Regex::new(r#"https?://[^\s<>"']+"#).unwrap();
 
-        url_re.replace_all(text, |caps: &regex::Captures| {
-            let url = &caps[1];
+        let mut result = String::new();
+        let mut last_end = 0;
 
-            // Check max length
-            if self.config.max_link_length > 0 && url.len() > self.config.max_link_length {
-                return url.to_string();
-            }
+        for mat in url_re.find_iter(text) {
+            let url = mat.as_str();
+            let start = mat.start();
 
-            // Check domain blocks
-            if !self.config.blocked_domains.is_empty() {
-                if let Ok(parsed) = Url::parse(url) {
-                    if let Some(host) = parsed.host_str() {
-                        if self.config.blocked_domains.contains(host) {
-                            return url.to_string();
+            // Check if preceded by =, ", ', or > (inside an HTML attribute or tag)
+            let skip = if start > 0 {
+                let prev_char = text.as_bytes()[start - 1];
+                matches!(prev_char, b'=' | b'"' | b'\'' | b'>')
+            } else {
+                false
+            };
+
+            // Append text before this match
+            result.push_str(&text[last_end..start]);
+
+            if skip {
+                // Keep the URL as-is
+                result.push_str(url);
+            } else {
+                // Check max length
+                if self.config.max_link_length > 0 && url.len() > self.config.max_link_length {
+                    result.push_str(url);
+                } else {
+                    // Check domain blocks
+                    let mut blocked = false;
+                    if !self.config.blocked_domains.is_empty() {
+                        if let Ok(parsed) = Url::parse(url) {
+                            if let Some(host) = parsed.host_str() {
+                                if self.config.blocked_domains.contains(host) {
+                                    blocked = true;
+                                }
+                            }
                         }
+                    }
+
+                    if blocked {
+                        result.push_str(url);
+                    } else {
+                        result.push_str(&format!("<a href=\"{}\">{}</a>", url, url));
                     }
                 }
             }
 
-            format!("<a href=\"{}\">{}</a>", url, url)
-        }).to_string()
+            last_end = mat.end();
+        }
+
+        // Append remaining text
+        result.push_str(&text[last_end..]);
+        result
     }
 
     /// Sanitize for specific context

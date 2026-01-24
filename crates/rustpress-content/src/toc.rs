@@ -49,7 +49,7 @@ impl TocEntry {
 
     /// Render as HTML list item
     pub fn to_html(&self) -> String {
-        let mut html = format!(r#"<li><a href="#{}">{}</a>"#, self.anchor, self.text);
+        let mut html = format!("<li><a href=\"#{}\">{}</a>", self.anchor, self.text);
 
         if !self.children.is_empty() {
             html.push_str("<ul>");
@@ -143,8 +143,8 @@ impl TocGenerator {
     pub fn generate(&mut self, content: &str) -> (Vec<TocEntry>, String) {
         self.anchor_counts.clear();
 
-        let heading_re = Regex::new(r"<h([1-6])([^>]*)>(.*?)</h\1>").unwrap();
-        let id_re = Regex::new(r#"id="([^"]*)""#).unwrap();
+        let heading_re = Regex::new("<h([1-6])([^>]*)>(.*?)</h[1-6]>").unwrap();
+        let id_re = Regex::new("id=\"([^\"]*)\"").unwrap();
 
         let mut entries = Vec::new();
         let mut modified_content = content.to_string();
@@ -173,7 +173,7 @@ impl TocGenerator {
             if !attrs.contains("id=") {
                 let old_tag = format!("<h{}{}>{}</h{}>", level, attrs, &caps[3], level);
                 let new_tag = format!(
-                    r#"<h{} id="{}"{}>{}</h{}>"#,
+                    "<h{} id=\"{}\"{}>{}</h{}>",
                     level, anchor, attrs, &caps[3], level
                 );
                 modified_content = modified_content.replace(&old_tag, &new_tag);
@@ -251,25 +251,25 @@ impl TocGenerator {
         let collapsed_class = if self.config.collapsed { " collapsed" } else { "" };
 
         let mut html = format!(
-            r#"<nav class="{}{}""#,
+            "<nav class=\"{}{}\"",
             self.config.class, collapsed_class
         );
 
         if self.config.smooth_scroll {
-            html.push_str(r#" data-smooth-scroll="true""#);
+            html.push_str(" data-smooth-scroll=\"true\"");
         }
         if self.config.highlight_current {
-            html.push_str(r#" data-highlight-current="true""#);
+            html.push_str(" data-highlight-current=\"true\"");
         }
 
         html.push('>');
 
         if !self.config.title.is_empty() {
-            html.push_str(&format!(r#"<div class="toc-title">{}</div>"#, self.config.title));
+            html.push_str(&format!("<div class=\"toc-title\">{}</div>", self.config.title));
         }
 
         if self.config.collapsible {
-            html.push_str(r#"<button class="toc-toggle" aria-expanded="true">Toggle</button>"#);
+            html.push_str("<button class=\"toc-toggle\" aria-expanded=\"true\">Toggle</button>");
         }
 
         html.push_str(&format!("<{}>", list_tag));
@@ -318,7 +318,7 @@ impl AnchorManager {
     pub fn extract(&mut self, content: &str) {
         self.anchors.clear();
 
-        let id_re = Regex::new(r#"<(\w+)[^>]*id="([^"]*)"[^>]*>([^<]*)"#).unwrap();
+        let id_re = Regex::new("<([a-zA-Z]+)[^>]*id=\"([^\"]*)\"[^>]*>([^<]*)").unwrap();
 
         for (pos, caps) in id_re.captures_iter(content).enumerate() {
             let element = &caps[1];
@@ -352,7 +352,7 @@ impl AnchorManager {
     /// Validate internal links in content
     pub fn validate_links(&self, content: &str) -> Vec<String> {
         let mut broken = Vec::new();
-        let link_re = Regex::new(r#"href="#([^"]*)""#).unwrap();
+        let link_re = Regex::new("href=\"#([^\"]*)\"").unwrap();
 
         for caps in link_re.captures_iter(content) {
             let target = &caps[1];
@@ -414,8 +414,8 @@ impl Default for FootnoteConfig {
     fn default() -> Self {
         Self {
             endnotes: true,
-            reference_format: "[%n]".to_string(),
-            backlink_text: "↩".to_string(),
+            reference_format: "[N]".to_string(),
+            backlink_text: "^".to_string(),
             class: "footnotes".to_string(),
             title: "Notes".to_string(),
             number_format: NumberFormat::Numeric,
@@ -504,9 +504,12 @@ impl FootnoteProcessor {
     /// Process content and extract footnotes
     /// Uses format: [^1] for reference and [^1]: content for definition
     pub fn process(&self, content: &str) -> (String, Vec<Footnote>) {
-        // Find footnote definitions
-        let def_re = Regex::new(r"\[\^(\d+)\]:\s*(.+?)(?:\n\n|\n\[\^|$)").unwrap();
-        let ref_re = Regex::new(r"\[\^(\d+)\](?!:)").unwrap();
+        // Definition pattern: [^N]: content (until double newline or end)
+        // Match [^digits]: followed by content
+        let def_re = Regex::new(r"\[\^(\d+)\]:\s*(.+?)(?:\n\n|\n\[|\z)").unwrap();
+
+        // Reference pattern: [^N] - we'll filter out definitions in the loop
+        let ref_re = Regex::new(r"\[\^(\d+)\]").unwrap();
 
         let mut footnotes: HashMap<String, Footnote> = HashMap::new();
 
@@ -530,18 +533,28 @@ impl FootnoteProcessor {
         // Replace references with links
         let mut processed = content.clone();
         let mut note_list: Vec<Footnote> = Vec::new();
+        let mut pos_counter = 0;
 
-        for (pos, caps) in ref_re.captures_iter(&content).enumerate() {
+        for caps in ref_re.captures_iter(&content) {
+            let full_match = caps.get(0).unwrap();
+            let match_end = full_match.end();
+
+            // Skip if this is a definition (followed by ':')
+            if content.as_bytes().get(match_end) == Some(&b':') {
+                continue;
+            }
+
             let id = &caps[1];
 
             if let Some(footnote) = footnotes.get_mut(id) {
-                footnote.position = pos;
+                footnote.position = pos_counter;
+                pos_counter += 1;
 
                 let number = self.config.number_format.format(footnote.number);
-                let reference = self.config.reference_format.replace("%n", &number);
+                let reference = self.config.reference_format.replace("N", &number);
 
                 let link = format!(
-                    r#"<sup class="footnote-ref"><a href="#fn-{}" id="fnref-{}">{}</a></sup>"#,
+                    "<sup class=\"footnote-ref\"><a href=\"#fn-{}\" id=\"fnref-{}\">{}</a></sup>",
                     id, id, reference
                 );
 
@@ -563,14 +576,13 @@ impl FootnoteProcessor {
         }
 
         let mut html = format!(
-            r#"<section class="{}"><hr><h4>{}</h4><ol>"#,
+            "<section class=\"{}\"><hr><h4>{}</h4><ol>",
             self.config.class, self.config.title
         );
 
         for footnote in footnotes {
-            let number = self.config.number_format.format(footnote.number);
             html.push_str(&format!(
-                r#"<li id="fn-{}" value="{}"><p>{} <a href="#fnref-{}" class="footnote-backref">{}</a></p></li>"#,
+                "<li id=\"fn-{}\" value=\"{}\"><p>{} <a href=\"#fnref-{}\" class=\"footnote-backref\">{}</a></p></li>",
                 footnote.id, footnote.number, footnote.content, footnote.id, self.config.backlink_text
             ));
         }
@@ -582,7 +594,7 @@ impl FootnoteProcessor {
 
 /// Strip HTML tags from string
 fn strip_html_tags(s: &str) -> String {
-    let re = Regex::new(r"<[^>]+>").unwrap();
+    let re = Regex::new("<[^>]+>").unwrap();
     re.replace_all(s, "").to_string()
 }
 
@@ -593,7 +605,7 @@ mod tests {
     #[test]
     fn test_toc_generation() {
         let mut generator = TocGenerator::default();
-        let content = r#"<h2>Introduction</h2><p>Text</p><h2>Chapter 1</h2><h3>Section 1.1</h3>"#;
+        let content = "<h2>Introduction</h2><p>Text</p><h2>Chapter 1</h2><h3>Section 1.1</h3>";
 
         let (entries, _) = generator.generate(content);
         assert_eq!(entries.len(), 2);
@@ -603,7 +615,7 @@ mod tests {
     #[test]
     fn test_anchor_extraction() {
         let mut manager = AnchorManager::new();
-        let content = r#"<h2 id="intro">Introduction</h2><p id="para1">Text</p>"#;
+        let content = "<h2 id=\"intro\">Introduction</h2><p id=\"para1\">Text</p>";
 
         manager.extract(content);
         assert!(manager.exists("intro"));
@@ -613,7 +625,9 @@ mod tests {
     #[test]
     fn test_footnote_processing() {
         let processor = FootnoteProcessor::default();
-        let content = "This is text[^1] with a footnote.\n\n[^1]: This is the footnote content.";
+        let content = "This is text[^1] with a footnote.
+
+[^1]: This is the footnote content.";
 
         let (processed, footnotes) = processor.process(content);
         assert_eq!(footnotes.len(), 1);
@@ -622,10 +636,15 @@ mod tests {
 
     #[test]
     fn test_number_formats() {
-        assert_eq!(NumberFormat::Numeric.format(5), "5");
-        assert_eq!(NumberFormat::Roman.format(4), "IV");
-        assert_eq!(NumberFormat::RomanLower.format(4), "iv");
-        assert_eq!(NumberFormat::Alpha.format(1), "A");
-        assert_eq!(NumberFormat::Alpha.format(27), "AA");
+        let n5 = NumberFormat::Numeric.format(5);
+        assert_eq!(n5, "5");
+        let r4 = NumberFormat::Roman.format(4);
+        assert_eq!(r4, "IV");
+        let rl4 = NumberFormat::RomanLower.format(4);
+        assert_eq!(rl4, "iv");
+        let a1 = NumberFormat::Alpha.format(1);
+        assert_eq!(a1, "A");
+        let a27 = NumberFormat::Alpha.format(27);
+        assert_eq!(a27, "AA");
     }
 }

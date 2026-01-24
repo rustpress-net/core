@@ -430,7 +430,7 @@ impl FeaturedImageManager {
     }
 
     /// Get featured image or fallback
-    pub fn get_or_fallback(&self, image: Option<&FeaturedImage>, post_type: &str) -> Option<&FeaturedImage> {
+    pub fn get_or_fallback<'a>(&'a self, image: Option<&'a FeaturedImage>, post_type: &str) -> Option<&'a FeaturedImage> {
         image
             .or_else(|| self.fallbacks.get(post_type))
             .or(self.default_image.as_ref())

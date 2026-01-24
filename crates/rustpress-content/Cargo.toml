@@ -34,6 +34,15 @@ ammonia = "3.3"
 regex = "1.10"
 slug = "0.1"
 urlencoding = "2.1"
+unicode-segmentation = "1.10"
+url = "2.5"
+
+# Image processing
+image = "0.25"
+base64 = "0.22"
+
+# XML processing
+quick-xml = "0.31"
 
 # Error handling
 thiserror = "1.0"

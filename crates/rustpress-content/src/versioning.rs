@@ -41,6 +41,21 @@ pub struct Revision {
 }
 
 impl Revision {
+    /// Create a new revision with defaults
+    pub fn new(content_id: Uuid, revision: i32) -> Self {
+        Self {
+            id: Uuid::new_v4(),
+            content_id,
+            revision,
+            title: String::new(),
+            content: String::new(),
+            blocks: serde_json::json!([]),
+            author_id: Uuid::nil(),
+            created_at: Utc::now(),
+            change_summary: None,
+        }
+    }
+
     /// Create a new revision from content
     pub fn from_content(content: &Content) -> Self {
         Self {
@@ -54,6 +69,24 @@ impl Revision {
             created_at: Utc::now(),
             change_summary: None,
         }
+    }
+
+    /// Builder: set title
+    pub fn with_title(mut self, title: &str) -> Self {
+        self.title = title.to_string();
+        self
+    }
+
+    /// Builder: set content
+    pub fn with_content(mut self, content: &str) -> Self {
+        self.content = content.to_string();
+        self
+    }
+
+    /// Builder: set author
+    pub fn with_author(mut self, author_id: Uuid) -> Self {
+        self.author_id = author_id;
+        self
     }
 }
 

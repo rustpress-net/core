@@ -7,10 +7,11 @@ authors.workspace = true
 license.workspace = true
 
 [features]
-default = []
-full = ["metrics", "tracing-full"]
+default = ["remote-discovery"]
+full = ["metrics", "tracing-full", "remote-discovery"]
 metrics = []
 tracing-full = []
+remote-discovery = ["reqwest"]
 
 [dependencies]
 # Async
@@ -21,6 +22,7 @@ futures.workspace = true
 # Serialization
 serde.workspace = true
 serde_json.workspace = true
+toml.workspace = true
 
 # Error handling
 thiserror.workspace = true
@@ -44,5 +46,9 @@ parking_lot.workspace = true
 dashmap.workspace = true
 once_cell.workspace = true
 
+# HTTP client (optional, for remote discovery)
+reqwest = { workspace = true, optional = true }
+
 [dev-dependencies]
 tokio = { workspace = true, features = ["test-util", "macros"] }
+tempfile = "3.10"

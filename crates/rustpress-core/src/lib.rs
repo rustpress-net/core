@@ -6,12 +6,14 @@
 pub mod api;
 pub mod config;
 pub mod context;
+pub mod discovery;
 pub mod error;
 pub mod health;
 pub mod hook;
 pub mod id;
 pub mod middleware;
 pub mod plugin;
+pub mod plugin_loader;
 pub mod repository;
 pub mod service;
 pub mod tenant;
@@ -25,6 +27,8 @@ pub use hook::{Action, Filter, Hook, HookRegistry};
 pub use id::TenantId;
 pub use id::{EntityId, Id};
 pub use plugin::{Plugin, PluginInfo, PluginManager};
+pub use plugin_loader::{PluginLoader, PluginManifest, LoadResult};
+pub use discovery::{DiscoveryService, DiscoverySource, DiscoveryConfig, ComponentType, ComponentManifest};
 pub use tenant::Tenant;
 
 /// The current version of RustPress

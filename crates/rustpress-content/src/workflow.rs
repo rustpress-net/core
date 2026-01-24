@@ -683,18 +683,18 @@ pub struct ScheduledPost {
 }
 
 /// Scheduler for handling scheduled publications
-pub struct PublishScheduler {
+pub struct WorkflowScheduler {
     /// Scheduled posts
     scheduled: Vec<ScheduledPost>,
 }
 
-impl Default for PublishScheduler {
+impl Default for WorkflowScheduler {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl PublishScheduler {
+impl WorkflowScheduler {
     pub fn new() -> Self {
         Self {
             scheduled: Vec::new(),
@@ -812,7 +812,7 @@ mod tests {
 
     #[test]
     fn test_scheduler() {
-        let mut scheduler = PublishScheduler::new();
+        let mut scheduler = WorkflowScheduler::new();
 
         let future = Utc::now() + Duration::hours(1);
         let result = scheduler.schedule(1, future, 100, "UTC");
